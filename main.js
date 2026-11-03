@@ -43,6 +43,17 @@ function createWindow() {
   win.setIgnoreMouseEvents(true, { forward: true });
 
   win.loadFile(path.join(__dirname, "index.html"));
+// ---- 诊断：转发渲染层日志与错误 ----
+win.webContents.on("console-message", (event, level, message) => {
+  const text = typeof message === "string" ? message : event?.message;
+  console.log("[renderer]", text);
+});
+win.webContents.on("preload-error", (_e, preloadPath, error) => {
+  console.log("[preload-error]", preloadPath, error && error.message);
+});
+win.webContents.on("did-fail-load", (_e, code, desc) => {
+  console.log("[did-fail-load]", code, desc);
+});
 
   win.webContents.on("did-finish-load", () => {
     if (readyLogged) return;
@@ -108,4 +119,6 @@ app.whenReady().then(() => {
   createWindow();
 });
 
+
+// ---- 转发渲染层 console 到主进程 ----
 app.on("window-all-closed", () => app.quit());
