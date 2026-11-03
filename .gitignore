@@ -1,4 +1,4 @@
-# 依赖
+﻿# 依赖
 node_modules/
 .pnp
 .pnp.*
@@ -31,3 +31,6 @@ pnpm-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
+
+# 本地截图与临时产物
+.shots/
