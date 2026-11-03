@@ -1,4 +1,4 @@
-# 芯宠 · XinChong
+﻿# 芯宠 · XinChong
 
 > 把「专属外观、可变人格、桌面陪伴」三件事，合在一只桌宠上。
 
@@ -275,6 +275,28 @@ xinchong/
 ├── AGENTS.md        # AI / 新成员接管入口
 ├── CONTRIBUTING.md  # fork / PR 协作流程
 └── README.md
+```
+
+---
+
+## 本地开发
+
+```bash
+pnpm install
+pnpm dev        # 开发模式（热更新）
+pnpm build      # 构建到 out/
+pnpm start      # 运行构建产物
+pnpm typecheck  # 类型检查
+```
+
+**两条硬性前置**：
+
+1. **项目路径必须短且纯英文**（当前固定 `E:\xinchong`）。中文长路径会让 Electron 启动即崩，见 `docs/DECISIONS.md` D-404。
+2. **清掉 `ELECTRON_RUN_AS_NODE`**，否则 Electron 会退化成 Node 模式、不开窗口：
+
+```powershell
+$env:ELECTRON_RUN_AS_NODE = $null
+pnpm dev
 ```
 
 ---
