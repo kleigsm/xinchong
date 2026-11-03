@@ -1,6 +1,7 @@
 import type { BrowserWindow } from "electron";
 import { ipcMain } from "electron";
 import type { Point } from "../shared/types";
+import { buildMenu } from "./tray";
 import { clampToVisibleArea } from "./window";
 
 let dragOffset: { dx: number; dy: number } | null = null;
@@ -10,7 +11,7 @@ export function isDragging(): boolean {
   return dragOffset !== null;
 }
 
-/** 注册拖拽相关的 IPC */
+/** 注册拖拽与右键菜单相关的 IPC */
 export function registerIpc(win: BrowserWindow): void {
   ipcMain.on("drag-start", (_event, point: Point) => {
     if (win.isDestroyed()) return;
@@ -31,5 +32,11 @@ export function registerIpc(win: BrowserWindow): void {
     clampToVisibleArea(win);
     const [x, y] = win.getPosition();
     console.log(`[drag] end, window at (${x},${y})`);
+  });
+
+  // 宠物身上右键 → 弹出与托盘一致的菜单
+  ipcMain.on("show-context-menu", () => {
+    if (win.isDestroyed()) return;
+    buildMenu(win).popup({ window: win });
   });
 }

@@ -1,7 +1,8 @@
-﻿import { app } from "electron";
+import { app } from "electron";
 import { describeDisplays, watchDisplays } from "./display";
 import { startHitTesting } from "./hit-test";
 import { isDragging, registerIpc } from "./ipc";
+import { createTray, destroyTray } from "./tray";
 import { createMainWindow } from "./window";
 
 const T0 = Date.now();
@@ -14,6 +15,7 @@ app.whenReady().then(() => {
 
   const win = createMainWindow();
   registerIpc(win);
+  createTray(win);
   stopHitTesting = startHitTesting(win, isDragging);
   stopWatchingDisplays = watchDisplays(win);
 
@@ -25,7 +27,6 @@ app.whenReady().then(() => {
     console.log(`[renderer] ${text}`);
   });
 
-
   win.webContents.once("did-finish-load", () => {
     console.log(`[app] window ready in ${Date.now() - T0}ms`);
   });
@@ -34,5 +35,6 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => {
   stopHitTesting?.();
   stopWatchingDisplays?.();
+  destroyTray();
   app.quit();
 });

@@ -10,6 +10,7 @@ const api: PetApi = {
   dragStart: (point: Point) => ipcRenderer.send("drag-start", point),
   dragMove: (point: Point) => ipcRenderer.send("drag-move", point),
   dragEnd: () => ipcRenderer.send("drag-end"),
+  showMenu: () => ipcRenderer.send("show-context-menu"),
 };
 
 contextBridge.exposeInMainWorld("pet", api);

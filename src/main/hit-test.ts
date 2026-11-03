@@ -6,7 +6,7 @@ import { HIT_RADIUS, POLL_INTERVAL_MS } from "../shared/constants";
  * 光标命中检测：定时查询光标位置，判断是否落在角色圆形范围内，
  * 据此切换窗口的鼠标穿透状态。
  *
- * 为什么不用 setIgnoreMouseEvents(..., { forward: true })??
+ * 为什么不用 setIgnoreMouseEvents(..., { forward: true })？
  * P0-1 实测：在该窗口配置下转发事件不触发，页面收不到 mousemove。
  * 轮询方案稳定且开销极低（50ms 一次坐标比较）。
  */
@@ -18,6 +18,8 @@ export function startHitTesting(
 
   const timer = setInterval(() => {
     if (win.isDestroyed()) return;
+    // 被托盘隐藏时不做检测
+    if (!win.isVisible()) return;
     // 拖拽中不要改动穿透状态，否则拖到一半会丢失鼠标捕获
     if (isDragging()) return;
 

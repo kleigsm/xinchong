@@ -9,4 +9,6 @@ export interface PetApi {
   dragStart(point: Point): void;
   dragMove(point: Point): void;
   dragEnd(): void;
+  /** 弹出右键菜单（与托盘菜单一致） */
+  showMenu(): void;
 }
