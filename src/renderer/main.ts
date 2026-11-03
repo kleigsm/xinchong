@@ -1,8 +1,11 @@
-﻿import { startBreathing } from "./animator";
-import type { Point } from "../shared/types";
+import { startBreathing } from "./animator";
+import type { Point, Settings } from "../shared/types";
 
 // 注意：不能叫 pet，否则和 preload 暴露的 window.pet 冲突（P0-1 踩过的坑）
 const petEl = document.getElementById("pet") as HTMLElement;
+const hintEl = document.getElementById("hint") as HTMLElement;
+
+const DEFAULT_HINT = "拖动我 / 透明区可穿透";
 
 let dragging = false;
 
@@ -34,6 +37,19 @@ window.addEventListener("contextmenu", (event: MouseEvent) => {
   event.preventDefault();
   window.pet.showMenu();
 });
+
+/** 设置变化时更新界面提示（等 P1-6 有音效后，这里还要控制静音） */
+function applySettings(settings: Settings): void {
+  if (settings.dnd) {
+    hintEl.textContent = "勿扰中";
+  } else if (settings.muted) {
+    hintEl.textContent = "已静音";
+  } else {
+    hintEl.textContent = DEFAULT_HINT;
+  }
+}
+
+window.pet.onSettings(applySettings);
 
 const stopBreathing = startBreathing(petEl);
 window.addEventListener("beforeunload", stopBreathing);

@@ -1,8 +1,9 @@
 import { app } from "electron";
+import { initAutoStart } from "./autostart";
 import { describeDisplays, watchDisplays } from "./display";
 import { startHitTesting } from "./hit-test";
 import { isDragging, registerIpc } from "./ipc";
-import { createTray, destroyTray } from "./tray";
+import { createTray, destroyTray, notifySettings } from "./tray";
 import { createMainWindow } from "./window";
 
 const T0 = Date.now();
@@ -12,6 +13,8 @@ let stopWatchingDisplays: (() => void) | null = null;
 
 app.whenReady().then(() => {
   console.log(`[app] ready in ${Date.now() - T0}ms`);
+
+  initAutoStart();
 
   const win = createMainWindow();
   registerIpc(win);
@@ -29,6 +32,8 @@ app.whenReady().then(() => {
 
   win.webContents.once("did-finish-load", () => {
     console.log(`[app] window ready in ${Date.now() - T0}ms`);
+    // 首屏把当前设置同步给页面
+    notifySettings(win);
   });
 });
 

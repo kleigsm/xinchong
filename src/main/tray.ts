@@ -1,5 +1,7 @@
 ﻿import { Menu, Tray, nativeImage } from "electron";
 import type { BrowserWindow } from "electron";
+import { applyAutoStart } from "./autostart";
+import { getSettings, updateSettings } from "./store";
 
 /**
  * 32x32 的粉色圆形图标，内嵌 base64。
@@ -12,23 +14,63 @@ let tray: Tray | null = null;
 export function createTray(win: BrowserWindow): Tray {
   const image = nativeImage.createFromDataURL("data:image/png;base64," + TRAY_ICON_PNG);
   tray = new Tray(image);
-
   tray.setToolTip("芯宠");
-  console.log("[tray] created");
   tray.setContextMenu(buildMenu(win));
-
-  // 左键单击：切换显示 / 隐藏
   tray.on("click", () => toggleWindow(win));
-
+  console.log("[tray] created");
   return tray;
+}
+
+/** 菜单状态变化后重新挂载，保证勾选状态是最新的 */
+export function refreshMenu(win: BrowserWindow): void {
+  tray?.setContextMenu(buildMenu(win));
+}
+
+/** 把最新设置推给渲染进程 */
+export function notifySettings(win: BrowserWindow): void {
+  if (win.isDestroyed()) return;
+  win.webContents.send("settings-changed", getSettings());
 }
 
 /** 托盘菜单与宠物右键菜单共用 */
 export function buildMenu(win: BrowserWindow): Menu {
+  const settings = getSettings();
+
   return Menu.buildFromTemplate([
     {
       label: "显示 / 隐藏",
       click: () => toggleWindow(win),
+    },
+    { type: "separator" },
+    {
+      label: "静音",
+      type: "checkbox",
+      checked: settings.muted,
+      click: (item) => {
+        updateSettings({ muted: item.checked });
+        refreshMenu(win);
+        notifySettings(win);
+      },
+    },
+    {
+      label: "勿扰模式",
+      type: "checkbox",
+      checked: settings.dnd,
+      click: (item) => {
+        updateSettings({ dnd: item.checked });
+        refreshMenu(win);
+        notifySettings(win);
+      },
+    },
+    {
+      label: "开机自启",
+      type: "checkbox",
+      checked: settings.autoStart,
+      click: (item) => {
+        applyAutoStart(item.checked);
+        refreshMenu(win);
+        notifySettings(win);
+      },
     },
     { type: "separator" },
     {
