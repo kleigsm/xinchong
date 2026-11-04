@@ -1,6 +1,7 @@
-import { Menu, Tray, nativeImage } from "electron";
+﻿import { Menu, Tray, nativeImage } from "electron";
 import type { BrowserWindow } from "electron";
 import { PERSONALITIES } from "../shared/personalities";
+import { showPerfDialog } from "./perf";
 import { applyAutoStart } from "./autostart";
 import { getSettings, updateSettings } from "./store";
 
@@ -97,6 +98,13 @@ export function buildMenu(win: BrowserWindow): Menu {
         applyAutoStart(item.checked);
         refreshMenu(win);
         notifySettings(win);
+      },
+    },
+    { type: "separator" },
+    {
+      label: "性能信息",
+      click: () => {
+        void showPerfDialog();
       },
     },
     { type: "separator" },

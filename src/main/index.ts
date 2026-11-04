@@ -1,8 +1,9 @@
-import { app } from "electron";
+﻿import { app } from "electron";
 import { initAutoStart } from "./autostart";
 import { describeDisplays, watchDisplays } from "./display";
 import { startHitTesting } from "./hit-test";
 import { isDragging, registerIpc } from "./ipc";
+import { startPerfSampling } from "./perf";
 import { createTray, destroyTray, notifySettings } from "./tray";
 import { createMainWindow } from "./window";
 
@@ -10,6 +11,7 @@ const T0 = Date.now();
 
 let stopHitTesting: (() => void) | null = null;
 let stopWatchingDisplays: (() => void) | null = null;
+let stopPerfSampling: (() => void) | null = null;
 
 app.whenReady().then(() => {
   console.log(`[app] ready in ${Date.now() - T0}ms`);
@@ -21,6 +23,7 @@ app.whenReady().then(() => {
   createTray(win);
   stopHitTesting = startHitTesting(win, isDragging);
   stopWatchingDisplays = watchDisplays(win);
+  stopPerfSampling = startPerfSampling(win);
 
   console.log(`[app] displays: ${describeDisplays()}`);
 
@@ -40,6 +43,7 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => {
   stopHitTesting?.();
   stopWatchingDisplays?.();
+  stopPerfSampling?.();
   destroyTray();
   app.quit();
 });

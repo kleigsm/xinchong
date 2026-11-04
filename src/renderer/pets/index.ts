@@ -1,4 +1,4 @@
-import type { AnimationName, AnimationSpec, PetPack } from "../../shared/pet-pack";
+﻿import type { AnimationName, AnimationSpec, PetPack } from "../../shared/pet-pack";
 import type { PersonalityId } from "../../shared/personalities";
 
 import shySheet from "../assets/pet-shy.png";
@@ -14,7 +14,7 @@ const SHEET_LAYOUT = {
 } as const;
 
 const ANIMATIONS: Record<AnimationName, AnimationSpec> = {
-  idle: { frames: [0, 1, 2, 3], fps: 8, loop: true },
+  idle: { frames: [0, 1, 2, 3], fps: 6, loop: true },
   click: { frames: [4, 5, 6, 7], fps: 12, loop: false },
   drag: { frames: [8, 9], fps: 6, loop: true },
   sleep: { frames: [12, 13], fps: 2, loop: true },

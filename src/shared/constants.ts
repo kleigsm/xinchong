@@ -1,4 +1,4 @@
-/** 窗口与交互的全局常量，主进程和渲染进程共用 */
+﻿/** 窗口与交互的全局常量，主进程和渲染进程共用 */
 
 /**
  * 窗口尺寸。
@@ -14,7 +14,7 @@ export const PET_SIZE = 160;
 export const HIT_RADIUS = 82;
 
 /** 光标轮询间隔（ms） */
-export const POLL_INTERVAL_MS = 50;
+export const POLL_INTERVAL_MS = 80;
 
 /** 拖动时至少保留多少像素在屏幕内，防止宠物被拖丢 */
 export const MIN_VISIBLE_PX = 60;

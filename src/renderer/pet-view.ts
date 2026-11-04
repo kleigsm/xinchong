@@ -1,4 +1,11 @@
-﻿import type { AnimationName, PetPack } from "../shared/pet-pack";
+import type { AnimationName, AnimationSpec, PetPack } from "../shared/pet-pack";
+
+/** 降帧下限：再低就不像"动"了 */
+const MIN_FPS = 4;
+/** 连续多少个慢帧判定为掉帧 */
+const SLOW_TICK_THRESHOLD = 12;
+/** 慢帧判定：实际间隔超过预期的多少倍 */
+const SLOW_FACTOR = 2.5;
 
 /**
  * 雪碧图动画播放器。
@@ -8,10 +15,8 @@
  * - 调试直观，不闪
  * - 代码量少
  *
- * 用法：
- *   const view = new PetView(el, pack);
- *   view.play("idle");
- *   view.play("click", () => view.play("idle"));
+ * 内置「卡顿自动降帧」：如果定时器持续被拖延（说明渲染跟不上），
+ * 每次把帧率降到 75%，最低 4fps —— 宁可慢一点，也不要堆积卡死。
  */
 export class PetView {
   private el: HTMLElement;
@@ -20,6 +25,11 @@ export class PetView {
   private frameIndex = 0;
   private current: AnimationName | null = null;
   private onFinish: (() => void) | null = null;
+
+  private spec: AnimationSpec | null = null;
+  private effectiveFps = 0;
+  private lastTickAt = 0;
+  private slowTicks = 0;
 
   constructor(el: HTMLElement, pack: PetPack) {
     this.el = el;
@@ -32,12 +42,17 @@ export class PetView {
   setPack(pack: PetPack): void {
     this.stop();
     this.pack = pack;
+    validatePack(pack);
     this.applySprite();
     this.play("idle");
   }
 
   get currentAnimation(): AnimationName | null {
     return this.current;
+  }
+
+  get fps(): number {
+    return this.effectiveFps;
   }
 
   /** 播放某段动画；非循环动画播完后调用 onFinish */
@@ -47,44 +62,90 @@ export class PetView {
 
     this.stop();
     this.current = name;
-    console.log(`[pet-view] play ${name}`);
+    this.spec = spec;
     this.onFinish = onFinish ?? null;
     this.frameIndex = 0;
+    this.effectiveFps = spec.fps;
+    this.slowTicks = 0;
+
+    console.log(`[pet-view] play ${name}`);
     this.renderFrame(spec.frames[0]);
-
-    const interval = 1000 / spec.fps;
-    this.timer = window.setInterval(() => {
-      this.frameIndex += 1;
-
-      if (this.frameIndex >= spec.frames.length) {
-        if (spec.loop) {
-          this.frameIndex = 0;
-        } else {
-          this.stop();
-          const done = this.onFinish;
-          this.onFinish = null;
-          done?.();
-          return;
-        }
-      }
-
-      this.renderFrame(spec.frames[this.frameIndex]);
-    }, interval);
+    this.startTimer();
   }
 
   stop(): void {
+    this.clearTimer();
+    this.current = null;
+    this.spec = null;
+  }
+
+  private startTimer(): void {
+    this.clearTimer();
+    this.lastTickAt = performance.now();
+    const interval = 1000 / this.effectiveFps;
+    this.timer = window.setInterval(() => this.onTick(interval), interval);
+  }
+
+  private clearTimer(): void {
     if (this.timer !== null) {
       window.clearInterval(this.timer);
       this.timer = null;
     }
-    this.current = null;
+  }
+
+  private onTick(interval: number): void {
+    const now = performance.now();
+    const delta = now - this.lastTickAt;
+    this.lastTickAt = now;
+
+    // 定时器被拖延，说明这一帧渲染跟不上
+    if (delta > interval * SLOW_FACTOR) {
+      this.slowTicks += 1;
+    } else if (this.slowTicks > 0) {
+      this.slowTicks -= 1;
+    }
+
+    if (this.slowTicks >= SLOW_TICK_THRESHOLD && this.effectiveFps > MIN_FPS) {
+      const next = Math.max(MIN_FPS, Math.round(this.effectiveFps * 0.75));
+      if (next < this.effectiveFps) {
+        console.log(`[pet-view] 检测到掉帧，降帧 ${this.effectiveFps} → ${next} fps`);
+        this.effectiveFps = next;
+        this.slowTicks = 0;
+        this.startTimer();
+        return;
+      }
+    }
+
+    this.advanceFrame();
+  }
+
+  private advanceFrame(): void {
+    const spec = this.spec;
+    if (!spec) return;
+
+    this.frameIndex += 1;
+
+    if (this.frameIndex >= spec.frames.length) {
+      if (spec.loop) {
+        this.frameIndex = 0;
+      } else {
+        this.clearTimer();
+        this.spec = null;
+        this.current = null;
+        const done = this.onFinish;
+        this.onFinish = null;
+        done?.();
+        return;
+      }
+    }
+
+    this.renderFrame(spec.frames[this.frameIndex]);
   }
 
   /** 设置雪碧图与尺寸，只需在换包时调用一次 */
   private applySprite(): void {
     const { image, columns, rows } = this.pack.sprite;
     this.el.style.backgroundImage = `url("${image}")`;
-    // 每格按元素大小缩放：4 列 → 400%
     this.el.style.backgroundSize = `${columns * 100}% ${rows * 100}%`;
     this.el.style.backgroundRepeat = "no-repeat";
   }

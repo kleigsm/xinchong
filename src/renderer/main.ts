@@ -1,4 +1,4 @@
-import { PetView } from "./pet-view";
+﻿import { PetView } from "./pet-view";
 import { PACKS } from "./pets";
 import { PetStateMachine } from "./state-machine";
 import { LinePicker, SpeechBubble } from "./bubble";
@@ -136,3 +136,12 @@ window.addEventListener("beforeunload", () => {
 });
 
 console.log("[renderer] ready");
+
+// 窗口被托盘隐藏时停止动画，避免后台空转烧 CPU
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    view.stop();
+  } else {
+    machine.start();
+  }
+});
