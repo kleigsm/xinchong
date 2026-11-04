@@ -1,7 +1,8 @@
 import { PetView } from "./pet-view";
-import { placeholderPack } from "./pets/placeholder";
+import { PACKS } from "./pets";
 import { PetStateMachine } from "./state-machine";
 import { LinePicker, SpeechBubble } from "./bubble";
+import { DEFAULT_PERSONALITY, isPersonalityId } from "../shared/personalities";
 import type { Point, Settings } from "../shared/types";
 
 // 注意：不能叫 pet，否则和 preload 暴露的 window.pet 冲突（P0-1 踩过的坑）
@@ -11,12 +12,14 @@ const bubbleEl = document.getElementById("bubble") as HTMLElement;
 /** 超过这个位移（px）才算拖拽，否则算点击 */
 const DRAG_THRESHOLD = 4;
 
-const view = new PetView(petEl, placeholderPack);
+let currentPackId = DEFAULT_PERSONALITY;
+
+const view = new PetView(petEl, PACKS[currentPackId]);
 const bubble = new SpeechBubble(bubbleEl);
 
-// 每个场景一个挑选器，避免连续重复同一句
-const clickLines = new LinePicker(placeholderPack.lines.click);
-const dragLines = new LinePicker(placeholderPack.lines.drag);
+// 台词挑选器随性格切换而重建
+let clickLines = new LinePicker(PACKS[currentPackId].lines.click);
+let dragLines = new LinePicker(PACKS[currentPackId].lines.drag);
 
 const machine = new PetStateMachine(view, {
   idleToSleepMs: 30_000,
@@ -80,8 +83,28 @@ window.addEventListener("contextmenu", (event: MouseEvent) => {
   window.pet.showMenu();
 });
 
-/** 设置变化：用气泡给出反馈（替代原来底部的提示文字） */
+/** 换性格：整个角色包（图 + 台词）一起换 */
+function switchPersonality(id: string): void {
+  const nextId = isPersonalityId(id) ? id : DEFAULT_PERSONALITY;
+  if (nextId === currentPackId) return;
+
+  currentPackId = nextId;
+  const pack = PACKS[nextId];
+
+  clickLines = new LinePicker(pack.lines.click);
+  dragLines = new LinePicker(pack.lines.drag);
+
+  view.setPack(pack);
+  machine.start(); // 重新进入待机，重置睡眠计时
+
+  bubble.show(`我是${pack.name}版哦`);
+  console.log(`[personality] switched to ${nextId}`);
+}
+
+/** 设置变化：性格、静音、勿扰 */
 function applySettings(settings: Settings): void {
+  if (settings.personality) switchPersonality(settings.personality);
+
   if (settings.dnd) {
     bubble.show("勿扰中，先不打扰你啦", 2000);
   } else if (settings.muted) {

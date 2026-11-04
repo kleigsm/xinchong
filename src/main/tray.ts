@@ -1,5 +1,6 @@
 ﻿import { Menu, Tray, nativeImage } from "electron";
 import type { BrowserWindow } from "electron";
+import { PERSONALITIES } from "../shared/personalities";
 import { applyAutoStart } from "./autostart";
 import { getSettings, updateSettings } from "./store";
 
@@ -42,6 +43,19 @@ export function buildMenu(win: BrowserWindow): Menu {
       click: () => toggleWindow(win),
     },
     { type: "separator" },
+    {
+      label: "性格",
+      submenu: PERSONALITIES.map((personality) => ({
+        label: personality.label,
+        type: "radio" as const,
+        checked: settings.personality === personality.id,
+        click: () => {
+          updateSettings({ personality: personality.id });
+          refreshMenu(win);
+          notifySettings(win);
+        },
+      })),
+    },
     {
       label: "静音",
       type: "checkbox",

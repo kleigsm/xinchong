@@ -14,6 +14,7 @@ const DEFAULTS: Settings = {
   muted: false,
   dnd: false,
   autoStart: false,
+  personality: "shy",
 };
 
 let cache: Settings | null = null;

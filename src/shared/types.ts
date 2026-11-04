@@ -12,6 +12,8 @@ export interface Settings {
   dnd: boolean;
   /** 开机自启（默认关闭） */
   autoStart: boolean;
+  /** 当前性格 id（见 shared/personalities.ts） */
+  personality: string;
 }
 
 /** preload 通过 contextBridge 暴露给渲染进程的 API */
