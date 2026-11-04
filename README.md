@@ -16,7 +16,8 @@
 | **接手的 AI / 新成员** | [`AGENTS.md`](AGENTS.md) → [`docs/STATUS.md`](docs/STATUS.md) |
 | **要认领任务** | [`docs/BACKLOG.md`](docs/BACKLOG.md) → [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 | **想知道进度** | [`docs/STATUS.md`](docs/STATUS.md) → [`docs/log/`](docs/log/) |
-| **想知道怎么实现** | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
+| **想知道怎么实现** | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| **要提供美术素材 / 自定义角色** | [docs/specs/asset-spec.md](docs/specs/asset-spec.md) |
 | **想知道为什么这么定** | [`docs/DECISIONS.md`](docs/DECISIONS.md) |
 | **想看计划** | [`docs/ROADMAP.md`](docs/ROADMAP.md) |
 
