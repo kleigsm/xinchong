@@ -23,6 +23,8 @@ export function createMainWindow(): BrowserWindow {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
+      // 桌宠的定时器不能被 Chromium 后台节流，否则「30 秒入睡」会失准
+      backgroundThrottling: false,
     },
   });
 

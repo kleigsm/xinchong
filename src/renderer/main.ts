@@ -1,5 +1,6 @@
-import { PetView } from "./pet-view";
+﻿import { PetView } from "./pet-view";
 import { placeholderPack } from "./pets/placeholder";
+import { PetStateMachine } from "./state-machine";
 import type { Point, Settings } from "../shared/types";
 
 // 注意：不能叫 pet，否则和 preload 暴露的 window.pet 冲突（P0-1 踩过的坑）
@@ -12,7 +13,14 @@ const DEFAULT_HINT = "拖动我 / 透明区可穿透";
 const DRAG_THRESHOLD = 4;
 
 const view = new PetView(petEl, placeholderPack);
-view.play("idle");
+const machine = new PetStateMachine(view, {
+  idleToSleepMs: 30_000,
+  onStateChange: (from, to) => {
+    // P1-4 的气泡会挂在这里：进入 click / idleLong 时说一句话
+    if (to === "sleep") console.log(`[state] 进入睡眠（从 ${from}）`);
+  },
+});
+machine.start();
 
 let pressOrigin: Point | null = null;
 let dragging = false;
@@ -33,7 +41,7 @@ window.addEventListener("mousemove", (event: MouseEvent) => {
     if (Math.hypot(dx, dy) > DRAG_THRESHOLD) {
       dragging = true;
       petEl.classList.add("dragging");
-      view.play("drag");
+      machine.onDragStart();
       window.pet.dragStart({ x: event.screenX, y: event.screenY });
     }
     return;
@@ -48,10 +56,9 @@ window.addEventListener("mouseup", () => {
   if (dragging) {
     window.pet.dragEnd();
     petEl.classList.remove("dragging");
-    view.play("idle");
+    machine.onDragEnd();
   } else {
-    // 没怎么移动 → 视为点击
-    view.play("click", () => view.play("idle"));
+    machine.onPetClick();
   }
 
   pressOrigin = null;
@@ -76,5 +83,7 @@ function applySettings(settings: Settings): void {
 }
 
 window.pet.onSettings(applySettings);
+
+window.addEventListener("beforeunload", () => machine.destroy());
 
 console.log("[renderer] ready");
