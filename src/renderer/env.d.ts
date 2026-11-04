@@ -1,4 +1,4 @@
-import type { PetApi } from "../shared/types";
+﻿import type { PetApi } from "../shared/types";
 
 declare global {
   interface Window {
@@ -7,9 +7,5 @@ declare global {
   }
 }
 
-declare module "*.css" {
-  const content: string;
-  export default content;
-}
 
 export {};
