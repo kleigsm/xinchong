@@ -1,4 +1,4 @@
-import type { AnimationName, PetPack } from "../shared/pet-pack";
+﻿import type { AnimationName, PetPack } from "../shared/pet-pack";
 
 /**
  * 雪碧图动画播放器。
@@ -24,6 +24,7 @@ export class PetView {
   constructor(el: HTMLElement, pack: PetPack) {
     this.el = el;
     this.pack = pack;
+    validatePack(pack);
     this.applySprite();
   }
 
@@ -98,5 +99,29 @@ export class PetView {
     const y = rows > 1 ? (row / (rows - 1)) * 100 : 0;
 
     this.el.style.backgroundPosition = `${x}% ${y}%`;
+  }
+}
+
+/**
+ * 启动时校验角色包，尽早暴露"帧号越界"这类配置错误。
+ *
+ * 背景：P1-2 调试时把睡觉动画错写成雪碧图的空白格，
+ * 表现为「一睡觉就变透明」，排查花了不少时间。
+ */
+function validatePack(pack: PetPack): void {
+  const { columns, rows } = pack.sprite;
+  const totalCells = columns * rows;
+
+  for (const [name, spec] of Object.entries(pack.animations)) {
+    if (spec.frames.length === 0) {
+      console.warn(`[pet-view] 动画 ${name} 没有帧`);
+      continue;
+    }
+    const outOfRange = spec.frames.filter((f) => f < 0 || f >= totalCells);
+    if (outOfRange.length > 0) {
+      console.warn(
+        `[pet-view] 动画 ${name} 有越界帧 ${outOfRange.join(",")}（雪碧图共 ${totalCells} 格）`,
+      );
+    }
   }
 }

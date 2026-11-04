@@ -1,4 +1,4 @@
-import type { PetPack } from "../../shared/pet-pack";
+﻿import type { PetPack } from "../../shared/pet-pack";
 import sheetUrl from "../assets/placeholder-sheet.png";
 
 /**
@@ -29,7 +29,7 @@ export const placeholderPack: PetPack = {
     idle: { frames: [0, 1, 2, 3], fps: 8, loop: true },
     click: { frames: [4, 5, 6, 7], fps: 12, loop: false },
     drag: { frames: [8, 9], fps: 6, loop: true },
-    sleep: { frames: [10, 11], fps: 2, loop: true },
+    sleep: { frames: [12, 13], fps: 2, loop: true },
   },
 
   lines: {
