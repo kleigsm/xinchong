@@ -11,7 +11,7 @@
 | 3 | [`docs/log/`](docs/log/) 最近 3 篇 | 上次做了什么、踩了什么坑 |
 | 4 | [`docs/DECISIONS.md`](docs/DECISIONS.md) | 已定的决策，不要重新推翻 |
 
-需要背景时再读 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)（技术选型与实现方案）、[`docs/ROADMAP.md`](docs/ROADMAP.md)（周计划）和根目录 [`README.md`](README.md)（产品定位与调研结论）。
+如果你是被"子窗口"派来做一个具体任务的，先看 [`docs/HANDOFF.md`](docs/HANDOFF.md) 里的收尾要求。需要背景时再读 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)（技术选型与实现方案）、[`docs/ROADMAP.md`](docs/ROADMAP.md)（周计划）和根目录 [`README.md`](README.md)（产品定位与调研结论）。
 
 ## 2. 项目是什么
 
@@ -21,7 +21,10 @@
 
 ## 3. 当前阶段
 
-**Phase 0 —— 技术选型与工程地基。仓库里还没有任何客户端代码。**
+**Phase 1 —— MVP 已完成（F1–F4）。当前阶段是交付：打包与设置面板。**
+
+代码在 `src/`（`main` / `preload` / `renderer` / `shared`），`pnpm start` 可运行。
+下一步优先级见 `docs/STATUS.md` 的「待办」。
 
 ## 4. 硬约束（违反就是返工）
 

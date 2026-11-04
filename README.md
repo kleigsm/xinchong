@@ -1,4 +1,4 @@
-﻿# 芯宠 · XinChong
+# 芯宠 · XinChong
 
 > 把「专属外观、可变人格、桌面陪伴」三件事，合在一只桌宠上。
 
@@ -18,6 +18,7 @@
 | **想知道进度** | [`docs/STATUS.md`](docs/STATUS.md) → [`docs/log/`](docs/log/) |
 | **想知道怎么实现** | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | **要提供美术素材 / 自定义角色** | [docs/specs/asset-spec.md](docs/specs/asset-spec.md) |
+| **要开新对话窗口接手某个任务** | [`docs/HANDOFF.md`](docs/HANDOFF.md) |
 | **想知道为什么这么定** | [`docs/DECISIONS.md`](docs/DECISIONS.md) |
 | **想看计划** | [`docs/ROADMAP.md`](docs/ROADMAP.md) |
 
