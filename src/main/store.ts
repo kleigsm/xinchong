@@ -15,6 +15,7 @@ const DEFAULTS: Settings = {
   dnd: false,
   autoStart: false,
   personality: "shy",
+  volume: 0.6,
 };
 
 let cache: Settings | null = null;
@@ -28,13 +29,15 @@ export function getSettings(): Settings {
   if (cache) return cache;
 
   try {
-    const raw = readFileSync(settingsPath(), "utf8");
+    // 去掉 BOM：用户用记事本 / PowerShell 编辑过 JSON 时可能带 BOM，
+    // 而 JSON.parse 遇到 BOM 会直接抛错，表现为"设置被静默重置"。
+    const raw = readFileSync(settingsPath(), "utf8").replace(/^\uFEFF/, "");
     const parsed = JSON.parse(raw) as Partial<Settings>;
     cache = { ...DEFAULTS, ...parsed };
     console.log(`[store] loaded ${settingsPath()}`);
-  } catch {
+  } catch (error) {
     cache = { ...DEFAULTS };
-    console.log(`[store] no settings yet, using defaults`);
+    console.log(`[store] no settings yet, using defaults (${String(error)})`);
   }
 
   return cache;

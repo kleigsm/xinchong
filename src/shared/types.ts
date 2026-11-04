@@ -14,6 +14,8 @@ export interface Settings {
   autoStart: boolean;
   /** 当前性格 id（见 shared/personalities.ts） */
   personality: string;
+  /** 音量 0–1 */
+  volume: number;
 }
 
 /** preload 通过 contextBridge 暴露给渲染进程的 API */

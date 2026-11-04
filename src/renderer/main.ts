@@ -2,6 +2,7 @@ import { PetView } from "./pet-view";
 import { PACKS } from "./pets";
 import { PetStateMachine } from "./state-machine";
 import { LinePicker, SpeechBubble } from "./bubble";
+import { SoundPlayer } from "./audio";
 import { DEFAULT_PERSONALITY, isPersonalityId } from "../shared/personalities";
 import type { Point, Settings } from "../shared/types";
 
@@ -16,15 +17,21 @@ let currentPackId = DEFAULT_PERSONALITY;
 
 const view = new PetView(petEl, PACKS[currentPackId]);
 const bubble = new SpeechBubble(bubbleEl);
+const sound = new SoundPlayer(PACKS[currentPackId]);
 
 // 台词挑选器随性格切换而重建
 let clickLines = new LinePicker(PACKS[currentPackId].lines.click);
 let dragLines = new LinePicker(PACKS[currentPackId].lines.drag);
 
+/** 当前设置快照：勿扰时不出声、不冒台词 */
+let currentSettings: Settings | null = null;
+const isDoNotDisturb = (): boolean => currentSettings?.dnd === true;
+
 const machine = new PetStateMachine(view, {
   idleToSleepMs: 30_000,
   onStateChange: (_from, to) => {
-    if (to === "click") {
+    if (to === "click" && !isDoNotDisturb()) {
+      sound.play("click");
       const line = clickLines.next();
       if (line) bubble.show(line);
     }
@@ -52,8 +59,11 @@ window.addEventListener("mousemove", (event: MouseEvent) => {
       dragging = true;
       petEl.classList.add("dragging");
       machine.onDragStart();
-      const line = dragLines.next();
-      if (line) bubble.show(line);
+      if (!isDoNotDisturb()) {
+        sound.play("drag");
+        const line = dragLines.next();
+        if (line) bubble.show(line);
+      }
       window.pet.dragStart({ x: event.screenX, y: event.screenY });
     }
     return;
@@ -95,14 +105,20 @@ function switchPersonality(id: string): void {
   dragLines = new LinePicker(pack.lines.drag);
 
   view.setPack(pack);
+  sound.setPack(pack);
   machine.start(); // 重新进入待机，重置睡眠计时
+  sound.play("appear");
 
   bubble.show(`我是${pack.name}版哦`);
   console.log(`[personality] switched to ${nextId}`);
 }
 
-/** 设置变化：性格、静音、勿扰 */
+/** 设置变化：性格、静音、勿扰、音量 */
 function applySettings(settings: Settings): void {
+  currentSettings = settings;
+  sound.setMuted(settings.muted);
+  sound.setVolume(settings.volume ?? 0.6);
+
   if (settings.personality) switchPersonality(settings.personality);
 
   if (settings.dnd) {

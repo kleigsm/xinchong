@@ -1,4 +1,4 @@
-﻿import { Menu, Tray, nativeImage } from "electron";
+import { Menu, Tray, nativeImage } from "electron";
 import type { BrowserWindow } from "electron";
 import { PERSONALITIES } from "../shared/personalities";
 import { applyAutoStart } from "./autostart";
@@ -75,6 +75,19 @@ export function buildMenu(win: BrowserWindow): Menu {
         refreshMenu(win);
         notifySettings(win);
       },
+    },
+    {
+      label: "音量",
+      submenu: [0, 0.25, 0.5, 0.75, 1].map((level) => ({
+        label: `${Math.round(level * 100)}%`,
+        type: "radio" as const,
+        checked: Math.abs(settings.volume - level) < 0.01,
+        click: () => {
+          updateSettings({ volume: level });
+          refreshMenu(win);
+          notifySettings(win);
+        },
+      })),
     },
     {
       label: "开机自启",
