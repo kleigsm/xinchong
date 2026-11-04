@@ -9,24 +9,24 @@ body {
   user-select: none;
   /* 不要用 -webkit-app-region: drag，它会吞掉点击事件 */
   -webkit-app-region: no-drag;
+  font-family:
+    "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
 }
 
 /**
- * 桌宠本体：一个 160×160 的雪碧图容器。
- * 背景图与 background-size / position 由 PetView 在运行时设置，
- * 这里只负责尺寸、光影与光标。
+ * 桌宠本体：160×160 的雪碧图容器，贴在窗口底部。
+ * 背景图与 background-size / position 由 PetView 运行时设置。
  */
 #pet {
   position: absolute;
   left: 50%;
-  top: 50%;
+  bottom: 0;
   width: 160px;
   height: 160px;
-  margin: -80px 0 0 -80px;
+  margin-left: -80px;
   background-repeat: no-repeat;
-  filter: drop-shadow(0 8px 18px rgba(201, 79, 112, 0.35));
+  filter: drop-shadow(0 6px 14px rgba(201, 79, 112, 0.35));
   cursor: grab;
-  /* 帧动画由 JS 驱动，避免额外的合成层开销 */
   will-change: background-position;
 }
 
@@ -34,17 +34,50 @@ body {
   cursor: grabbing;
 }
 
-#hint {
+/**
+ * 台词气泡：位于角色上方，不遮挡角色。
+ * 默认透明并轻微下移，加 .visible 后淡入。
+ */
+#bubble {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 4px;
+  left: 50%;
+  bottom: 168px;
+  transform: translate(-50%, 4px);
+  max-width: 280px;
+  box-sizing: border-box;
+  padding: 8px 14px;
+  border-radius: 14px;
+  background: #fffdfa;
+  color: #3a2a2e;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
   text-align: center;
-  font:
-    11px/1.4 "Segoe UI",
-    "Microsoft YaHei",
-    sans-serif;
-  color: rgba(255, 255, 255, 0.85);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 14px rgba(90, 40, 60, 0.18);
+  opacity: 0;
   pointer-events: none;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+#bubble.visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* 气泡小尾巴，指向角色 */
+#bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  background: #fffdfa;
+  transform: rotate(45deg);
+  border-radius: 2px;
+  box-shadow: 2px 2px 6px rgba(90, 40, 60, 0.08);
 }

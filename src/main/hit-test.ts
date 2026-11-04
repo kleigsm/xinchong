@@ -1,6 +1,6 @@
 import type { BrowserWindow } from "electron";
 import { screen } from "electron";
-import { HIT_RADIUS, POLL_INTERVAL_MS } from "../shared/constants";
+import { HIT_RADIUS, PET_SIZE, POLL_INTERVAL_MS } from "../shared/constants";
 
 /**
  * 光标命中检测：定时查询光标位置，判断是否落在角色圆形范围内，
@@ -37,8 +37,9 @@ export function startHitTesting(
 function isCursorOnPet(win: BrowserWindow): boolean {
   const cursor = screen.getCursorScreenPoint();
   const bounds = win.getBounds();
+  // 角色贴在窗口底部：水平居中，垂直取底部 PET_SIZE 区域的中点
   const cx = bounds.x + bounds.width / 2;
-  const cy = bounds.y + bounds.height / 2;
+  const cy = bounds.y + bounds.height - PET_SIZE / 2;
   const dx = cursor.x - cx;
   const dy = cursor.y - cy;
   return dx * dx + dy * dy <= HIT_RADIUS * HIT_RADIUS;

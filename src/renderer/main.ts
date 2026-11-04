@@ -1,23 +1,30 @@
-﻿import { PetView } from "./pet-view";
+import { PetView } from "./pet-view";
 import { placeholderPack } from "./pets/placeholder";
 import { PetStateMachine } from "./state-machine";
+import { LinePicker, SpeechBubble } from "./bubble";
 import type { Point, Settings } from "../shared/types";
 
 // 注意：不能叫 pet，否则和 preload 暴露的 window.pet 冲突（P0-1 踩过的坑）
 const petEl = document.getElementById("pet") as HTMLElement;
-const hintEl = document.getElementById("hint") as HTMLElement;
-
-const DEFAULT_HINT = "拖动我 / 透明区可穿透";
+const bubbleEl = document.getElementById("bubble") as HTMLElement;
 
 /** 超过这个位移（px）才算拖拽，否则算点击 */
 const DRAG_THRESHOLD = 4;
 
 const view = new PetView(petEl, placeholderPack);
+const bubble = new SpeechBubble(bubbleEl);
+
+// 每个场景一个挑选器，避免连续重复同一句
+const clickLines = new LinePicker(placeholderPack.lines.click);
+const dragLines = new LinePicker(placeholderPack.lines.drag);
+
 const machine = new PetStateMachine(view, {
   idleToSleepMs: 30_000,
-  onStateChange: (from, to) => {
-    // P1-4 的气泡会挂在这里：进入 click / idleLong 时说一句话
-    if (to === "sleep") console.log(`[state] 进入睡眠（从 ${from}）`);
+  onStateChange: (_from, to) => {
+    if (to === "click") {
+      const line = clickLines.next();
+      if (line) bubble.show(line);
+    }
   },
 });
 machine.start();
@@ -42,6 +49,8 @@ window.addEventListener("mousemove", (event: MouseEvent) => {
       dragging = true;
       petEl.classList.add("dragging");
       machine.onDragStart();
+      const line = dragLines.next();
+      if (line) bubble.show(line);
       window.pet.dragStart({ x: event.screenX, y: event.screenY });
     }
     return;
@@ -71,19 +80,20 @@ window.addEventListener("contextmenu", (event: MouseEvent) => {
   window.pet.showMenu();
 });
 
-/** 设置变化时更新界面提示（等音效接入后，这里还要控制静音） */
+/** 设置变化：用气泡给出反馈（替代原来底部的提示文字） */
 function applySettings(settings: Settings): void {
   if (settings.dnd) {
-    hintEl.textContent = "勿扰中";
+    bubble.show("勿扰中，先不打扰你啦", 2000);
   } else if (settings.muted) {
-    hintEl.textContent = "已静音";
-  } else {
-    hintEl.textContent = DEFAULT_HINT;
+    bubble.show("好，我安静一会儿", 2000);
   }
 }
 
 window.pet.onSettings(applySettings);
 
-window.addEventListener("beforeunload", () => machine.destroy());
+window.addEventListener("beforeunload", () => {
+  machine.destroy();
+  bubble.destroy();
+});
 
 console.log("[renderer] ready");

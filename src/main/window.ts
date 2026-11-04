@@ -1,6 +1,6 @@
-﻿import { BrowserWindow, screen } from "electron";
+import { BrowserWindow, screen } from "electron";
 import { join } from "node:path";
-import { MIN_VISIBLE_PX, WINDOW_SIZE } from "../shared/constants";
+import { MIN_VISIBLE_PX, WINDOW_HEIGHT, WINDOW_WIDTH } from "../shared/constants";
 
 /**
  * 创建桌宠主窗口：透明、无边框、置顶、不占任务栏、不抢焦点。
@@ -8,8 +8,8 @@ import { MIN_VISIBLE_PX, WINDOW_SIZE } from "../shared/constants";
  */
 export function createMainWindow(): BrowserWindow {
   const win = new BrowserWindow({
-    width: WINDOW_SIZE,
-    height: WINDOW_SIZE,
+    width: WINDOW_WIDTH,
+    height: WINDOW_HEIGHT,
     transparent: true,
     frame: false,
     alwaysOnTop: true,
@@ -56,8 +56,8 @@ export function createMainWindow(): BrowserWindow {
 function placeAtDefaultPosition(win: BrowserWindow): void {
   const { workArea } = screen.getPrimaryDisplay();
   // 放在右下角偏内，避免贴着屏幕边缘被任务栏或其他窗口遮挡
-  const x = workArea.x + workArea.width - WINDOW_SIZE - 120;
-  const y = workArea.y + workArea.height - WINDOW_SIZE - 160;
+  const x = workArea.x + workArea.width - WINDOW_WIDTH - 120;
+  const y = workArea.y + workArea.height - WINDOW_HEIGHT - 60;
   win.setPosition(Math.round(x), Math.round(y));
   console.log(`[window] default position (${Math.round(x)},${Math.round(y)}) in workArea ${workArea.width}x${workArea.height}`);
 }
