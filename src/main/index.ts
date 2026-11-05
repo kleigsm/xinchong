@@ -1,4 +1,4 @@
-﻿import { app, ipcMain } from "electron";
+import { app, ipcMain } from "electron";
 import { appendFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { initAutoStart } from "./autostart";
@@ -99,6 +99,12 @@ app.whenReady().then(() => {
     // 开发期：直接弹出聊天输入条
     if (process.env.XINCHONG_CHAT_INPUT === "1") {
       setTimeout(() => openChatInput(win), 1200);
+    }
+
+    // 开发期：连开两次，用来验证"第二次还能不能打字"
+    if (process.env.XINCHONG_CHAT_INPUT === "twice") {
+      setTimeout(() => openChatInput(win), 2000);
+      setTimeout(() => openChatInput(win), 12000);
     }
 
     // 开发期：直接验证素材包导出

@@ -1,4 +1,4 @@
-﻿import { PetView } from "./pet-view";
+import { PetView } from "./pet-view";
 import { PACKS } from "./pets";
 import { PetStateMachine } from "./state-machine";
 import { SpeechBubble } from "./bubble";
@@ -273,7 +273,13 @@ document.addEventListener("visibilitychange", () => {
 function openChatInput(): void {
   chatBox.hidden = false;
   chatInput.value = "";
-  chatInput.focus();
+
+  // 窗口刚拿到焦点时输入框可能还没就绪，补两次聚焦（第二次能治"第二次打不了字"）
+  requestAnimationFrame(() => chatInput.focus());
+  window.setTimeout(() => {
+    chatInput.focus();
+    chatInput.select();
+  }, 120);
 }
 
 function closeChatInput(): void {
@@ -302,6 +308,8 @@ async function sendChat(): Promise<void> {
   const fallback = lineEngine.pick("click");
   bubble.show(fallback ?? "嗯……", 4000);
 }
+
+chatBox.addEventListener("mousedown", () => chatInput.focus());
 
 chatInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
