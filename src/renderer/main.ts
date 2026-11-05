@@ -1,7 +1,8 @@
 import { PetView } from "./pet-view";
 import { PACKS } from "./pets";
 import { PetStateMachine } from "./state-machine";
-import { LinePicker, SpeechBubble } from "./bubble";
+import { SpeechBubble } from "./bubble";
+import { LineEngine } from "./line-engine";
 import { SoundPlayer } from "./audio";
 import { DEFAULT_PERSONALITY, isPersonalityId } from "../shared/personalities";
 import type { Point, Settings } from "../shared/types";
@@ -21,9 +22,8 @@ const view = new PetView(petEl, PACKS[currentPackId]);
 const bubble = new SpeechBubble(bubbleEl);
 const sound = new SoundPlayer(PACKS[currentPackId]);
 
-// 台词挑选器随性格切换而重建
-let clickLines = new LinePicker(PACKS[currentPackId].lines.click);
-let dragLines = new LinePicker(PACKS[currentPackId].lines.drag);
+// 话术引擎：按「性格 × 场景」挑台词，换角色时 setBank 整体替换
+let lineEngine = new LineEngine(PACKS[currentPackId].lines);
 
 /** 当前设置快照：勿扰时不出声、不冒台词 */
 let currentSettings: Settings | null = null;
@@ -32,10 +32,20 @@ const isDoNotDisturb = (): boolean => currentSettings?.dnd === true;
 const machine = new PetStateMachine(view, {
   idleToSleepMs: 30_000,
   onStateChange: (_from, to) => {
-    if (to === "click" && !isDoNotDisturb()) {
+    if (isDoNotDisturb()) return;
+
+    if (to === "click") {
       sound.play("click");
-      const line = clickLines.next();
+      // 深夜有 30% 概率说"夜里的话"。白天 pick("night") 返回 null，会自动跳过。
+      const nightLine = Math.random() < 0.3 ? lineEngine.pick("night") : null;
+      const line = nightLine ?? lineEngine.pick("click");
       if (line) bubble.show(line);
+    }
+
+    // 入睡时说一句晚安（场景 sleep）
+    if (to === "sleep") {
+      const line = lineEngine.pick("sleep");
+      if (line) bubble.show(line, 4000);
     }
   },
 });
@@ -70,7 +80,7 @@ window.addEventListener("mousemove", (event: MouseEvent) => {
       machine.onDragStart();
       if (!isDoNotDisturb()) {
         sound.play("drag");
-        const line = dragLines.next();
+        const line = lineEngine.pick("drag");
         if (line) bubble.show(line);
       }
       window.pet.dragStart({ x: event.screenX, y: event.screenY });
@@ -117,8 +127,7 @@ function switchPersonality(id: string): void {
   currentPackId = nextId;
   const pack = PACKS[nextId];
 
-  clickLines = new LinePicker(pack.lines.click);
-  dragLines = new LinePicker(pack.lines.drag);
+  lineEngine.setBank(pack.lines);
 
   view.setPack(pack);
   sound.setPack(pack);
@@ -150,8 +159,7 @@ window.pet.onSettings(applySettings);
 window.pet.onUsePet((payload) => {
   usingUserPet = true;
 
-  clickLines = new LinePicker(payload.pack.lines.click);
-  dragLines = new LinePicker(payload.pack.lines.drag);
+  lineEngine.setBank(payload.pack.lines);
 
   view.setPack(payload.pack);
   sound.setPack(payload.pack);
