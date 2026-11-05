@@ -1,5 +1,5 @@
-import { contextBridge, ipcRenderer } from "electron";
-import type { PetApi, Point, Settings } from "../shared/types";
+﻿import { contextBridge, ipcRenderer } from "electron";
+import type { PetApi, Point, Settings, UserPetPayload } from "../shared/types";
 
 /**
  * 只暴露必要的方法，渲染进程拿不到 Node。
@@ -11,11 +11,19 @@ const api: PetApi = {
   dragMove: (point: Point) => ipcRenderer.send("drag-move", point),
   dragEnd: () => ipcRenderer.send("drag-end"),
   showMenu: () => ipcRenderer.send("show-context-menu"),
+  ready: () => ipcRenderer.send("renderer-ready"),
   onSettings: (callback: (settings: Settings) => void) => {
     const listener = (_event: unknown, settings: Settings): void => callback(settings);
     ipcRenderer.on("settings-changed", listener);
     return () => {
       ipcRenderer.removeListener("settings-changed", listener);
+    };
+  },
+  onUsePet: (callback: (payload: UserPetPayload) => void) => {
+    const listener = (_event: unknown, payload: UserPetPayload): void => callback(payload);
+    ipcRenderer.on("pet:use", listener);
+    return () => {
+      ipcRenderer.removeListener("pet:use", listener);
     };
   },
 };

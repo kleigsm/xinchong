@@ -1,6 +1,7 @@
 ﻿import { Menu, Tray, nativeImage } from "electron";
 import type { BrowserWindow } from "electron";
 import { PERSONALITIES } from "../shared/personalities";
+import { runImportFlow } from "./import-flow";
 import { showPerfDialog } from "./perf";
 import { applyAutoStart } from "./autostart";
 import { getSettings, updateSettings } from "./store";
@@ -44,6 +45,12 @@ export function buildMenu(win: BrowserWindow): Menu {
       click: () => toggleWindow(win),
     },
     { type: "separator" },
+    {
+      label: "导入角色…",
+      click: () => {
+        void runImportFlow(win);
+      },
+    },
     {
       label: "性格",
       submenu: PERSONALITIES.map((personality) => ({

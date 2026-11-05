@@ -1,4 +1,4 @@
-import { PetView } from "./pet-view";
+﻿import { PetView } from "./pet-view";
 import { PACKS } from "./pets";
 import { PetStateMachine } from "./state-machine";
 import { LinePicker, SpeechBubble } from "./bubble";
@@ -14,6 +14,8 @@ const bubbleEl = document.getElementById("bubble") as HTMLElement;
 const DRAG_THRESHOLD = 4;
 
 let currentPackId = DEFAULT_PERSONALITY;
+/** 是否正在使用用户导入的角色（此时不再跟随性格设置切换） */
+let usingUserPet = false;
 
 const view = new PetView(petEl, PACKS[currentPackId]);
 const bubble = new SpeechBubble(bubbleEl);
@@ -131,7 +133,7 @@ function applySettings(settings: Settings): void {
   sound.setMuted(settings.muted);
   sound.setVolume(settings.volume ?? 0.6);
 
-  if (settings.personality) switchPersonality(settings.personality);
+  if (!usingUserPet && settings.personality) switchPersonality(settings.personality);
 
   if (settings.dnd) {
     bubble.show("勿扰中，先不打扰你啦", 2000);
@@ -142,12 +144,29 @@ function applySettings(settings: Settings): void {
 
 window.pet.onSettings(applySettings);
 
+// 用户导入角色成功后，立即换上（不重启程序）
+window.pet.onUsePet((payload) => {
+  usingUserPet = true;
+
+  clickLines = new LinePicker(payload.pack.lines.click);
+  dragLines = new LinePicker(payload.pack.lines.drag);
+
+  view.setPack(payload.pack);
+  sound.setPack(payload.pack);
+  machine.start();
+
+  bubble.show(`换上了「${payload.name}」`, 2500);
+  console.log(`[pet] 切换到用户角色 ${payload.id}`);
+});
+
 window.addEventListener("beforeunload", () => {
   machine.destroy();
   bubble.destroy();
 });
 
 console.log("[renderer] ready");
+// 告诉主进程：监听器都已注册，可以派发事件了
+window.pet.ready();
 
 // 窗口被托盘隐藏时停止动画，避免后台空转烧 CPU
 document.addEventListener("visibilitychange", () => {

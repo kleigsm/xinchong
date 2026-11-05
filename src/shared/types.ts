@@ -1,3 +1,5 @@
+﻿import type { PetPack } from "./pet-pack";
+
 /** 屏幕坐标点（DIP） */
 export interface Point {
   x: number;
@@ -27,4 +29,15 @@ export interface PetApi {
   showMenu(): void;
   /** 订阅设置变化，返回取消订阅函数 */
   onSettings(callback: (settings: Settings) => void): () => void;
+  /** 渲染层初始化完成，通知主进程可以派发事件了 */
+  ready(): void;
+  /** 订阅「导入后立即换上」事件 */
+  onUsePet(callback: (payload: UserPetPayload) => void): () => void;
+}
+
+/** 主进程告知渲染层：换上这个角色（雪碧图已转成 data URL） */
+export interface UserPetPayload {
+  id: string;
+  name: string;
+  pack: PetPack;
 }

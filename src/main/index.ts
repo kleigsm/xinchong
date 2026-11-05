@@ -1,7 +1,8 @@
-import { app } from "electron";
+﻿import { app, ipcMain } from "electron";
 import { appendFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { initAutoStart } from "./autostart";
+import { importFromPath } from "./import-flow";
 import { describeDisplays, watchDisplays } from "./display";
 import { startHitTesting } from "./hit-test";
 import { isDragging, registerIpc } from "./ipc";
@@ -66,6 +67,17 @@ app.whenReady().then(() => {
     console.log(`[app] window ready in ${Date.now() - T0}ms`);
     // 首屏把当前设置同步给页面
     notifySettings(win);
+  });
+
+  // 渲染层初始化完毕（监听器都已注册）之后再派发事件，避免时序竞争
+  ipcMain.once("renderer-ready", () => {
+    console.log("[app] renderer ready");
+
+    const testPath = process.env.XINCHONG_IMPORT_TEST;
+    if (testPath) {
+      console.log(`[import] 测试模式，导入 ${testPath}`);
+      void importFromPath(win, testPath);
+    }
   });
 });
 
