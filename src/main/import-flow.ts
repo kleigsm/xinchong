@@ -2,16 +2,21 @@ import { basename, extname } from "node:path";
 import type { BrowserWindow } from "electron";
 import { dialog } from "electron";
 import { DEFAULT_IMPORTED_LINES } from "../shared/default-lines";
-import { importSpriteSheet } from "./importer";
+import { importSingleImage, importSpriteSheet, type ImportResult } from "./importer";
 import { sanitizePetId, writePet } from "./pet-store";
 import { updateSettings } from "./store";
 
 /**
- * 「导入角色」的两个入口：
+ * 「导入角色」的入口。
  *
- * - runImportFlow()  ：弹文件对话框，给用户用
- * - importFromPath() ：直接按路径导入，给自动化测试用
+ * 两种模式：
+ * - l3：雪碧图（多帧，用户自己画的完整动作）
+ * - l2：单张立绘（程序自动做呼吸/眨眼/抖动）
+ *
+ * 另有 importFromPath() 供自动化测试直接调用，跳过文件对话框。
  */
+
+export type ImportMode = "l3" | "l2";
 
 const DEFAULT_LINES = DEFAULT_IMPORTED_LINES;
 
@@ -19,11 +24,15 @@ const DEFAULT_LINES = DEFAULT_IMPORTED_LINES;
 export async function importFromPath(
   win: BrowserWindow,
   filePath: string,
+  mode: ImportMode = "l3",
 ): Promise<{ ok: boolean; id?: string; error?: string }> {
   const displayName = basename(filePath, extname(filePath));
   const id = sanitizePetId(displayName);
 
-  const result = importSpriteSheet(filePath, id, displayName, DEFAULT_LINES);
+  const result: ImportResult =
+    mode === "l2"
+      ? importSingleImage(filePath, id, displayName, DEFAULT_LINES)
+      : importSpriteSheet(filePath, id, displayName, DEFAULT_LINES);
 
   if (!result.ok) {
     console.warn(`[import] 校验失败: ${result.error}`);
@@ -52,7 +61,7 @@ export async function importFromPath(
   }
 
   console.log(
-    `[import] 成功: ${id}（每格 ${result.pack.sprite.frameWidth}px，警告 ${result.warnings.length} 条）`,
+    `[import] 成功(${mode}): ${id}（${result.pack.sprite.columns}×${result.pack.sprite.rows} 格，警告 ${result.warnings.length} 条）`,
   );
 
   if (result.warnings.length > 0) {
@@ -85,14 +94,14 @@ export async function importFromPath(
 }
 
 /** 给用户用：先弹文件对话框 */
-export async function runImportFlow(win: BrowserWindow): Promise<void> {
+export async function runImportFlow(win: BrowserWindow, mode: ImportMode = "l3"): Promise<void> {
   const picked = await dialog.showOpenDialog(win, {
-    title: "选择角色雪碧图",
+    title: mode === "l2" ? "选择一张立绘（自动生成动作）" : "选择角色雪碧图（多帧）",
     buttonLabel: "导入",
     filters: [{ name: "图片", extensions: ["png"] }],
     properties: ["openFile"],
   });
 
   if (picked.canceled || picked.filePaths.length === 0) return;
-  await importFromPath(win, picked.filePaths[0]);
+  await importFromPath(win, picked.filePaths[0], mode);
 }

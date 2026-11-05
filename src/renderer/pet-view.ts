@@ -1,4 +1,4 @@
-import type { AnimationName, AnimationSpec, PetPack } from "../shared/pet-pack";
+﻿import type { AnimationName, AnimationSpec, PetPack } from "../shared/pet-pack";
 
 /** 降帧下限：再低就不像"动"了 */
 const MIN_FPS = 4;
@@ -30,6 +30,8 @@ export class PetView {
   private effectiveFps = 0;
   private lastTickAt = 0;
   private slowTicks = 0;
+  /** L2 单帧立绘的驱动定时器 */
+  private staticTimer: number | null = null;
 
   constructor(el: HTMLElement, pack: PetPack) {
     this.el = el;
@@ -55,10 +57,20 @@ export class PetView {
     return this.effectiveFps;
   }
 
+  /** 是否为「单帧立绘」（L2）：用 CSS transform 动画，不逐帧重绘 */
+  get isStatic(): boolean {
+    return this.pack.sprite.columns === 1 && this.pack.sprite.rows === 1;
+  }
+
   /** 播放某段动画；非循环动画播完后调用 onFinish */
   play(name: AnimationName, onFinish?: () => void): void {
     const spec = this.pack.animations[name];
     if (!spec || spec.frames.length === 0) return;
+
+    if (this.isStatic) {
+      this.playStatic(name, onFinish);
+      return;
+    }
 
     this.stop();
     this.current = name;
@@ -73,10 +85,78 @@ export class PetView {
     this.startTimer();
   }
 
+  /**
+   * L2 单帧立绘：整张图定死，动作全靠 transform。
+   *
+   * 为什么不直接用 CSS 关键帧：
+   * CSS 动画跑 60fps，透明窗口每帧合成一次，实测 GPU 20%+、CPU 25%。
+   * 改成和雪碧图同频（8fps）的 JS 驱动后，开销降到和 L3 一个量级。
+   * 呼吸这种慢动作 8fps 完全够顺。
+   */
+  private playStatic(name: AnimationName, onFinish?: () => void): void {
+    this.stop();
+    this.current = name;
+
+    const started = performance.now();
+    const duration = name === "click" ? 420 : 0;
+
+    const tick = (): void => {
+      const elapsed = performance.now() - started;
+      this.renderStatic(name, elapsed);
+
+      if (name === "click" && elapsed >= duration) {
+        this.clearStaticTimer();
+        onFinish?.();
+      }
+    };
+
+    tick();
+    console.log(`[pet-view] play ${name} (static)`);
+    this.staticTimer = window.setInterval(tick, 1000 / 8);
+  }
+
+  /** 按时间和动作算出当前 transform */
+  private renderStatic(name: AnimationName, elapsed: number): void {
+    let transform = "scale(1, 1)";
+
+    if (name === "idle") {
+      const phase = (elapsed % 3200) / 3200;
+      const wave = Math.sin(phase * Math.PI * 2);
+      transform = `scale(${1 + wave * 0.012}, ${1 + wave * 0.022})`;
+    } else if (name === "drag") {
+      const phase = (elapsed % 1100) / 1100;
+      transform = `rotate(${Math.sin(phase * Math.PI * 2) * 4}deg)`;
+    } else if (name === "sleep") {
+      const phase = (elapsed % 4000) / 4000;
+      const wave = Math.sin(phase * Math.PI * 2);
+      transform = `scale(${0.97 + wave * 0.008}, ${0.96 + wave * 0.012})`;
+      this.el.style.opacity = "0.94";
+    } else if (name === "click") {
+      // 0.42s 的弹跳：先压扁起跳，再回弹
+      const t = Math.min(elapsed / 420, 1);
+      const lift = Math.sin(t * Math.PI) * 10;
+      const squash = 1 - Math.sin(t * Math.PI) * 0.04;
+      transform = `translateY(${-lift}px) scale(${1 + (1 - squash) * 0.6}, ${squash})`;
+    }
+
+    if (name !== "sleep") this.el.style.opacity = "1";
+    this.el.style.transform = transform;
+  }
+
+  private clearStaticTimer(): void {
+    if (this.staticTimer !== null) {
+      window.clearInterval(this.staticTimer);
+      this.staticTimer = null;
+    }
+  }
+
   stop(): void {
     this.clearTimer();
+    this.clearStaticTimer();
     this.current = null;
     this.spec = null;
+    this.el.style.transform = "";
+    this.el.style.opacity = "1";
   }
 
   private startTimer(): void {

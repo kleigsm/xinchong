@@ -91,7 +91,8 @@ app.whenReady().then(() => {
     const testPath = process.env.XINCHONG_IMPORT_TEST;
     if (testPath) {
       console.log(`[import] 测试模式，导入 ${testPath}`);
-      void importFromPath(win, testPath);
+      const mode = process.env.XINCHONG_IMPORT_MODE === "l2" ? "l2" : "l3";
+      void importFromPath(win, testPath, mode);
     }
   });
 });

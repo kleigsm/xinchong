@@ -1,4 +1,4 @@
-﻿import { Menu, Tray, nativeImage } from "electron";
+import { Menu, Tray, nativeImage } from "electron";
 import type { BrowserWindow } from "electron";
 import { PERSONALITIES } from "../shared/personalities";
 import { runImportFlow } from "./import-flow";
@@ -57,9 +57,15 @@ export function buildMenu(win: BrowserWindow): Menu {
     petItems.push({ type: "separator" });
   }
   petItems.push({
-    label: "导入角色…",
+    label: "导入立绘（单张，自动动画）…",
     click: () => {
-      void runImportFlow(win);
+      void runImportFlow(win, "l2");
+    },
+  });
+  petItems.push({
+    label: "导入雪碧图（多帧）…",
+    click: () => {
+      void runImportFlow(win, "l3");
     },
   });
   if (settings.activePetId) {

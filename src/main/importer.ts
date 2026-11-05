@@ -1,4 +1,4 @@
-import { nativeImage } from "electron";
+﻿import { nativeImage } from "electron";
 import type { AnimationName, PetPack } from "../shared/pet-pack";
 import { buildAnimations, detectLayout, requiredStartFrames } from "./sheet-layout";
 
@@ -169,4 +169,81 @@ export function importSpriteSheet(
   };
 
   return { ok: true, pack, sprite: image.toPNG(), warnings };
+}
+/**
+ * L2：导入单张立绘，程序自动生成动作。
+ *
+ * 要求比 L3 宽松得多——用户随手一张图就能用：
+ * - 接近正方形（比例 0.7–1.4）
+ * - 边长 128–1024
+ * - 有透明背景
+ */
+const L2_STATIC_ANIMATIONS: PetPack["animations"] = {
+  idle: { frames: [0], fps: 1, loop: true },
+  click: { frames: [0], fps: 1, loop: false },
+  drag: { frames: [0], fps: 1, loop: true },
+  sleep: { frames: [0], fps: 1, loop: true },
+};
+
+export function importSingleImage(
+  filePath: string,
+  idName: string,
+  displayName: string,
+  lines: PetPack["lines"],
+): ImportResult {
+  const image = nativeImage.createFromPath(filePath);
+  if (image.isEmpty()) {
+    return { ok: false, error: "这个文件读不出来。请确认它是 PNG 图片。" };
+  }
+
+  const { width, height } = image.getSize();
+  const ratio = width / height;
+
+  if (ratio < 0.7 || ratio > 1.4) {
+    return {
+      ok: false,
+      error: `立绘应该接近正方形，你这张是 ${width}×${height}。横躺或竖长的人物放进去会被拉伸。`,
+    };
+  }
+
+  const side = Math.min(width, height);
+  if (side < 128) {
+    return { ok: false, error: `图片太小了（${width}×${height}），边长至少 128。` };
+  }
+  if (side > 1024) {
+    return { ok: false, error: `图片太大了（${width}×${height}），边长最多 1024。` };
+  }
+
+  const bitmap = image.toBitmap();
+  let transparent = 0;
+  let total = 0;
+  for (let y = 0; y < height; y += 8) {
+    for (let x = 0; x < width; x += 8) {
+      const alpha = bitmap[(y * width + x) * 4 + 3];
+      total += 1;
+      if (alpha < 200) transparent += 1;
+    }
+  }
+  if (transparent / total < 0.15) {
+    return {
+      ok: false,
+      error: "图片几乎没有透明区域，看起来是白底或实心背景。请导出带 Alpha 通道的 PNG。",
+    };
+  }
+
+  const pack: PetPack = {
+    id: idName,
+    name: displayName,
+    sprite: {
+      image: "sprite.png",
+      frameWidth: width,
+      frameHeight: height,
+      columns: 1,
+      rows: 1,
+    },
+    animations: L2_STATIC_ANIMATIONS,
+    lines,
+  };
+
+  return { ok: true, pack, sprite: image.toPNG(), warnings: [] };
 }
