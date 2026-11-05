@@ -63,6 +63,32 @@ function placeAtDefaultPosition(win: BrowserWindow): void {
 }
 
 /**
+ * 把目标位置夹到「至少有 MIN_VISIBLE_PX 留在工作区内」。
+ *
+ * 拖拽过程中每帧都要调用：即使松手事件丢失（光标已在窗口外），
+ * 宠物也不会被拖到完全看不见的地方。
+ */
+export function clampPosition(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): { x: number; y: number } {
+  const display = screen.getDisplayMatching({ x, y, width, height });
+  const area = display.workArea;
+
+  const minX = area.x - width + MIN_VISIBLE_PX;
+  const maxX = area.x + area.width - MIN_VISIBLE_PX;
+  const minY = area.y - height + MIN_VISIBLE_PX;
+  const maxY = area.y + area.height - MIN_VISIBLE_PX;
+
+  return {
+    x: clamp(x, minX, maxX),
+    y: clamp(y, minY, maxY),
+  };
+}
+
+/**
  * 保证窗口至少有 MIN_VISIBLE_PX 留在某个显示器的工作区内。
  * 用于处理：拖出屏幕边缘、显示器被拔掉、分辨率变化。
  */
@@ -70,20 +96,11 @@ export function clampToVisibleArea(win: BrowserWindow): void {
   if (win.isDestroyed()) return;
 
   const bounds = win.getBounds();
-  const display = screen.getDisplayMatching(bounds);
-  const area = display.workArea;
+  const target = clampPosition(bounds.x, bounds.y, bounds.width, bounds.height);
 
-  const minX = area.x - bounds.width + MIN_VISIBLE_PX;
-  const maxX = area.x + area.width - MIN_VISIBLE_PX;
-  const minY = area.y - bounds.height + MIN_VISIBLE_PX;
-  const maxY = area.y + area.height - MIN_VISIBLE_PX;
-
-  const x = clamp(bounds.x, minX, maxX);
-  const y = clamp(bounds.y, minY, maxY);
-
-  if (x !== bounds.x || y !== bounds.y) {
-    win.setPosition(Math.round(x), Math.round(y));
-    console.log(`[window] clamped from (${bounds.x},${bounds.y}) to (${x},${y})`);
+  if (target.x !== bounds.x || target.y !== bounds.y) {
+    win.setPosition(Math.round(target.x), Math.round(target.y));
+    console.log(`[window] clamped from (${bounds.x},${bounds.y}) to (${target.x},${target.y})`);
   }
 }
 

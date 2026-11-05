@@ -1,4 +1,4 @@
-﻿import { PetView } from "./pet-view";
+import { PetView } from "./pet-view";
 import { PACKS } from "./pets";
 import { PetStateMachine } from "./state-machine";
 import { LinePicker, SpeechBubble } from "./bubble";
@@ -52,6 +52,13 @@ window.addEventListener("mousedown", (event: MouseEvent) => {
 window.addEventListener("mousemove", (event: MouseEvent) => {
   if (!pressOrigin) return;
 
+  // 松手事件可能丢失（光标已经移出窗口，例如拖到屏幕边缘时），
+  // 用 buttons 状态兜底：拖动中却没有按键按下，说明早就松手了。
+  if (dragging && event.buttons === 0) {
+    endDrag();
+    return;
+  }
+
   if (!dragging) {
     const dx = event.screenX - pressOrigin.x;
     const dy = event.screenY - pressOrigin.y;
@@ -72,19 +79,24 @@ window.addEventListener("mousemove", (event: MouseEvent) => {
   window.pet.dragMove({ x: event.screenX, y: event.screenY });
 });
 
+function endDrag(): void {
+  window.pet.dragEnd();
+  petEl.classList.remove("dragging");
+  machine.onDragEnd();
+  pressOrigin = null;
+  dragging = false;
+}
+
 window.addEventListener("mouseup", () => {
   if (!pressOrigin) return;
 
   if (dragging) {
-    window.pet.dragEnd();
-    petEl.classList.remove("dragging");
-    machine.onDragEnd();
+    endDrag();
   } else {
     machine.onPetClick();
+    pressOrigin = null;
+    dragging = false;
   }
-
-  pressOrigin = null;
-  dragging = false;
 });
 
 // 右键：弹出与托盘一致的菜单

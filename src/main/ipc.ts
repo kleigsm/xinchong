@@ -2,7 +2,7 @@ import type { BrowserWindow } from "electron";
 import { ipcMain, screen } from "electron";
 import type { Point } from "../shared/types";
 import { buildMenu } from "./tray";
-import { clampToVisibleArea } from "./window";
+import { clampPosition, clampToVisibleArea } from "./window";
 
 /**
  * 拖拽实现说明：
@@ -45,10 +45,15 @@ export function registerIpc(win: BrowserWindow): void {
     dragTimer = setInterval(() => {
       if (win.isDestroyed() || !dragOffset) return;
       const current = screen.getCursorScreenPoint();
-      win.setPosition(
-        Math.round(current.x - dragOffset.dx),
-        Math.round(current.y - dragOffset.dy),
+      const bounds = win.getBounds();
+      // 每帧都夹到屏幕内：即使松手事件丢失，宠物也不会被拖到看不见的地方
+      const target = clampPosition(
+        current.x - dragOffset.dx,
+        current.y - dragOffset.dy,
+        bounds.width,
+        bounds.height,
       );
+      win.setPosition(Math.round(target.x), Math.round(target.y));
     }, DRAG_INTERVAL_MS);
 
     console.log(
