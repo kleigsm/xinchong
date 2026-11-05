@@ -1,4 +1,4 @@
-import type { PetPack } from "./pet-pack";
+﻿import type { PetPack } from "./pet-pack";
 
 /** 屏幕坐标点（DIP） */
 export interface Point {
@@ -33,6 +33,10 @@ export interface PetApi {
   onSettings(callback: (settings: Settings) => void): () => void;
   /** 渲染层初始化完成，通知主进程可以派发事件了 */
   ready(): void;
+  /** 订阅「要用户说话」事件（右键菜单里点「说句话…」） */
+  onShowChatInput(callback: () => void): () => void;
+  /** 告诉主进程：输入条关了，恢复不可聚焦 */
+  chatInputClosed(): void;
   /** 订阅「换回内置角色」事件 */
   onUseBuiltin(callback: (personalityId: string) => void): () => void;
   /** 订阅「导入后立即换上」事件 */

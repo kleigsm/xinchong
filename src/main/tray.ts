@@ -1,8 +1,10 @@
-import { Menu, Tray, nativeImage } from "electron";
+﻿import { Menu, Tray, dialog, nativeImage } from "electron";
 import type { BrowserWindow } from "electron";
 import { PERSONALITIES } from "../shared/personalities";
 import { runImportFlow } from "./import-flow";
 import { openSettingsWindow } from "./settings-window";
+import { loadChatKey } from "./chat-key";
+import { openChatInput } from "./chat-input";
 import { listPetSummaries } from "./pet-payload";
 import { deleteStoredPet, useStoredPet } from "./pet-switch";
 import { showPerfDialog } from "./perf";
@@ -86,6 +88,23 @@ export function buildMenu(win: BrowserWindow): Menu {
       click: () => toggleWindow(win),
     },
     { type: "separator" },
+    {
+      label: "说句话…",
+      click: () => {
+        if (!loadChatKey()) {
+          void dialog.showMessageBox(win, {
+            type: "info",
+            title: "还没有配置",
+            message: "要先填一个 API Key 才能聊天",
+            detail:
+              "打开「设置…」→「聊天」，填入你自己的 DeepSeek Key。\n不填也没关系，桌宠会继续说内置台词。",
+            buttons: ["知道了"],
+          });
+          return;
+        }
+        openChatInput(win);
+      },
+    },
     {
       label: "我的角色",
       submenu: petItems,

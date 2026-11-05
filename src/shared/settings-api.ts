@@ -41,6 +41,8 @@ export interface SettingsApi {
   chatSaveKey(key: string): Promise<{ ok: boolean; error?: string }>;
   chatClearKey(): Promise<boolean>;
   chatTest(key?: string): Promise<ChatTestResult>;
+  chatSend(text: string): Promise<ChatResult>;
+  chatHasKey(): Promise<boolean>;
   getSystemInfo(): Promise<SystemInfo>;
   openUserData(): Promise<void>;
   openLogFolder(): Promise<void>;
@@ -58,3 +60,6 @@ export interface ChatTestResult {
   ok: boolean;
   message: string;
 }
+export type ChatResult =
+  | { ok: true; reply: string }
+  | { ok: false; reason: string; message: string };

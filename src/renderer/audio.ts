@@ -1,6 +1,14 @@
 import type { PetPack } from "../shared/pet-pack";
 
-export type SoundKind = "click" | "drag" | "sleep" | "appear";
+export type SoundKind =
+  | "click"
+  | "drag"
+  | "sleep"
+  | "appear"
+  | "wave"
+  | "stretch"
+  | "pat"
+  | "angry";
 
 /**
  * 音效播放器。
@@ -110,6 +118,24 @@ export class SoundPlayer {
         // 很轻的低音，别吵
         this.blip(ctx, now, base * 0.5, 0.35, "sine", 0.35);
         break;
+      case "wave":
+        // 轻快的两连音，像"拜拜"
+        this.blip(ctx, now, base * 1.1, 0.09, "sine");
+        this.blip(ctx, now + 0.11, base * 1.4, 0.1, "sine");
+        break;
+      case "stretch":
+        // 缓缓上扬，像打哈欠
+        this.slide(ctx, now, base * 0.7, base * 1.05, 0.5);
+        break;
+      case "pat":
+        // 两声很轻的"噗哟"
+        this.blip(ctx, now, base * 1.3, 0.07, "triangle", 0.6);
+        this.blip(ctx, now + 0.09, base * 1.5, 0.08, "triangle", 0.5);
+        break;
+      case "angry":
+        // 短促的下滑方波，像"哼"
+        this.slide(ctx, now, base * 0.9, base * 0.55, 0.16, "square");
+        break;
     }
   }
 
@@ -144,10 +170,11 @@ export class SoundPlayer {
     from: number,
     to: number,
     duration: number,
+    type: OscillatorType = "sine",
   ): void {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.type = "sine";
+    osc.type = type;
     osc.frequency.setValueAtTime(from, at);
     osc.frequency.exponentialRampToValueAtTime(to, at + duration);
 

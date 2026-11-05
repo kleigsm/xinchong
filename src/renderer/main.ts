@@ -1,4 +1,4 @@
-import { PetView } from "./pet-view";
+﻿import { PetView } from "./pet-view";
 import { PACKS } from "./pets";
 import { PetStateMachine } from "./state-machine";
 import { SpeechBubble } from "./bubble";
@@ -10,6 +10,8 @@ import type { Point, Settings } from "../shared/types";
 // 注意：不能叫 pet，否则和 preload 暴露的 window.pet 冲突（P0-1 踩过的坑）
 const petEl = document.getElementById("pet") as HTMLElement;
 const bubbleEl = document.getElementById("bubble") as HTMLElement;
+const chatBox = document.getElementById("chat-box") as HTMLElement;
+const chatInput = document.getElementById("chat-input") as HTMLInputElement;
 
 /** 超过这个位移（px）才算拖拽，否则算点击 */
 const DRAG_THRESHOLD = 4;
@@ -46,6 +48,14 @@ const machine = new PetStateMachine(view, {
     if (to === "sleep") {
       const line = lineEngine.pick("sleep");
       if (line) bubble.show(line, 4000);
+    }
+
+    // 四个性格动作：招手 / 伸懒腰 / 摸头 / 生气
+    // 场景名和动作名一一对应，引擎挑不到就自动回退到 click 池
+    if (to === "wave" || to === "stretch" || to === "pat" || to === "angry") {
+      sound.play(to);
+      const line = lineEngine.pick(to);
+      if (line) bubble.show(line, 2500);
     }
   },
 });
@@ -248,3 +258,50 @@ document.addEventListener("visibilitychange", () => {
     machine.start();
   }
 });
+
+/** 显示聊天输入条 */
+function openChatInput(): void {
+  chatBox.hidden = false;
+  chatInput.value = "";
+  chatInput.focus();
+}
+
+function closeChatInput(): void {
+  if (chatBox.hidden) return;
+  chatBox.hidden = true;
+  chatInput.blur();
+  window.pet.chatInputClosed();
+}
+
+/** 发一句话给桌宠；失败就回落到内置台词，绝不让它"哑火" */
+async function sendChat(): Promise<void> {
+  const text = chatInput.value.trim();
+  closeChatInput();
+  if (!text) return;
+
+  bubble.show("……", 20000);
+
+  const result = await window.api.chatSend(text);
+  if (result.ok) {
+    bubble.show(result.reply, 12000);
+    return;
+  }
+
+  // 失败回落：用引擎挑一句，保证它还是会说话
+  console.log(`[chat] 失败(${result.reason}): ${result.message}`);
+  const fallback = lineEngine.pick("click");
+  bubble.show(fallback ?? "嗯……", 4000);
+}
+
+chatInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    void sendChat();
+  }
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeChatInput();
+  }
+});
+
+window.pet.onShowChatInput(() => openChatInput());

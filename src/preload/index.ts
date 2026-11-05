@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from "electron";
+﻿import { contextBridge, ipcRenderer } from "electron";
 import type { PetApi, Point, Settings, UserPetPayload } from "../shared/types";
 
 /**
@@ -14,6 +14,7 @@ const api: PetApi = {
   dragEnd: () => ipcRenderer.send("drag-end"),
   showMenu: () => ipcRenderer.send("show-context-menu"),
   ready: () => ipcRenderer.send("renderer-ready"),
+  chatInputClosed: () => ipcRenderer.send("chat-input-closed"),
   onSettings: (callback: (settings: Settings) => void) => {
     const listener = (_event: unknown, settings: Settings): void => callback(settings);
     ipcRenderer.on("settings-changed", listener);
@@ -26,6 +27,13 @@ const api: PetApi = {
     ipcRenderer.on("pet:builtin", listener);
     return () => {
       ipcRenderer.removeListener("pet:builtin", listener);
+    };
+  },
+  onShowChatInput: (callback: () => void) => {
+    const listener = (): void => callback();
+    ipcRenderer.on("pet:chat-input", listener);
+    return () => {
+      ipcRenderer.removeListener("pet:chat-input", listener);
     };
   },
   onUsePet: (callback: (payload: UserPetPayload) => void) => {
@@ -60,6 +68,8 @@ const settingsApi = {
   chatSaveKey: (key: string) => ipcRenderer.invoke("api:chat:saveKey", key),
   chatClearKey: () => ipcRenderer.invoke("api:chat:clearKey"),
   chatTest: (key?: string) => ipcRenderer.invoke("api:chat:test", key),
+  chatSend: (text: string) => ipcRenderer.invoke("api:chat:send", text),
+  chatHasKey: () => ipcRenderer.invoke("api:chat:hasKey"),
   getSystemInfo: () => ipcRenderer.invoke("api:system:info"),
   openUserData: () => ipcRenderer.invoke("api:system:openUserData"),
   openLogFolder: () => ipcRenderer.invoke("api:system:openLogFolder"),

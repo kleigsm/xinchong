@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -9,6 +9,9 @@
   </head>
   <body>
     <div id="bubble" role="status" aria-live="polite"></div>
+    <div id="chat-box" hidden>
+      <input id="chat-input" type="text" maxlength="200" placeholder="和它说句话…" autocomplete="off" />
+    </div>
     <div id="pet" aria-label="芯宠"></div>
     <script type="module" src="./main.ts"></script>
   </body>

@@ -3,6 +3,7 @@ import { appendFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { initAutoStart } from "./autostart";
 import { registerSettingsApi } from "./api";
+import { closeChatInput, openChatInput } from "./chat-input";
 import { exportTemplate } from "./template";
 import { importFromPath } from "./import-flow";
 import { destroySettingsWindow, openSettingsWindow } from "./settings-window";
@@ -75,6 +76,9 @@ app.whenReady().then(() => {
     notifySettings(win);
   });
 
+  // 输入条关闭后恢复"不可聚焦"
+  ipcMain.on("chat-input-closed", () => closeChatInput(win));
+
   // 渲染层初始化完毕（监听器都已注册）之后再派发事件，避免时序竞争
   ipcMain.once("renderer-ready", () => {
     console.log("[app] renderer ready");
@@ -90,6 +94,11 @@ app.whenReady().then(() => {
         console.warn(`[app] 上次的角色 ${activePetId} 不在了，回退内置角色`);
         updateSettings({ activePetId: null });
       }
+    }
+
+    // 开发期：直接弹出聊天输入条
+    if (process.env.XINCHONG_CHAT_INPUT === "1") {
+      setTimeout(() => openChatInput(win), 1200);
     }
 
     // 开发期：直接验证素材包导出

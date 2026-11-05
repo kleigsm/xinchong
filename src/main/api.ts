@@ -10,6 +10,7 @@ import { readPerfSnapshot } from "./perf";
 import { importFromPath, runImportFlow, type ImportMode } from "./import-flow";
 import { exportTemplate } from "./template";
 import { clearChatKey, isEncryptionAvailable, loadChatKey, maskChatKey, saveChatKey } from "./chat-key";
+import { sendChatMessage } from "./chat";
 
 /**
  * 设置窗口用的 IPC 接口（invoke/handle 模式）。
@@ -196,6 +197,12 @@ export function registerSettingsApi(getWindow: () => BrowserWindow | null): void
 
   ipcMain.handle("api:chat:clearKey", () => clearChatKey());
 
+  ipcMain.handle("api:chat:send", async (_event, text: string) => {
+    const settings = getSettings();
+    return sendChatMessage(text, settings.personality);
+  });
+
+  ipcMain.handle("api:chat:hasKey", () => loadChatKey() !== null);
   ipcMain.handle("api:chat:test", async (_event, rawKey?: string) => {
     const key = rawKey?.trim() || loadChatKey();
     if (!key) return { ok: false, message: "还没有填 Key" };
