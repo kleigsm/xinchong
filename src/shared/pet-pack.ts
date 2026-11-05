@@ -7,8 +7,16 @@
 
 import type { LineBank } from "./lines";
 
-/** 动画名：状态机只会请求这四种 */
-export type AnimationName = "idle" | "click" | "drag" | "sleep";
+/** 动画名：4/5 行布局只提供前四个，9 行布局提供全部八个 */
+export type AnimationName =
+  | "idle"
+  | "click"
+  | "drag"
+  | "sleep"
+  | "wave"
+  | "stretch"
+  | "pat"
+  | "angry";
 
 /** 一段动画 */
 export interface AnimationSpec {
@@ -43,7 +51,7 @@ export interface PetPack {
   /** 显示名，如「害羞」「开朗」 */
   name: string;
   sprite: SpriteSpec;
-  animations: Record<AnimationName, AnimationSpec>;
+  animations: Partial<Record<AnimationName, AnimationSpec>>;
   lines: LineBank;
   /** 音效文件（可选，暂未接入） */
   sounds?: Partial<Record<AnimationName, string>>;

@@ -104,7 +104,7 @@ export function importSpriteSheet(
   if (!layout) {
     return {
       ok: false,
-      error: `图片有 ${rows} 行，但只支持 4 行或 5 行。4 行 = 每行一个动作；5 行 = 待机占前两行（8 帧）。`,
+      error: `图片有 ${rows} 行，但只支持 4 / 5 / 9 行。4 行 = 每行一个动作；5 行 = 待机占前两行（8 帧）；9 行 = 在 5 行基础上再追加招手/伸懒腰/摸头/生气。`,
     };
   }
 

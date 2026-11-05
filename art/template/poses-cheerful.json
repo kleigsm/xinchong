@@ -1,0 +1,333 @@
+[
+ {
+  "index": 0,
+  "dy": 0.0,
+  "eyes": "happy",
+  "look": 0.4,
+  "arms": "side",
+  "blush": 1.0
+ },
+ {
+  "index": 1,
+  "dy": -3.4,
+  "eyes": "happy",
+  "look": 0.4,
+  "arms": "side",
+  "blush": 1.0,
+  "comb": 5.0,
+  "ears": 2.5
+ },
+ {
+  "index": 2,
+  "dy": -2.6,
+  "eyes": "happy",
+  "look": 0.6,
+  "arms": "side",
+  "blush": 1.0,
+  "comb": 3.5
+ },
+ {
+  "index": 3,
+  "dy": -0.8,
+  "eyes": "open",
+  "look": 1.0,
+  "arms": "side",
+  "blush": 1.0,
+  "comb": 1.0
+ },
+ {
+  "index": 4,
+  "dy": -2.2,
+  "eyes": "happy",
+  "look": 0.4,
+  "arms": "side",
+  "blush": 1.0,
+  "comb": 3.0
+ },
+ {
+  "index": 5,
+  "dy": -3.0,
+  "eyes": "happy",
+  "look": 0.2,
+  "arms": "side",
+  "blush": 1.0,
+  "comb": 4.0,
+  "ears": 1.5
+ },
+ {
+  "index": 6,
+  "dy": -1.6,
+  "eyes": "wide",
+  "look": 1.2,
+  "arms": "side",
+  "blush": 0.9,
+  "comb": 1.5
+ },
+ {
+  "index": 7,
+  "dy": -0.6,
+  "eyes": "happy",
+  "look": 0.6,
+  "arms": "side",
+  "blush": 1.0,
+  "comb": 1.0
+ },
+ {
+  "index": 8,
+  "dy": -4.5,
+  "squash": 1.04,
+  "eyes": "wide",
+  "arms": "up",
+  "mouth": "open",
+  "comb": -10,
+  "ears": -4,
+  "blush": 0.7,
+  "head_dy": -1.0
+ },
+ {
+  "index": 9,
+  "dy": -2.0,
+  "squash": 0.96,
+  "eyes": "happy",
+  "arms": "up",
+  "mouth": "open",
+  "blush": 1.0,
+  "head_tilt": -2,
+  "comb": -6
+ },
+ {
+  "index": 10,
+  "dy": -1.0,
+  "eyes": "happy",
+  "arms": "up",
+  "mouth": "open",
+  "blush": 1.0,
+  "head_tilt": 2,
+  "heart": true
+ },
+ {
+  "index": 11,
+  "dy": 0.6,
+  "eyes": "happy",
+  "arms": "side",
+  "mouth": "smile",
+  "blush": 0.9,
+  "comb": 2
+ },
+ {
+  "index": 12,
+  "tilt": -10,
+  "dy": -3.0,
+  "eyes": "wide",
+  "arms": "dangle",
+  "mouth": "open",
+  "comb": 7,
+  "ears": -5,
+  "head_tilt": -3
+ },
+ {
+  "index": 13,
+  "tilt": 0,
+  "dy": -4.0,
+  "squash": 1.03,
+  "eyes": "wide",
+  "arms": "dangle",
+  "mouth": "open",
+  "comb": 2
+ },
+ {
+  "index": 14,
+  "tilt": 10,
+  "dy": -2.0,
+  "eyes": "wide",
+  "arms": "dangle",
+  "mouth": "open",
+  "comb": -7,
+  "ears": 5,
+  "head_tilt": 3
+ },
+ {
+  "index": 15,
+  "tilt": 0,
+  "dy": -1.0,
+  "eyes": "wide",
+  "arms": "dangle",
+  "mouth": "open",
+  "comb": -2
+ },
+ {
+  "index": 16,
+  "dy": 1.0,
+  "eyes": "closed",
+  "arms": "side",
+  "mouth": "smile",
+  "blush": 0.8,
+  "head_tilt": 4,
+  "comb": 6,
+  "zzz": 1
+ },
+ {
+  "index": 17,
+  "dy": 2.2,
+  "squash": 0.985,
+  "eyes": "closed",
+  "arms": "side",
+  "mouth": "smile",
+  "blush": 0.8,
+  "head_tilt": 6,
+  "comb": 8,
+  "zzz": 2
+ },
+ {
+  "index": 18,
+  "dy": 2.6,
+  "eyes": "closed",
+  "arms": "side",
+  "mouth": "smile",
+  "blush": 0.8,
+  "head_tilt": 6,
+  "comb": 8,
+  "zzz": 2
+ },
+ {
+  "index": 19,
+  "dy": 1.6,
+  "eyes": "closed",
+  "arms": "side",
+  "mouth": "smile",
+  "blush": 0.8,
+  "head_tilt": 4,
+  "comb": 6,
+  "zzz": 1
+ },
+ {
+  "index": 20,
+  "arms": "wave",
+  "eyes": "happy",
+  "head_tilt": -4,
+  "comb": 2,
+  "blush": 1.0
+ },
+ {
+  "index": 21,
+  "arms": "wave",
+  "wave": 2.5,
+  "eyes": "happy",
+  "head_tilt": -2,
+  "dy": -1,
+  "comb": 3,
+  "blush": 1.0
+ },
+ {
+  "index": 22,
+  "arms": "wave",
+  "wave": -2.0,
+  "eyes": "happy",
+  "head_tilt": -4,
+  "comb": 1,
+  "blush": 1.0
+ },
+ {
+  "index": 23,
+  "arms": "side",
+  "eyes": "happy",
+  "head_tilt": 0,
+  "blush": 1.0
+ },
+ {
+  "index": 24,
+  "arms": "stretch",
+  "eyes": "half",
+  "squash": 1.03,
+  "dy": -1
+ },
+ {
+  "index": 25,
+  "arms": "stretch",
+  "eyes": "closed",
+  "squash": 1.06,
+  "dy": -3,
+  "comb": 4
+ },
+ {
+  "index": 26,
+  "arms": "stretch",
+  "eyes": "closed",
+  "squash": 1.05,
+  "dy": -3,
+  "head_tilt": 3,
+  "comb": 2
+ },
+ {
+  "index": 27,
+  "arms": "side",
+  "eyes": "happy",
+  "squash": 0.99,
+  "mouth": "smile"
+ },
+ {
+  "index": 28,
+  "eyes": "closed",
+  "head_tilt": 4,
+  "blush": 1.0,
+  "dy": 1
+ },
+ {
+  "index": 29,
+  "eyes": "closed",
+  "head_tilt": -4,
+  "blush": 1.0
+ },
+ {
+  "index": 30,
+  "eyes": "happy",
+  "heart": true,
+  "head_tilt": 3,
+  "blush": 1.0
+ },
+ {
+  "index": 31,
+  "eyes": "half",
+  "blush": 1.0,
+  "head_tilt": 1
+ },
+ {
+  "index": 32,
+  "brows": "angry",
+  "eyes": "squeeze",
+  "mouth": "open",
+  "anger": true,
+  "squash": 1.05,
+  "comb": -8,
+  "blush": 0.6
+ },
+ {
+  "index": 33,
+  "brows": "angry",
+  "eyes": "squeeze",
+  "mouth": "open",
+  "anger": true,
+  "squash": 1.05,
+  "comb": 8,
+  "head_tilt": -3,
+  "blush": 0.6
+ },
+ {
+  "index": 34,
+  "brows": "angry",
+  "eyes": "squeeze",
+  "mouth": "open",
+  "anger": true,
+  "squash": 1.03,
+  "dy": 2,
+  "comb": -6,
+  "blush": 0.6
+ },
+ {
+  "index": 35,
+  "brows": "angry",
+  "eyes": "half",
+  "mouth": "small",
+  "blush": 0.6
+ }
+]

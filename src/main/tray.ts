@@ -104,6 +104,15 @@ export function buildMenu(win: BrowserWindow): Menu {
       })),
     },
     {
+      label: "动作",
+      submenu: [
+        { label: "招手", click: () => win.webContents.send("play-action", "wave") },
+        { label: "伸懒腰", click: () => win.webContents.send("play-action", "stretch") },
+        { label: "摸头", click: () => win.webContents.send("play-action", "pat") },
+        { label: "生气", click: () => win.webContents.send("play-action", "angry") },
+      ],
+    },
+    {
       label: "静音",
       type: "checkbox",
       checked: settings.muted,

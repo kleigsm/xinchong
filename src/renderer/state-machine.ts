@@ -1,7 +1,18 @@
 import type { PetView } from "./pet-view";
 
-/** 桌宠的四种行为状态 */
-export type PetState = "idle" | "click" | "drag" | "sleep";
+/** 桌宠的行为状态 */
+export type PetState =
+  | "idle"
+  | "click"
+  | "drag"
+  | "sleep"
+  | "wave"
+  | "stretch"
+  | "pat"
+  | "angry";
+
+/** 播一次就回待机的动作（连点要能重播） */
+const ONE_SHOT: ReadonlySet<PetState> = new Set(["click", "wave", "stretch", "pat", "angry"]);
 
 export interface StateMachineOptions {
   /** 空闲多久进入睡觉（毫秒），默认 30 秒 */
@@ -49,7 +60,36 @@ export class PetStateMachine {
   onPetClick(): void {
     // 拖拽中不响应点击，避免拖到一半突然播反应动画
     if (this.state === "drag") return;
+    // 睡醒先伸个懒腰，再回待机
+    if (this.state === "sleep") {
+      this.enter("stretch");
+      return;
+    }
     this.enter("click");
+  }
+
+  /** 双击：招手 */
+  playWave(): void {
+    if (this.state === "drag") return;
+    this.enter("wave", true);
+  }
+
+  /** 睡醒 / 手动：伸懒腰 */
+  playStretch(): void {
+    if (this.state === "drag") return;
+    this.enter("stretch", true);
+  }
+
+  /** 长按：摸头 */
+  playPat(): void {
+    if (this.state === "drag") return;
+    this.enter("pat", true);
+  }
+
+  /** 连点：生气 */
+  playAngry(): void {
+    if (this.state === "drag") return;
+    this.enter("angry", true);
   }
 
   /** 开始拖拽 */
@@ -72,8 +112,8 @@ export class PetStateMachine {
 
   private enter(next: PetState, force = false): void {
     const from = this.state;
-    // 同一状态重复进入没意义；但点击例外（连点要能重播反应）
-    if (!force && from === next && next !== "click") return;
+    // 同一状态重复进入没意义；但一次性动作例外（连点/连按要能重播）
+    if (!force && from === next && !ONE_SHOT.has(next)) return;
 
     this.state = next;
     this.clearSleepTimer();
@@ -101,6 +141,15 @@ export class PetStateMachine {
 
       case "sleep":
         this.view.play("sleep");
+        break;
+
+      case "wave":
+      case "stretch":
+      case "pat":
+      case "angry":
+        this.view.play(next, () => {
+          if (this.state === next) this.enter("idle");
+        });
         break;
     }
   }

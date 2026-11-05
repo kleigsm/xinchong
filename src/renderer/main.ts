@@ -53,12 +53,34 @@ machine.start();
 
 let pressOrigin: Point | null = null;
 let dragging = false;
+let patTimer: number | null = null;
+let patTriggered = false;
+let lastClickAt = 0;
+let rapidCount = 0;
+
+function clearPatTimer(): void {
+  if (patTimer !== null) {
+    window.clearTimeout(patTimer);
+    patTimer = null;
+  }
+}
 
 window.addEventListener("mousedown", (event: MouseEvent) => {
   // 只响应左键，右键留给菜单
   if (event.button !== 0) return;
   pressOrigin = { x: event.screenX, y: event.screenY };
   dragging = false;
+  patTriggered = false;
+  clearPatTimer();
+  // 长按 1.2 秒 = 摸头。
+  // 之所以不用更短的 0.65s：用户按住想拖、手抖停顿一下就会被判定成摸头，
+  // 而且旧实现里摸头之后会锁住拖拽，体验很糟。
+  patTimer = window.setTimeout(() => {
+    if (pressOrigin && !dragging && !patTriggered) {
+      patTriggered = true;
+      machine.playPat();
+    }
+  }, 1200);
 });
 
 window.addEventListener("mousemove", (event: MouseEvent) => {
@@ -75,6 +97,9 @@ window.addEventListener("mousemove", (event: MouseEvent) => {
     const dx = event.screenX - pressOrigin.x;
     const dy = event.screenY - pressOrigin.y;
     if (Math.hypot(dx, dy) > DRAG_THRESHOLD) {
+      clearPatTimer();
+      // 摸头之后用户又想拖：允许。摸头动画会被拖拽打断，这是符合直觉的。
+      patTriggered = false;
       dragging = true;
       petEl.classList.add("dragging");
       machine.onDragStart();
@@ -92,6 +117,7 @@ window.addEventListener("mousemove", (event: MouseEvent) => {
 });
 
 function endDrag(): void {
+  clearPatTimer();
   window.pet.dragEnd();
   petEl.classList.remove("dragging");
   machine.onDragEnd();
@@ -101,11 +127,32 @@ function endDrag(): void {
 
 window.addEventListener("mouseup", () => {
   if (!pressOrigin) return;
+  clearPatTimer();
+
+  // 长按已经触发摸头，松手不要再补一次点击
+  if (patTriggered) {
+    patTriggered = false;
+    pressOrigin = null;
+    dragging = false;
+    return;
+  }
 
   if (dragging) {
     endDrag();
   } else {
-    machine.onPetClick();
+    const now = performance.now();
+    rapidCount = now - lastClickAt < 1200 ? rapidCount + 1 : 1;
+    lastClickAt = now;
+
+    if (rapidCount >= 3) {
+      rapidCount = 0;
+      machine.playAngry();
+    } else if (rapidCount === 2) {
+      machine.playWave();
+    } else {
+      machine.onPetClick();
+    }
+
     pressOrigin = null;
     dragging = false;
   }
@@ -154,6 +201,14 @@ function applySettings(settings: Settings): void {
 }
 
 window.pet.onSettings(applySettings);
+
+// 托盘 / 右键菜单里的「动作」主动触发
+window.pet.onPlayAction((name) => {
+  if (name === "wave") machine.playWave();
+  else if (name === "stretch") machine.playStretch();
+  else if (name === "pat") machine.playPat();
+  else if (name === "angry") machine.playAngry();
+});
 
 // 用户导入角色成功后，立即换上（不重启程序）
 window.pet.onUsePet((payload) => {

@@ -1,4 +1,4 @@
-﻿import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer } from "electron";
 import type { PetApi, Point, Settings, UserPetPayload } from "../shared/types";
 
 /**
@@ -33,6 +33,13 @@ const api: PetApi = {
     ipcRenderer.on("pet:use", listener);
     return () => {
       ipcRenderer.removeListener("pet:use", listener);
+    };
+  },
+  onPlayAction: (callback: (name: string) => void) => {
+    const listener = (_event: unknown, name: string): void => callback(name);
+    ipcRenderer.on("play-action", listener);
+    return () => {
+      ipcRenderer.removeListener("play-action", listener);
     };
   },
 };
