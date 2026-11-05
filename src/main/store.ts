@@ -15,6 +15,7 @@ const DEFAULTS: Settings = {
   dnd: false,
   autoStart: false,
   personality: "shy",
+  activePetId: null,
   volume: 0.6,
 };
 

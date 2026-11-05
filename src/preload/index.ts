@@ -19,6 +19,13 @@ const api: PetApi = {
       ipcRenderer.removeListener("settings-changed", listener);
     };
   },
+  onUseBuiltin: (callback: (personalityId: string) => void) => {
+    const listener = (_event: unknown, personalityId: string): void => callback(personalityId);
+    ipcRenderer.on("pet:builtin", listener);
+    return () => {
+      ipcRenderer.removeListener("pet:builtin", listener);
+    };
+  },
   onUsePet: (callback: (payload: UserPetPayload) => void) => {
     const listener = (_event: unknown, payload: UserPetPayload): void => callback(payload);
     ipcRenderer.on("pet:use", listener);

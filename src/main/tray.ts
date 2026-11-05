@@ -2,6 +2,8 @@
 import type { BrowserWindow } from "electron";
 import { PERSONALITIES } from "../shared/personalities";
 import { runImportFlow } from "./import-flow";
+import { listPetSummaries } from "./pet-payload";
+import { deleteStoredPet, useStoredPet } from "./pet-switch";
 import { showPerfDialog } from "./perf";
 import { applyAutoStart } from "./autostart";
 import { getSettings, updateSettings } from "./store";
@@ -38,6 +40,38 @@ export function notifySettings(win: BrowserWindow): void {
 /** 托盘菜单与宠物右键菜单共用 */
 export function buildMenu(win: BrowserWindow): Menu {
   const settings = getSettings();
+  const myPets = listPetSummaries();
+
+  const petItems: Electron.MenuItemConstructorOptions[] = myPets.map((pet) => ({
+    label: pet.name,
+    type: "radio" as const,
+    checked: settings.activePetId === pet.id,
+    click: () => {
+      useStoredPet(win, pet.id);
+      refreshMenu(win);
+      notifySettings(win);
+    },
+  }));
+
+  if (petItems.length > 0) {
+    petItems.push({ type: "separator" });
+  }
+  petItems.push({
+    label: "导入角色…",
+    click: () => {
+      void runImportFlow(win);
+    },
+  });
+  if (settings.activePetId) {
+    petItems.push({
+      label: "删除当前角色",
+      click: () => {
+        deleteStoredPet(win, settings.activePetId as string, settings.activePetId);
+        refreshMenu(win);
+        notifySettings(win);
+      },
+    });
+  }
 
   return Menu.buildFromTemplate([
     {
@@ -46,10 +80,8 @@ export function buildMenu(win: BrowserWindow): Menu {
     },
     { type: "separator" },
     {
-      label: "导入角色…",
-      click: () => {
-        void runImportFlow(win);
-      },
+      label: "我的角色",
+      submenu: petItems,
     },
     {
       label: "性格",

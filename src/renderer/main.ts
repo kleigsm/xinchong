@@ -1,4 +1,4 @@
-﻿import { PetView } from "./pet-view";
+import { PetView } from "./pet-view";
 import { PACKS } from "./pets";
 import { PetStateMachine } from "./state-machine";
 import { LinePicker, SpeechBubble } from "./bubble";
@@ -110,8 +110,10 @@ window.addEventListener("contextmenu", (event: MouseEvent) => {
 /** 换性格：整个角色包（图 + 台词）一起换 */
 function switchPersonality(id: string): void {
   const nextId = isPersonalityId(id) ? id : DEFAULT_PERSONALITY;
-  if (nextId === currentPackId) return;
+  // 正在用用户角色时，即使目标内置角色和上次相同也要真的换回来
+  if (nextId === currentPackId && !usingUserPet) return;
 
+  usingUserPet = false;
   currentPackId = nextId;
   const pack = PACKS[nextId];
 
@@ -157,6 +159,13 @@ window.pet.onUsePet((payload) => {
 
   bubble.show(`换上了「${payload.name}」`, 2500);
   console.log(`[pet] 切换到用户角色 ${payload.id}`);
+});
+
+// 换回内置性格角色
+window.pet.onUseBuiltin((personalityId) => {
+  switchPersonality(personalityId);
+  bubble.show("换回内置角色啦", 2000);
+  console.log(`[pet] 换回内置角色 ${personalityId}`);
 });
 
 window.addEventListener("beforeunload", () => {

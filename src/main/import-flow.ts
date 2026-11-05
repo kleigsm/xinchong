@@ -4,6 +4,7 @@ import { dialog } from "electron";
 import { DEFAULT_IMPORTED_LINES } from "../shared/default-lines";
 import { importSpriteSheet } from "./importer";
 import { sanitizePetId, writePet } from "./pet-store";
+import { updateSettings } from "./store";
 
 /**
  * 「导入角色」的两个入口：
@@ -63,6 +64,9 @@ export async function importFromPath(
       buttons: ["知道了"],
     });
   }
+
+  // 记住这个角色，下次启动直接用它
+  updateSettings({ activePetId: id });
 
   // 通知渲染层立即换上这个角色
   win.webContents.send("pet:use", {

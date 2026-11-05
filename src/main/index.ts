@@ -3,6 +3,8 @@ import { appendFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { initAutoStart } from "./autostart";
 import { importFromPath } from "./import-flow";
+import { buildPetPayload } from "./pet-payload";
+import { getSettings, updateSettings } from "./store";
 import { describeDisplays, watchDisplays } from "./display";
 import { startHitTesting } from "./hit-test";
 import { isDragging, registerIpc } from "./ipc";
@@ -72,6 +74,19 @@ app.whenReady().then(() => {
   // 渲染层初始化完毕（监听器都已注册）之后再派发事件，避免时序竞争
   ipcMain.once("renderer-ready", () => {
     console.log("[app] renderer ready");
+
+    // 恢复上次使用的自定义角色
+    const activePetId = getSettings().activePetId;
+    if (activePetId) {
+      const payload = buildPetPayload(activePetId);
+      if (payload) {
+        win.webContents.send("pet:use", payload);
+        console.log(`[app] 恢复自定义角色 ${activePetId}`);
+      } else {
+        console.warn(`[app] 上次的角色 ${activePetId} 不在了，回退内置角色`);
+        updateSettings({ activePetId: null });
+      }
+    }
 
     const testPath = process.env.XINCHONG_IMPORT_TEST;
     if (testPath) {
