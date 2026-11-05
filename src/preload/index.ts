@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from "electron";
+﻿import { contextBridge, ipcRenderer } from "electron";
 import type { PetApi, Point, Settings, UserPetPayload } from "../shared/types";
 
 /**
@@ -48,6 +48,7 @@ const settingsApi = {
   importPet: (mode: "l2" | "l3") => ipcRenderer.invoke("api:pets:import", mode),
   useBuiltin: (personalityId: string) => ipcRenderer.invoke("api:pets:useBuiltin", personalityId),
   getPersonalities: () => ipcRenderer.invoke("api:personalities"),
+  exportTemplate: () => ipcRenderer.invoke("api:template:export"),
   getSystemInfo: () => ipcRenderer.invoke("api:system:info"),
   openUserData: () => ipcRenderer.invoke("api:system:openUserData"),
   openLogFolder: () => ipcRenderer.invoke("api:system:openLogFolder"),

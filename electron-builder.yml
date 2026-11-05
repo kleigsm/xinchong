@@ -1,4 +1,4 @@
-﻿# electron-builder 配置
+# electron-builder 配置
 # 目标：产出免安装的 zip，解压即用（课程项目不需要安装器）
 
 appId: io.github.kleigsm.xinchong
@@ -19,6 +19,11 @@ files:
 
 # 源码打进 asar，防止用户误改
 asar: true
+
+# 素材包模板需要以真实文件存在（导出时要压缩它，asar 里的路径没法给外部工具用）
+extraResources:
+  - from: resources/pet-pack-template
+    to: template
 
 # 没有原生依赖，跳过 rebuild
 npmRebuild: false

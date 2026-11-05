@@ -3,6 +3,7 @@ import { appendFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { initAutoStart } from "./autostart";
 import { registerSettingsApi } from "./api";
+import { exportTemplate } from "./template";
 import { importFromPath } from "./import-flow";
 import { destroySettingsWindow, openSettingsWindow } from "./settings-window";
 import { buildPetPayload } from "./pet-payload";
@@ -89,6 +90,11 @@ app.whenReady().then(() => {
         console.warn(`[app] 上次的角色 ${activePetId} 不在了，回退内置角色`);
         updateSettings({ activePetId: null });
       }
+    }
+
+    // 开发期：直接验证素材包导出
+    if (process.env.XINCHONG_EXPORT_TEMPLATE === "1") {
+      void exportTemplate(win);
     }
 
     // 开发期：直接打开设置窗口，省得点托盘

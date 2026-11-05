@@ -1,4 +1,4 @@
-﻿import type { Settings } from "../../shared/types";
+import type { Settings } from "../../shared/types";
 import type { PetListItem, PersonalityInfo, SettingsApi, SystemInfo } from "../../shared/settings-api";
 
 declare global {
@@ -107,6 +107,11 @@ function pagePets(): string {
         "导入雪碧图（多帧）",
         `<button class="btn" data-action="import-l3">选择图片…</button>`,
         "4 列 × 4/5 行，每格 128px，待机/点击/拖拽/睡觉",
+      )}
+      ${row(
+        "素材包模板",
+        `<button class="btn" data-action="export-template">下载模板…</button>`,
+        "含示例雪碧图、两种配置示例和绘制说明",
       )}
     </div>`;
 }
@@ -307,6 +312,8 @@ function bindEvents(): void {
       const mode = action === "import-l2" ? "l2" : "l3";
       void window.api.importPet(mode).then(() => reload());
     }
+
+    if (action === "export-template") void window.api.exportTemplate();
 
     if (action === "open-userdata") void window.api.openUserData();
     if (action === "open-log") void window.api.openLogFolder();

@@ -1,4 +1,4 @@
-import type { Settings } from "./types";
+﻿import type { Settings } from "./types";
 
 /** 设置窗口与主进程之间的接口定义（preload 暴露为 window.api） */
 
@@ -36,6 +36,7 @@ export interface SettingsApi {
   importPet(mode: "l2" | "l3"): Promise<{ ok: boolean }>;
   useBuiltin(personalityId: string): Promise<boolean>;
   getPersonalities(): Promise<PersonalityInfo[]>;
+  exportTemplate(): Promise<string | null>;
   getSystemInfo(): Promise<SystemInfo>;
   openUserData(): Promise<void>;
   openLogFolder(): Promise<void>;

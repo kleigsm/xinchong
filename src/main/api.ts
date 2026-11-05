@@ -1,4 +1,4 @@
-import { app, dialog, ipcMain, nativeImage, shell } from "electron";
+﻿import { app, dialog, ipcMain, nativeImage, shell } from "electron";
 import type { BrowserWindow } from "electron";
 import { join } from "node:path";
 import type { Settings } from "../shared/types";
@@ -8,6 +8,7 @@ import { listPetIds, readPet, removePet, writePet } from "./pet-store";
 import { useStoredPet } from "./pet-switch";
 import { readPerfSnapshot } from "./perf";
 import { importFromPath, runImportFlow, type ImportMode } from "./import-flow";
+import { exportTemplate } from "./template";
 
 /**
  * 设置窗口用的 IPC 接口（invoke/handle 模式）。
@@ -152,6 +153,12 @@ export function registerSettingsApi(getWindow: () => BrowserWindow | null): void
   });
 
   ipcMain.handle("api:personalities", () => PERSONALITIES);
+
+  ipcMain.handle("api:template:export", async () => {
+    const win = getWindow();
+    if (!win) return null;
+    return exportTemplate(win);
+  });
 
   ipcMain.handle("api:system:openLogFolder", async () => {
     const path = join(app.getPath("userData"), "main.log");
