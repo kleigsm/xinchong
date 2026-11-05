@@ -18,5 +18,14 @@ export default defineConfig({
   },
   renderer: {
     root: resolve(__dirname, "src/renderer"),
+    build: {
+      rollupOptions: {
+        // 多页：桌宠窗口 + 设置窗口
+        input: {
+          index: resolve(__dirname, "src/renderer/index.html"),
+          settings: resolve(__dirname, "src/renderer/settings/index.html"),
+        },
+      },
+    },
   },
 });

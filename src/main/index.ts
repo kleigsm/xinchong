@@ -2,7 +2,9 @@
 import { appendFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { initAutoStart } from "./autostart";
+import { registerSettingsApi } from "./api";
 import { importFromPath } from "./import-flow";
+import { destroySettingsWindow, openSettingsWindow } from "./settings-window";
 import { buildPetPayload } from "./pet-payload";
 import { getSettings, updateSettings } from "./store";
 import { describeDisplays, watchDisplays } from "./display";
@@ -52,6 +54,7 @@ app.whenReady().then(() => {
 
   const win = createMainWindow();
   registerIpc(win);
+  registerSettingsApi(() => (win.isDestroyed() ? null : win));
   createTray(win);
   stopHitTesting = startHitTesting(win, isDragging);
   stopWatchingDisplays = watchDisplays(win);
@@ -88,6 +91,11 @@ app.whenReady().then(() => {
       }
     }
 
+    // 开发期：直接打开设置窗口，省得点托盘
+    if (process.env.XINCHONG_OPEN_SETTINGS === "1") {
+      openSettingsWindow();
+    }
+
     const testPath = process.env.XINCHONG_IMPORT_TEST;
     if (testPath) {
       console.log(`[import] 测试模式，导入 ${testPath}`);
@@ -102,5 +110,6 @@ app.on("window-all-closed", () => {
   stopWatchingDisplays?.();
   stopPerfSampling?.();
   destroyTray();
+  destroySettingsWindow();
   app.quit();
 });

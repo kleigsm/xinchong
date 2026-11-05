@@ -2,6 +2,7 @@ import { Menu, Tray, nativeImage } from "electron";
 import type { BrowserWindow } from "electron";
 import { PERSONALITIES } from "../shared/personalities";
 import { runImportFlow } from "./import-flow";
+import { openSettingsWindow } from "./settings-window";
 import { listPetSummaries } from "./pet-payload";
 import { deleteStoredPet, useStoredPet } from "./pet-switch";
 import { showPerfDialog } from "./perf";
@@ -155,7 +156,9 @@ export function buildMenu(win: BrowserWindow): Menu {
     { type: "separator" },
     {
       label: "设置…",
-      enabled: false, // P1-8 设置面板完成后启用
+      click: () => {
+        openSettingsWindow();
+      },
     },
     { type: "separator" },
     {

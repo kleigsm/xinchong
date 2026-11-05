@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    />
+    <title>芯宠 · 设置</title>
+    <link rel="stylesheet" href="./settings.css" />
+  </head>
+  <body>
+    <aside class="nav">
+      <div class="brand">
+        <span class="logo">芯</span>
+        <span class="brand-text">芯宠</span>
+      </div>
+      <nav id="nav">
+        <button class="nav-item active" data-page="pets">角色</button>
+        <button class="nav-item" data-page="personality">性格</button>
+        <button class="nav-item" data-page="sound">声音</button>
+        <button class="nav-item" data-page="chat">聊天</button>
+        <button class="nav-item" data-page="system">系统</button>
+        <button class="nav-item" data-page="about">关于</button>
+      </nav>
+      <div class="nav-foot">v<span id="nav-version">—</span></div>
+    </aside>
+
+    <main id="content" class="content"></main>
+
+    <script type="module" src="./settings.ts"></script>
+  </body>
+</html>
