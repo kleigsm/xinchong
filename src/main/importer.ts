@@ -1,5 +1,6 @@
 import { nativeImage } from "electron";
-import type { AnimationName, AnimationSpec, PetPack } from "../shared/pet-pack";
+import type { AnimationName, PetPack } from "../shared/pet-pack";
+import { buildAnimations, detectLayout, requiredStartFrames } from "./sheet-layout";
 
 /**
  * 角色雪碧图导入与校验（L3）。
@@ -11,7 +12,7 @@ import type { AnimationName, AnimationSpec, PetPack } from "../shared/pet-pack";
  * 但看得懂"整图尺寸应该是 512×512，你的是 600×600"。
  */
 
-/** 固定 4 列（规格 v1），行数由图片高度决定，但必须是 4 行 */
+/** 固定 4 列（规格 v1），行数只能是 4 或 5 */
 const COLUMNS = 4;
 const MIN_CELL = 64;
 const MAX_CELL = 256;
@@ -60,16 +61,6 @@ function analyzeCells(
   return stats;
 }
 
-function buildAnimations(cellSize: number): Record<AnimationName, AnimationSpec> {
-  void cellSize;
-  return {
-    idle: { frames: [0, 1, 2, 3], fps: 8, loop: true },
-    click: { frames: [4, 5, 6, 7], fps: 12, loop: false },
-    drag: { frames: [8, 9], fps: 6, loop: true },
-    sleep: { frames: [12, 13], fps: 2, loop: true },
-  };
-}
-
 /**
  * 校验并解析一张角色雪碧图。
  *
@@ -108,11 +99,12 @@ export function importSpriteSheet(
   }
 
   const rows = height / cellSize;
+  const layout = detectLayout(rows);
 
-  if (rows !== 4) {
+  if (!layout) {
     return {
       ok: false,
-      error: `图片有 ${rows} 行，但需要正好 4 行（待机 / 点击 / 拖拽 / 睡觉）。`,
+      error: `图片有 ${rows} 行，但只支持 4 行或 5 行。4 行 = 每行一个动作；5 行 = 待机占前两行（8 帧）。`,
     };
   }
 
@@ -136,14 +128,8 @@ export function importSpriteSheet(
   }
 
   // 必需动作的首帧必须有内容
-  const required: Array<{ index: number; label: string }> = [
-    { index: 0, label: "待机（第 1 行第 1 格）" },
-    { index: 4, label: "点击（第 2 行第 1 格）" },
-    { index: 8, label: "拖拽（第 3 行第 1 格）" },
-    { index: 12, label: "睡觉（第 4 行第 1 格）" },
-  ];
-  for (const item of required) {
-    if (cells[item.index].opaqueRatio < 0.03) {
+  for (const item of requiredStartFrames(layout)) {
+    if (cells[item.index] && cells[item.index].opaqueRatio < 0.03) {
       return {
         ok: false,
         error: `第 ${item.index} 格（${item.label}）是空的，但它是必需动作的起始帧。`,
@@ -151,18 +137,20 @@ export function importSpriteSheet(
     }
   }
 
-  // 非致命提醒
+  // 非致命提醒：4 行布局下，拖拽/睡觉只用前 2 格，后两格若有内容不会播
   const warnings: string[] = [];
-  const emptyInPairs: Array<{ indexes: number[]; label: string }> = [
-    { indexes: [10, 11], label: "拖拽" },
-    { indexes: [14, 15], label: "睡觉" },
-  ];
-  for (const pair of emptyInPairs) {
-    const hasContent = pair.indexes.some((i) => cells[i].opaqueRatio > 0.03);
-    if (hasContent) {
-      warnings.push(
-        `第 ${pair.indexes.join("、")} 格有内容，但当前配置只用到每行的前 2 格（${pair.label}）。多出来的帧暂时不会播放。`,
-      );
+  if (layout === "4-row") {
+    const unusedPairs: Array<{ indexes: number[]; label: string }> = [
+      { indexes: [10, 11], label: "拖拽" },
+      { indexes: [14, 15], label: "睡觉" },
+    ];
+    for (const pair of unusedPairs) {
+      const hasContent = pair.indexes.some((i) => cells[i].opaqueRatio > 0.03);
+      if (hasContent) {
+        warnings.push(
+          `第 ${pair.indexes.join("、")} 格有内容，但 4 行布局只用每行前 2 格（${pair.label}）。用 5 行布局才能播到剩余帧。`,
+        );
+      }
     }
   }
 
@@ -176,7 +164,7 @@ export function importSpriteSheet(
       columns: COLUMNS,
       rows,
     },
-    animations: buildAnimations(cellSize),
+    animations: buildAnimations(layout) as Record<AnimationName, PetPack["animations"][AnimationName]>,
     lines,
   };
 
