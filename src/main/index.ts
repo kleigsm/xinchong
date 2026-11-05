@@ -1,4 +1,6 @@
-﻿import { app } from "electron";
+import { app } from "electron";
+import { appendFileSync, mkdirSync } from "node:fs";
+import { join } from "node:path";
 import { initAutoStart } from "./autostart";
 import { describeDisplays, watchDisplays } from "./display";
 import { startHitTesting } from "./hit-test";
@@ -6,6 +8,33 @@ import { isDragging, registerIpc } from "./ipc";
 import { startPerfSampling } from "./perf";
 import { createTray, destroyTray, notifySettings } from "./tray";
 import { createMainWindow } from "./window";
+
+/**
+ * 打包后的应用没有控制台，stdout 是断开的管道。
+ * 此时任何 console.log 都会抛 EPIPE 并弹出「JavaScript error occurred in the main process」。
+ * 解决：打包模式下把日志写到 userData/main.log，不再往 stdout 写。
+ */
+function setupLogging(): void {
+  if (!app.isPackaged) return;
+
+  const write = (level: string, args: unknown[]): void => {
+    try {
+      const dir = app.getPath("userData");
+      mkdirSync(dir, { recursive: true });
+      const line = `${new Date().toISOString()} [${level}] ${args.map(String).join(" ")}\n`;
+      appendFileSync(join(dir, "main.log"), line);
+    } catch {
+      // 日志失败不能影响主流程
+    }
+  };
+
+  console.log = (...args: unknown[]) => write("log", args);
+  console.info = (...args: unknown[]) => write("info", args);
+  console.warn = (...args: unknown[]) => write("warn", args);
+  console.error = (...args: unknown[]) => write("error", args);
+}
+
+setupLogging();
 
 const T0 = Date.now();
 

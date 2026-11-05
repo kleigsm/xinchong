@@ -1,13 +1,16 @@
-﻿# 依赖
+# 依赖
 node_modules/
 .pnp
 .pnp.*
 
 # 构建产物
 dist/
-build/
 out/
 target/
+
+# electron-builder 的资源目录：图标要进仓库，其它产物忽略
+build/*
+!build/icon.png
 
 # 客户端安装包（走 GitHub Releases 分发，不进仓库）
 *.exe

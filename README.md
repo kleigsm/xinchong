@@ -20,6 +20,7 @@
 | **要提供美术素材 / 自定义角色** | [docs/specs/asset-spec.md](docs/specs/asset-spec.md) |
 | **要开新对话窗口接手某个任务** | [`docs/HANDOFF.md`](docs/HANDOFF.md) |
 | **美术要接入项目（画角色图）** | [`docs/onboarding-artist.md`](docs/onboarding-artist.md) |
+| **要打包分发** | [`docs/packaging.md`](docs/packaging.md) |
 | **想知道为什么这么定** | [`docs/DECISIONS.md`](docs/DECISIONS.md) |
 | **想看计划** | [`docs/ROADMAP.md`](docs/ROADMAP.md) |
 

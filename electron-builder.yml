@@ -1,0 +1,40 @@
+﻿# electron-builder 配置
+# 目标：产出免安装的 zip，解压即用（课程项目不需要安装器）
+
+appId: io.github.kleigsm.xinchong
+productName: XinChong
+copyright: 芯宠 · 集美大学人机交互与设计心理学课程项目
+
+directories:
+  output: dist
+  buildResources: build
+
+# 直接用本地已安装的 Electron，避免打包时再下载 150MB
+electronDist: node_modules/electron/dist
+
+# 只打包构建产物，不带上源码和文档
+files:
+  - out/**/*
+  - package.json
+
+# 源码打进 asar，防止用户误改
+asar: true
+
+# 没有原生依赖，跳过 rebuild
+npmRebuild: false
+
+# 只保留中文和英文语言包（默认 55 个，占 49MB）
+electronLanguages:
+  - zh-CN
+  - en-US
+
+win:
+  target:
+    - target: zip
+      arch:
+        - x64
+  icon: build/icon.png
+  artifactName: xinchong-win-x64-${version}.${ext}
+
+# 兼容性：Windows 10 1903+
+# （electron-builder 默认就支持，这里显式标注便于以后查）
