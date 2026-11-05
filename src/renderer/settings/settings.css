@@ -1,4 +1,4 @@
-﻿* {
+* {
   box-sizing: border-box;
 }
 
@@ -130,7 +130,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 12px 16px;
   padding: 12px 14px;
   background: #fff;
   border: 1px solid #f2e7e2;
@@ -149,10 +150,12 @@ body {
 }
 
 .row .control {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
+  min-width: 0;
 }
 
 /* 开关 */

@@ -1,4 +1,4 @@
-import type { Settings } from "../../shared/types";
+﻿import type { Settings } from "../../shared/types";
 import type { PetListItem, PersonalityInfo, SettingsApi, SystemInfo } from "../../shared/settings-api";
 
 declare global {
@@ -17,6 +17,13 @@ let currentPage: Page = "pets";
 
 const content = document.getElementById("content") as HTMLElement;
 const navVersion = document.getElementById("nav-version") as HTMLElement;
+
+function setChatResult(text: string, ok: boolean): void {
+  const el = document.getElementById("chat-result");
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = ok ? "#3f8f5f" : "#b3424f";
+}
 
 function esc(text: string): string {
   return text.replace(/[&<>"']/g, (ch) => {
@@ -161,15 +168,68 @@ function pageSound(): string {
   `;
 }
 
-function pageChat(): string {
+async function pageChat(): Promise<string> {
+  const status = await window.api.chatStatus();
+
+  const keyBlock = status.hasKey
+    ? `<div class="row">
+         <div>
+           <div class="label">已保存的 Key</div>
+           <div class="hint">加密保存在本机，只有当前 Windows 账户能解开</div>
+         </div>
+         <div class="control">
+           <span class="mono">${esc(status.masked ?? "")}</span>
+           <button class="btn small" data-action="chat-test">测试连接</button>
+           <button class="btn small danger" data-action="chat-clear">清除</button>
+         </div>
+       </div>`
+    : `<div class="row">
+         <div>
+           <div class="label">DeepSeek API Key</div>
+           <div class="hint">在 platform.deepseek.com 申请。留空就继续用内置台词</div>
+         </div>
+         <div class="control">
+           <input type="password" id="chat-key-input" placeholder="sk-..."
+             style="width:200px;padding:7px 10px;border:1px solid #e8d6cf;border-radius:8px;outline:none" />
+           <button class="btn primary" data-action="chat-save">保存</button>
+           <button class="btn" data-action="chat-test">测试</button>
+         </div>
+       </div>`;
+
+  const warn = status.encryptionAvailable
+    ? ""
+    : `<div class="placeholder" style="border-color:#f0c9c9;color:#b3424f">
+         这台机器的系统加密不可用，Key 无法安全保存。
+       </div>`;
+
   return `
     <h2>聊天</h2>
     <p class="sub">可选功能：自带 DeepSeek API Key，让桌宠能接你的话。</p>
-    <div class="placeholder">
-      📝 开发中<br /><br />
-      计划支持：填入自己的 API Key（加密保存在本地）、可开关的聊天入口、
-      断网或失败时自动回落到内置台词库。<br /><br />
-      <strong>不填也能用</strong>：桌宠会继续说内置台词，功能完全不受影响。
+
+    ${warn}
+
+    <div class="group">
+      <div class="group-title">API Key</div>
+      ${keyBlock}
+      <div id="chat-result" class="hint" style="margin-top:8px;padding-left:4px;min-height:18px"></div>
+    </div>
+
+    <div class="group">
+      <div class="group-title">隐私</div>
+      <div class="placeholder">
+        Key 用 Windows 系统加密（DPAPI）保存在本机
+        <span class="mono">%APPDATA%\\xinchong\\chat-key.bin</span>，<strong>不会上传到任何服务器</strong>。<br /><br />
+        只有你主动和桌宠说话时，那一句才会发给你自己配置的服务；其它时候完全离线。<br /><br />
+        <strong>不填也能用</strong>：桌宠继续说内置台词，功能不受影响。
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-title">聊天入口</div>
+      <div class="placeholder">
+        📝 对话功能正在接入：填好 Key 之后，下一版会开放「和它说句话」的入口。<br />
+        失败或断网时自动回落到内置台词。
+      </div>
     </div>`;
 }
 
@@ -313,6 +373,29 @@ function bindEvents(): void {
       void window.api.importPet(mode).then(() => reload());
     }
 
+    if (action === "chat-save") {
+      const input = document.getElementById("chat-key-input") as HTMLInputElement | null;
+      const value = input?.value.trim() ?? "";
+      void window.api.chatSaveKey(value).then((res) => {
+        if (res.ok) void reload();
+        else setChatResult(res.error ?? "保存失败", false);
+      });
+    }
+
+    if (action === "chat-test") {
+      const input = document.getElementById("chat-key-input") as HTMLInputElement | null;
+      setChatResult("正在测试…", true);
+      void window.api.chatTest(input?.value.trim() || undefined).then((res) => {
+        setChatResult(res.message, res.ok);
+      });
+    }
+
+    if (action === "chat-clear") {
+      void window.api.confirm("清除已保存的 Key？", "清除后桌宠会改回内置台词。").then((yes) => {
+        if (!yes) return;
+        void window.api.chatClearKey().then(() => reload());
+      });
+    }
     if (action === "export-template") void window.api.exportTemplate();
 
     if (action === "open-userdata") void window.api.openUserData();

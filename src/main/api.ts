@@ -9,6 +9,7 @@ import { useStoredPet } from "./pet-switch";
 import { readPerfSnapshot } from "./perf";
 import { importFromPath, runImportFlow, type ImportMode } from "./import-flow";
 import { exportTemplate } from "./template";
+import { clearChatKey, isEncryptionAvailable, loadChatKey, maskChatKey, saveChatKey } from "./chat-key";
 
 /**
  * 设置窗口用的 IPC 接口（invoke/handle 模式）。
@@ -179,4 +180,53 @@ export function registerSettingsApi(getWindow: () => BrowserWindow | null): void
     });
     return result.response === 1;
   });
+
+  // ---------------- 聊天（P2-6）----------------
+
+  ipcMain.handle("api:chat:status", () => {
+    const key = loadChatKey();
+    return {
+      hasKey: key !== null,
+      encryptionAvailable: isEncryptionAvailable(),
+      masked: key ? maskChatKey(key) : null,
+    };
+  });
+
+  ipcMain.handle("api:chat:saveKey", (_event, key: string) => saveChatKey(key));
+
+  ipcMain.handle("api:chat:clearKey", () => clearChatKey());
+
+  ipcMain.handle("api:chat:test", async (_event, rawKey?: string) => {
+    const key = rawKey?.trim() || loadChatKey();
+    if (!key) return { ok: false, message: "还没有填 Key" };
+
+    try {
+      const response = await fetch("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${key}`,
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [{ role: "user", content: "ping" }],
+          max_tokens: 4,
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (response.ok) return { ok: true, message: "连接正常，Key 可用" };
+      if (response.status === 401) return { ok: false, message: "Key 无效或已过期" };
+      if (response.status === 402) return { ok: false, message: "账户余额不足" };
+      if (response.status === 429) return { ok: false, message: "请求太频繁，稍后再试" };
+      return { ok: false, message: `服务返回 ${response.status}` };
+    } catch (error) {
+      const text = String(error);
+      if (text.includes("TimeoutError") || text.includes("timed out")) {
+        return { ok: false, message: "连接超时，检查网络或代理" };
+      }
+      return { ok: false, message: `网络错误：${text.slice(0, 120)}` };
+    }
+  });
 }
+

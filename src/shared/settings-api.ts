@@ -37,9 +37,24 @@ export interface SettingsApi {
   useBuiltin(personalityId: string): Promise<boolean>;
   getPersonalities(): Promise<PersonalityInfo[]>;
   exportTemplate(): Promise<string | null>;
+  chatStatus(): Promise<ChatStatus>;
+  chatSaveKey(key: string): Promise<{ ok: boolean; error?: string }>;
+  chatClearKey(): Promise<boolean>;
+  chatTest(key?: string): Promise<ChatTestResult>;
   getSystemInfo(): Promise<SystemInfo>;
   openUserData(): Promise<void>;
   openLogFolder(): Promise<void>;
   resetSettings(): Promise<Settings>;
   confirm(message: string, detail: string): Promise<boolean>;
+}
+
+export interface ChatStatus {
+  hasKey: boolean;
+  encryptionAvailable: boolean;
+  masked: string | null;
+}
+
+export interface ChatTestResult {
+  ok: boolean;
+  message: string;
 }
