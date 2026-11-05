@@ -67,7 +67,7 @@ export interface LineEngineOptions {
 export class LineEngine {
   constructor(bank: LineBank, options?: LineEngineOptions);
 
-  /** 取一句；库为空返回 null（调用方静默处理） */
+  /** 取一句；无可取时返回 null（调用方静默处理） */
   pick(scene: Scene): string | null;
 
   /** 换角色时整体换库（同时清空历史） */
@@ -91,7 +91,7 @@ export class LineEngine {
 | 1 | **同场景不重复** | 连续取 `min(10, 库长-1)` 次不出现重复 |
 | 2 | **库不够时降级** | 若某场景只有 3 条，则"最近 3 条不重复"退化为轮换，不报错 |
 | 3 | **空场景回退** | 场景没内容 → 回退到 `click` 池 → 再没有就返回 `null` |
-| 4 | **时间感知** | `pick("night")` 只在 22:00–05:00 返回内容，否则返回 `null` |
+| 4 | **时间门禁** | `night` 只在 22:00–05:00 返回内容，**其余时间返回 `null`，不回退** |
 | 5 | **纯函数可测** | 不引用 `window` / DOM / 全局时间，全部通过构造参数注入 |
 | 6 | **换库清历史** | `setBank()` 后历史清空（否则新角色会"继承"旧角色的去重记录） |
 
@@ -99,26 +99,61 @@ export class LineEngine {
 
 ## 五、验收标准（照着自测）
 
+### 5.1 回退的优先级（先把这个定死，否则会打架）
+
+```
+1. 场景有时间限制吗？
+   ├─ 有（只有 night）且当前不在 22:00–05:00  →  返回 null（不回退）
+   └─ 无 → 继续
+2. 该场景的库非空吗？
+   ├─ 非空 → 从里面挑（按规则 1）
+   └─ 空 → 回退到 click 池
+3. click 池也空 → 返回 null
+```
+
+**关键**：`night` 在白天要返回 `null`，**不能**回退到 click——
+否则中午点桌宠会冒出"还没睡？"这种台词。时间条件是"硬门禁"，优先级高于回退。
+
+### 5.2 测试用例
+
 ```ts
-// 1. 不重复
-const engine = new LineEngine({ click: ["a","b","c","d","e"], drag: [], idleLong: [], sleep: [], morning: [], night: [] });
+const bank = {
+  click: ["a", "b", "c", "d", "e"],
+  drag: [],          // 故意空
+  idleLong: [],
+  sleep: [],
+  morning: [],
+  night: ["还没睡？"],
+};
+
+// 1. 不重复：连取 5 次，5 条各不相同
+const engine = new LineEngine(bank);
 const picked = new Set(Array.from({ length: 5 }, () => engine.pick("click")));
 expect(picked.size).toBe(5);
 
-// 2. 空库回退
-expect(engine.pick("drag")).toBe(null);   // drag 空 → 回退 click → 有内容
-// 注意：规则 3 说回退到 click，所以这里应该返回 click 里的某句，不是 null
+// 2. 空场景回退：drag 为空 → 返回 click 池里的某句（不是 null）
+expect(bank.click).toContain(engine.pick("drag"));
 
-// 3. 深夜
-const at2am = new LineEngine({ night: ["还没睡？"], click: [], drag: [], idleLong: [], sleep: [], morning: [] }, { now: () => new Date("2026-01-01T02:00:00") });
+// 3. 深夜有内容
+const at2am = new LineEngine(bank, { now: () => new Date("2026-01-01T02:00:00") });
 expect(at2am.pick("night")).toBe("还没睡？");
 
-// 4. 白天
-const atNoon = new LineEngine(..., { now: () => new Date("2026-01-01T12:00:00") });
+// 4. 白天返回 null（硬门禁，不回退）
+const atNoon = new LineEngine(bank, { now: () => new Date("2026-01-01T12:00:00") });
 expect(atNoon.pick("night")).toBe(null);
+
+// 5. 全空：返回 null，不抛异常
+const empty = new LineEngine({ click: [], drag: [], idleLong: [], sleep: [], morning: [], night: [] });
+expect(empty.pick("click")).toBe(null);
+
+// 6. 换库清历史：换库后能立刻取到之前取过的那句
+const e2 = new LineEngine({ click: ["x"], drag: [], idleLong: [], sleep: [], morning: [], night: [] });
+expect(e2.pick("click")).toBe("x");
+e2.setBank({ click: ["x"], drag: [], idleLong: [], sleep: [], morning: [], night: [] });
+expect(e2.pick("click")).toBe("x");
 ```
 
-另外要满足：
+### 5.3 命令检查
 
 - [ ] `pnpm typecheck` 通过
 - [ ] `pnpm test` 全部通过
@@ -196,3 +231,14 @@ const line = lineEngine.pick("click");
 ```
 
 **卡住随时问**，别自己发明规则——这份文档里的规则都是和主窗口对过的。
+
+---
+
+## 十、环境提醒（D-404）
+
+**项目路径不能含中文**，否则 Electron 启动即崩（`0x80000003`），且**没有任何报错提示**。
+
+开发机用的路径是 `E:\xinchong`。如果你的机器没有 E 盘，用 `D:\xinchong` 这类短英文路径。
+
+已经放在中文路径下的，把它**移动**过去（不是复制），然后重新 `pnpm install`。
+`node_modules` 里有些绝对路径，移动后最好删掉重装。
