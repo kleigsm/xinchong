@@ -5,6 +5,8 @@
  * 详细规格见 docs/ARCHITECTURE.md 第 6 节。
  */
 
+import type { LineBank } from "./lines";
+
 /** 动画名：状态机只会请求这四种 */
 export type AnimationName = "idle" | "click" | "drag" | "sleep";
 
@@ -31,13 +33,9 @@ export interface SpriteSpec {
   rows: number;
 }
 
-/** 台词库：按场景分组 */
-export interface LineBank {
-  click: string[];
-  drag: string[];
-  idleLong: string[];
-  sleep?: string[];
-}
+// 台词库类型已迁移到 ./lines（6 场景，新增场景可选）。这里保留再导出，
+// 兼容仍从 ./pet-pack 引 LineBank 的旧导入（如 default-lines.ts）。
+export type { LineBank };
 
 /** 一个完整的角色包 */
 export interface PetPack {
