@@ -17,6 +17,10 @@ const DEFAULTS: Settings = {
   personality: "shy",
   activePetId: null,
   volume: 0.6,
+  idleToSleepMs: 30_000,
+  gestureWave: true,
+  gesturePat: true,
+  gestureAngry: true,
 };
 
 let cache: Settings | null = null;

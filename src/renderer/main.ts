@@ -1,4 +1,4 @@
-﻿import { PetView } from "./pet-view";
+import { PetView } from "./pet-view";
 import { PACKS } from "./pets";
 import { PetStateMachine } from "./state-machine";
 import { SpeechBubble } from "./bubble";
@@ -86,6 +86,7 @@ window.addEventListener("mousedown", (event: MouseEvent) => {
   // 之所以不用更短的 0.65s：用户按住想拖、手抖停顿一下就会被判定成摸头，
   // 而且旧实现里摸头之后会锁住拖拽，体验很糟。
   patTimer = window.setTimeout(() => {
+    if (currentSettings?.gesturePat === false) return;
     if (pressOrigin && !dragging && !patTriggered) {
       patTriggered = true;
       machine.playPat();
@@ -154,10 +155,10 @@ window.addEventListener("mouseup", () => {
     rapidCount = now - lastClickAt < 1200 ? rapidCount + 1 : 1;
     lastClickAt = now;
 
-    if (rapidCount >= 3) {
+    if (rapidCount >= 3 && currentSettings?.gestureAngry !== false) {
       rapidCount = 0;
       machine.playAngry();
-    } else if (rapidCount === 2) {
+    } else if (rapidCount === 2 && currentSettings?.gestureWave !== false) {
       machine.playWave();
     } else {
       machine.onPetClick();
@@ -195,11 +196,12 @@ function switchPersonality(id: string): void {
   console.log(`[personality] switched to ${nextId}`);
 }
 
-/** 设置变化：性格、静音、勿扰、音量 */
+/** 设置变化：性格、静音、勿扰、音量、行为 */
 function applySettings(settings: Settings): void {
   currentSettings = settings;
   sound.setMuted(settings.muted);
   sound.setVolume(settings.volume ?? 0.6);
+  machine.setIdleTimeout(settings.idleToSleepMs ?? 30_000);
 
   if (!usingUserPet && settings.personality) switchPersonality(settings.personality);
 

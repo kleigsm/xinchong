@@ -1,4 +1,4 @@
-﻿import type { Settings } from "../../shared/types";
+import type { Settings } from "../../shared/types";
 import type { PetListItem, PersonalityInfo, SettingsApi, SystemInfo } from "../../shared/settings-api";
 
 declare global {
@@ -7,7 +7,7 @@ declare global {
   }
 }
 
-type Page = "pets" | "personality" | "sound" | "chat" | "system" | "about";
+type Page = "pets" | "personality" | "sound" | "behavior" | "chat" | "system" | "about";
 
 let settings: Settings;
 let pets: PetListItem[] = [];
@@ -18,12 +18,24 @@ let currentPage: Page = "pets";
 const content = document.getElementById("content") as HTMLElement;
 const navVersion = document.getElementById("nav-version") as HTMLElement;
 
-function setChatResult(text: string, ok: boolean): void {
-  const el = document.getElementById("chat-result");
-  if (!el) return;
-  el.textContent = text;
-  el.style.color = ok ? "#3f8f5f" : "#b3424f";
-}
+const PERSONALITY_NAMES: Record<string, string> = {
+  shy: "害羞",
+  cheerful: "开朗",
+  tsundere: "傲娇",
+};
+
+const PERSONALITY_DESC: Record<string, string> = {
+  shy: "小声、容易脸红，被戳到会害羞",
+  cheerful: "热情话多，最喜欢一起摸鱼",
+  tsundere: "嘴硬心软，明明在意却装作无所谓",
+};
+
+const SLEEP_OPTIONS: Array<{ label: string; value: number }> = [
+  { label: "30 秒", value: 30_000 },
+  { label: "1 分钟", value: 60_000 },
+  { label: "5 分钟", value: 300_000 },
+  { label: "不睡", value: 0 },
+];
 
 function esc(text: string): string {
   return text.replace(/[&<>"']/g, (ch) => {
@@ -38,17 +50,12 @@ function esc(text: string): string {
   });
 }
 
-const PERSONALITY_NAMES: Record<string, string> = {
-  shy: "害羞",
-  cheerful: "开朗",
-  tsundere: "傲娇",
-};
-
-const PERSONALITY_DESC: Record<string, string> = {
-  shy: "小声、容易脸红，被戳到会害羞",
-  cheerful: "热情话多，最喜欢一起摸鱼",
-  tsundere: "嘴硬心软，明明在意却装作无所谓",
-};
+function setChatResult(text: string, ok: boolean): void {
+  const el = document.getElementById("chat-result");
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = ok ? "#3f8f5f" : "#c4342a";
+}
 
 async function refresh(): Promise<void> {
   [settings, pets, personalities] = await Promise.all([
@@ -56,6 +63,16 @@ async function refresh(): Promise<void> {
     window.api.listPets(),
     window.api.getPersonalities(),
   ]);
+}
+
+/* ---------------- 组件 ---------------- */
+
+function card(title: string, icon: string, body: string): string {
+  return `
+    <section class="card">
+      <div class="card-title"><span class="icon">${icon}</span>${esc(title)}</div>
+      ${body}
+    </section>`;
 }
 
 function row(label: string, controlHtml: string, hint = ""): string {
@@ -69,11 +86,26 @@ function row(label: string, controlHtml: string, hint = ""): string {
     </div>`;
 }
 
-function toggle(key: "muted" | "dnd" | "autoStart", on: boolean): string {
-  return `<button class="switch ${on ? "on" : ""}" data-action="toggle" data-key="${key}" aria-pressed="${on}"></button>`;
+function toggle(key: keyof Settings, on: boolean): string {
+  return `<button class="switch ${on ? "on" : ""}" data-action="toggle" data-key="${String(key)}" aria-pressed="${on}"></button>`;
 }
 
-/* ---------------- 各页面 ---------------- */
+function segmented(
+  key: keyof Settings,
+  options: Array<{ label: string; value: number }>,
+  current: number,
+): string {
+  const items = options
+    .map(
+      (opt) =>
+        `<button data-action="segment" data-key="${String(key)}" data-value="${opt.value}"
+           class="${opt.value === current ? "active" : ""}">${esc(opt.label)}</button>`,
+    )
+    .join("");
+  return `<div class="segmented">${items}</div>`;
+}
+
+/* ---------------- 页面 ---------------- */
 
 function pagePets(): string {
   const cards = pets.length
@@ -92,35 +124,33 @@ function pagePets(): string {
         </div>`,
         )
         .join("")}</div>`
-    : `<div class="empty">还没有导入自己的角色<br />点下面的按钮试试</div>`;
+    : `<div class="empty">还没有导入自己的角色<br />用一张画就能做出一只专属桌宠</div>`;
 
   return `
-    <h2>角色</h2>
-    <p class="sub">用你自己的图片做一只专属桌宠。图片只在本地处理，不会上传。</p>
+    <h2 class="page-title">角色</h2>
+    <p class="page-sub">图片只在本地处理，不会上传。</p>
 
-    <div class="group">
-      <div class="group-title">我的角色</div>
-      ${cards}
-    </div>
+    ${card("我的角色", "★", cards)}
 
-    <div class="group">
-      <div class="group-title">导入新角色</div>
-      ${row(
+    ${card(
+      "导入新角色",
+      "＋",
+      row(
         "导入立绘（单张）",
         `<button class="btn primary" data-action="import-l2">选择图片…</button>`,
-        "一张透明背景的 PNG，程序自动做呼吸、点击弹跳、拖拽摆动",
-      )}
-      ${row(
-        "导入雪碧图（多帧）",
-        `<button class="btn" data-action="import-l3">选择图片…</button>`,
-        "4 列 × 4/5 行，每格 128px，待机/点击/拖拽/睡觉",
-      )}
-      ${row(
-        "素材包模板",
-        `<button class="btn" data-action="export-template">下载模板…</button>`,
-        "含示例雪碧图、两种配置示例和绘制说明",
-      )}
-    </div>`;
+        "一张透明背景的 PNG，自动生成呼吸、弹跳、摆动",
+      ) +
+        row(
+          "导入雪碧图（多帧）",
+          `<button class="btn" data-action="import-l3">选择图片…</button>`,
+          "4 列，4 / 5 / 9 行，每格 128px",
+        ) +
+        row(
+          "素材包模板",
+          `<button class="btn" data-action="export-template">下载模板…</button>`,
+          "含示例图、配置示例和绘制说明",
+        ),
+    )}`;
 }
 
 function pagePersonality(): string {
@@ -131,41 +161,79 @@ function pagePersonality(): string {
       <button class="pet-card ${activeId === p.id ? "active" : ""}" data-action="use-builtin" data-id="${p.id}"
         style="cursor:pointer;text-align:center">
         <div class="name" style="font-size:14px;font-weight:600">${esc(PERSONALITY_NAMES[p.id] ?? p.label)}</div>
-        <div class="hint" style="font-size:12px;color:#a99a9e">${esc(PERSONALITY_DESC[p.id] ?? "")}</div>
+        <div class="hint" style="font-size:12px;color:#8a8a90;white-space:normal">${esc(PERSONALITY_DESC[p.id] ?? "")}</div>
       </button>`,
     )
     .join("");
 
   return `
-    <h2>性格</h2>
-    <p class="sub">换性格会同时换掉形象、台词和音色。</p>
-    <div class="group">
-      <div class="group-title">内置角色</div>
-      <div class="pet-grid">${cards}</div>
-      ${settings.activePetId ? `<p class="sub" style="margin-top:12px">当前使用的是自定义角色，选择上面任意一个即可换回内置角色。</p>` : ""}
-    </div>`;
+    <h2 class="page-title">性格</h2>
+    <p class="page-sub">换性格会同时换掉形象、台词和音色。</p>
+    ${card("内置角色", "☺", `<div class="pet-grid">${cards}</div>`)}
+    ${
+      settings.activePetId
+        ? `<p class="page-sub">当前使用的是自定义角色，选上面任意一个即可换回内置角色。</p>`
+        : ""
+    }`;
 }
 
 function pageSound(): string {
   const percent = Math.round(settings.volume * 100);
   return `
-    <h2>声音</h2>
-    <p class="sub">默认静音关闭；勿扰模式下不出声也不冒台词。</p>
+    <h2 class="page-title">声音</h2>
+    <p class="page-sub">默认静音关闭；勿扰模式下不出声也不冒台词。</p>
 
-    <div class="row">
-      <div>
-        <div class="label">音量</div>
-        <div class="hint">点击、拖拽、切换角色时的音效响度</div>
-      </div>
-      <div class="control">
-        <input type="range" min="0" max="100" step="5" value="${percent}" data-action="volume" />
-        <span class="volume-value" id="volume-value">${percent}%</span>
-      </div>
-    </div>
+    ${card(
+      "音量",
+      "♪",
+      `<div class="row">
+         <div>
+           <div class="label">音效音量</div>
+           <div class="hint">点击、拖拽、动作时的响度</div>
+         </div>
+         <div class="control">
+           <input type="range" min="0" max="100" step="5" value="${percent}" data-action="volume" />
+           <span class="range-value" id="volume-value">${percent}%</span>
+         </div>
+       </div>`,
+    )}
 
-    ${row("静音", toggle("muted", settings.muted), "关掉一切音效")}
-    ${row("勿扰模式", toggle("dnd", settings.dnd), "不冒台词、不出声，动画照常")}
-  `;
+    ${card(
+      "安静模式",
+      "☾",
+      row("静音", toggle("muted", settings.muted), "关掉一切音效") +
+        row("勿扰模式", toggle("dnd", settings.dnd), "不冒台词、不出声，动画照常"),
+    )}`;
+}
+
+function pageBehavior(): string {
+  const sleepValue = SLEEP_OPTIONS.some((o) => o.value === settings.idleToSleepMs)
+    ? settings.idleToSleepMs
+    : 30_000;
+
+  return `
+    <h2 class="page-title">行为</h2>
+    <p class="page-sub">它什么时候睡、哪些手势生效。</p>
+
+    ${card(
+      "作息",
+      "◷",
+      `<div class="row">
+         <div>
+           <div class="label">多久没互动就睡觉</div>
+           <div class="hint">睡着后点一下就醒，醒来会伸个懒腰</div>
+         </div>
+         <div class="control">${segmented("idleToSleepMs", SLEEP_OPTIONS, sleepValue)}</div>
+       </div>`,
+    )}
+
+    ${card(
+      "手势",
+      "✋",
+      row("双击招手", toggle("gestureWave", settings.gestureWave), "连点两下 → 挥手") +
+        row("长按摸头", toggle("gesturePat", settings.gesturePat), "按住 1.2 秒 → 被摸头") +
+        row("连点生气", toggle("gestureAngry", settings.gestureAngry), "1.2 秒内点三下 → 生气"),
+    )}`;
 }
 
 async function pageChat(): Promise<string> {
@@ -190,110 +258,99 @@ async function pageChat(): Promise<string> {
          </div>
          <div class="control">
            <input type="password" id="chat-key-input" placeholder="sk-..."
-             style="width:200px;padding:7px 10px;border:1px solid #e8d6cf;border-radius:8px;outline:none" />
+             style="width:200px;padding:8px 11px;border:1px solid #ececef;border-radius:11px;outline:none;font-size:13px" />
            <button class="btn primary" data-action="chat-save">保存</button>
            <button class="btn" data-action="chat-test">测试</button>
          </div>
        </div>`;
 
-  const warn = status.encryptionAvailable
-    ? ""
-    : `<div class="placeholder" style="border-color:#f0c9c9;color:#b3424f">
-         这台机器的系统加密不可用，Key 无法安全保存。
-       </div>`;
-
   return `
-    <h2>聊天</h2>
-    <p class="sub">可选功能：自带 DeepSeek API Key，让桌宠能接你的话。</p>
+    <h2 class="page-title">聊天</h2>
+    <p class="page-sub">可选功能：自带 DeepSeek API Key，让桌宠能接你的话。</p>
 
-    ${warn}
+    ${status.encryptionAvailable ? "" : `<div class="note warn">这台机器的系统加密不可用，Key 无法安全保存。</div>`}
 
-    <div class="group">
-      <div class="group-title">API Key</div>
-      ${keyBlock}
-      <div id="chat-result" class="hint" style="margin-top:8px;padding-left:4px;min-height:18px"></div>
-    </div>
+    ${card("API Key", "◆", keyBlock + `<div id="chat-result"></div>`)}
 
-    <div class="group">
-      <div class="group-title">隐私</div>
-      <div class="placeholder">
+    ${card(
+      "隐私",
+      "🔒",
+      `<div class="note">
         Key 用 Windows 系统加密（DPAPI）保存在本机
         <span class="mono">%APPDATA%\\xinchong\\chat-key.bin</span>，<strong>不会上传到任何服务器</strong>。<br /><br />
         只有你主动和桌宠说话时，那一句才会发给你自己配置的服务；其它时候完全离线。<br /><br />
         <strong>不填也能用</strong>：桌宠继续说内置台词，功能不受影响。
-      </div>
-    </div>
+      </div>`,
+    )}
 
-    <div class="group">
-      <div class="group-title">聊天入口</div>
-      <div class="placeholder">
-        📝 对话功能正在接入：填好 Key 之后，下一版会开放「和它说句话」的入口。<br />
-        失败或断网时自动回落到内置台词。
-      </div>
-    </div>`;
+    ${card(
+      "怎么用",
+      "？",
+      `<div class="note">
+        右键桌宠 → <strong>说句话…</strong> → 输入框会出现在它头顶。<br />
+        回车发送，Esc 取消。失败或断网时会自动回落到内置台词。
+      </div>`,
+    )}`;
 }
 
 async function pageSystem(): Promise<string> {
   if (!systemInfo) systemInfo = await window.api.getSystemInfo();
 
   return `
-    <h2>系统</h2>
-    <p class="sub">启动方式、资源占用和数据位置。</p>
+    <h2 class="page-title">系统</h2>
+    <p class="page-sub">启动方式、资源占用和数据位置。</p>
 
-    <div class="group">
-      <div class="group-title">启动</div>
-      ${row("开机自启", toggle("autoStart", settings.autoStart), "登录 Windows 后自动启动芯宠")}
-    </div>
+    ${card("启动", "⏻", row("开机自启", toggle("autoStart", settings.autoStart), "登录 Windows 后自动启动芯宠"))}
 
-    <div class="group">
-      <div class="group-title">资源占用</div>
-      ${row("CPU", `<span class="mono">${systemInfo.cpuPercent}%</span>`, "占单核百分比")}
-      ${row("内存", `<span class="mono">${systemInfo.memoryMB} MB</span>`, `共 ${systemInfo.processes} 个进程`)}
-    </div>
+    ${card(
+      "资源占用",
+      "▤",
+      row("CPU", `<span class="mono">${systemInfo.cpuPercent}%</span>`, "占单核百分比") +
+        row("内存", `<span class="mono">${systemInfo.memoryMB} MB</span>`, `共 ${systemInfo.processes} 个进程`),
+    )}
 
-    <div class="group">
-      <div class="group-title">数据</div>
-      ${row(
-        "配置与角色目录",
-        `<button class="btn small" data-action="open-userdata">打开</button>`,
-        systemInfo.userDataPath,
-      )}
-      ${row("运行日志", `<button class="btn small" data-action="open-log">打开</button>`, "反馈问题时请附上最后几行")}
-    </div>
+    ${card(
+      "数据",
+      "▤",
+      row("配置与角色目录", `<button class="btn small" data-action="open-userdata">打开</button>`, systemInfo.userDataPath) +
+        row("运行日志", `<button class="btn small" data-action="open-log">打开</button>`, "反馈问题时附上最后几行"),
+    )}
 
-    <div class="group">
-      <div class="group-title">危险操作</div>
-      ${row(
+    ${card(
+      "危险操作",
+      "!",
+      row(
         "恢复默认设置",
         `<button class="btn small danger" data-action="reset">重置</button>`,
-        "会清除音量、性格、自启等设置，不会删除导入的角色",
-      )}
-    </div>`;
+        "会清除音量、性格、行为等设置，不删除导入的角色",
+      ),
+    )}`;
 }
 
 function pageAbout(): string {
   return `
-    <h2>关于</h2>
-    <p class="sub">芯宠 —— 轻量化桌面情感陪伴小伙伴</p>
+    <h2 class="page-title">关于</h2>
+    <p class="page-sub">芯宠 —— 轻量化桌面情感陪伴小伙伴</p>
 
     <div class="about-card">
       <h3>芯宠 XinChong</h3>
-      <div style="color:#9a8a8e;font-size:13px">一个会待在桌面角落的小家伙</div>
+      <div style="color:#8a8a90;font-size:13px">一个会待在桌面角落的小家伙</div>
       <div class="kv">
         <span class="k">版本</span><span>v${esc(systemInfo?.version ?? "—")}</span>
         <span class="k">Electron</span><span>${esc(systemInfo?.electron ?? "—")}</span>
-        <span class="k">角色美术</span><span>感谢美术同学的三套角色</span>
+        <span class="k">角色美术</span><span>胡汇兴</span>
         <span class="k">项目性质</span><span>集美大学《人机交互与设计心理学》课程项目</span>
       </div>
     </div>
 
-    <div class="group" style="margin-top:20px">
-      <div class="group-title">隐私</div>
-      <div class="placeholder">
+    ${card(
+      "隐私",
+      "🔒",
+      `<div class="note">
         你导入的所有图片、设置、角色数据都只保存在本机（<span class="mono">%APPDATA%\\xinchong</span>），
         不会上传到任何服务器。
-      </div>
-    </div>`;
+      </div>`,
+    )}`;
 }
 
 /* ---------------- 渲染与事件 ---------------- */
@@ -302,6 +359,7 @@ const renderers: Record<Page, () => string | Promise<string>> = {
   pets: pagePets,
   personality: pagePersonality,
   sound: pageSound,
+  behavior: pageBehavior,
   chat: pageChat,
   system: pageSystem,
   about: pageAbout,
@@ -334,12 +392,23 @@ function bindEvents(): void {
     const id = el.dataset.id ?? "";
 
     if (action === "toggle") {
-      const key = el.dataset.key as "muted" | "dnd" | "autoStart";
+      const key = el.dataset.key as keyof Settings;
       const next = !settings[key];
       void window.api.patchSettings({ [key]: next }).then((s) => {
         settings = s;
         el.classList.toggle("on", next);
         el.setAttribute("aria-pressed", String(next));
+      });
+    }
+
+    if (action === "segment") {
+      const key = el.dataset.key as keyof Settings;
+      const value = Number(el.dataset.value);
+      void window.api.patchSettings({ [key]: value }).then((s) => {
+        settings = s;
+        for (const btn of el.parentElement?.querySelectorAll("button") ?? []) {
+          btn.classList.toggle("active", btn === el);
+        }
       });
     }
 
@@ -364,14 +433,16 @@ function bindEvents(): void {
         });
     }
 
-    if (action === "rename-pet") {
-      startRename(id);
-    }
+    if (action === "rename-pet") startRename(id);
 
     if (action === "import-l2" || action === "import-l3") {
       const mode = action === "import-l2" ? "l2" : "l3";
       void window.api.importPet(mode).then(() => reload());
     }
+
+    if (action === "export-template") void window.api.exportTemplate();
+    if (action === "open-userdata") void window.api.openUserData();
+    if (action === "open-log") void window.api.openLogFolder();
 
     if (action === "chat-save") {
       const input = document.getElementById("chat-key-input") as HTMLInputElement | null;
@@ -396,14 +467,10 @@ function bindEvents(): void {
         void window.api.chatClearKey().then(() => reload());
       });
     }
-    if (action === "export-template") void window.api.exportTemplate();
-
-    if (action === "open-userdata") void window.api.openUserData();
-    if (action === "open-log") void window.api.openLogFolder();
 
     if (action === "reset") {
       void window.api
-        .confirm("恢复默认设置？", "音量、性格、自启会回到初始值，导入的角色不受影响。")
+        .confirm("恢复默认设置？", "音量、性格、行为会回到初始值，导入的角色不受影响。")
         .then((yes) => (yes ? window.api.resetSettings() : null))
         .then((s) => {
           if (s) void reload();
@@ -421,17 +488,17 @@ function bindEvents(): void {
   });
 }
 
-/** 就地改名：把名字换成输入框 */
+/** 就地改名 */
 function startRename(id: string): void {
-  const card = content.querySelector<HTMLElement>(`[data-pet="${id}"]`);
-  const nameEl = card?.querySelector<HTMLElement>(".name");
-  if (!card || !nameEl) return;
+  const cardEl = content.querySelector<HTMLElement>(`[data-pet="${id}"]`);
+  const nameEl = cardEl?.querySelector<HTMLElement>(".name");
+  if (!cardEl || !nameEl) return;
 
   const input = document.createElement("input");
   input.value = nameEl.textContent ?? "";
   input.maxLength = 24;
   input.style.cssText =
-    "width:100%;font-size:13px;padding:3px 6px;border:1px solid #ef7d97;border-radius:6px;outline:none";
+    "width:100%;font-size:13px;padding:4px 7px;border:1px solid #f0603c;border-radius:8px;outline:none";
   nameEl.replaceWith(input);
   input.focus();
   input.select();

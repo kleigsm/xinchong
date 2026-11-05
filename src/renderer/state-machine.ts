@@ -52,6 +52,14 @@ export class PetStateMachine {
     this.enter("idle", true);
   }
 
+  /** 改「多久没互动就睡觉」；0 表示不自动睡。改完立刻重新计时 */
+  setIdleTimeout(ms: number): void {
+    this.idleToSleepMs = Math.max(0, ms);
+    if (this.state === "idle") {
+      this.enter("idle", true);
+    }
+  }
+
   get current(): PetState {
     return this.state ?? "idle";
   }
@@ -157,6 +165,9 @@ export class PetStateMachine {
   /** 重置"多久没互动"的计时 */
   private scheduleSleep(): void {
     this.clearSleepTimer();
+    // 0 表示「不自动睡」，直接不排定时器
+    if (this.idleToSleepMs <= 0) return;
+
     this.sleepTimer = window.setTimeout(() => {
       if (this.state === "idle") this.enter("sleep");
     }, this.idleToSleepMs);

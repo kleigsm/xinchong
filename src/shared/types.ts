@@ -1,4 +1,4 @@
-﻿import type { PetPack } from "./pet-pack";
+import type { PetPack } from "./pet-pack";
 
 /** 屏幕坐标点（DIP） */
 export interface Point {
@@ -20,6 +20,14 @@ export interface Settings {
   activePetId: string | null;
   /** 音量 0–1 */
   volume: number;
+  /** 多久没互动进入睡觉（毫秒）；0 = 不自动睡 */
+  idleToSleepMs: number;
+  /** 双击招手 */
+  gestureWave: boolean;
+  /** 长按摸头 */
+  gesturePat: boolean;
+  /** 连点生气 */
+  gestureAngry: boolean;
 }
 
 /** preload 通过 contextBridge 暴露给渲染进程的 API */
