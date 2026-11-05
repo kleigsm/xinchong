@@ -7,7 +7,7 @@ declare global {
   }
 }
 
-type Page = "pets" | "personality" | "sound" | "behavior" | "chat" | "system" | "about";
+type Page = "pets" | "personality" | "sound" | "behavior" | "chat" | "system" | "help" | "about";
 
 let settings: Settings;
 let pets: PetListItem[] = [];
@@ -293,6 +293,73 @@ async function pageChat(): Promise<string> {
     )}`;
 }
 
+
+/** 一行「操作 → 效果」 */
+function kvRow(label: string, value: string): string {
+  return `
+    <div class="row">
+      <div class="label">${esc(label)}</div>
+      <div class="control" style="color:#8a8a90;font-size:13px">${esc(value)}</div>
+    </div>`;
+}
+
+function pageHelp(): string {
+  return `
+    <h2 class="page-title">怎么玩</h2>
+    <p class="page-sub">它会的所有小动作，都是点一下、按一下就能发现的。</p>
+
+    ${card(
+      "基本交互",
+      "✋",
+      kvRow("单击", "说话 + 换表情") +
+        kvRow("双击", "招手打招呼") +
+        kvRow("长按 1.2 秒", "被摸头，会脸红") +
+        kvRow("1.2 秒内点三下", "生气，别戳太多") +
+        kvRow("按住拖动", "拎起来，会喊「要掉下去了」"),
+    )}
+
+    ${card(
+      "自己待着的时候",
+      "◷",
+      kvRow("一直没互动", "会睡着，闭眼打呼") +
+        kvRow("睡着后点一下", "伸个懒腰醒来") +
+        kvRow("深夜（22:00 后）", "偶尔会说夜里的话"),
+    )}
+
+    ${card(
+      "右键菜单",
+      "▤",
+      kvRow("说句话…", "和它聊天（需先填 API Key）") +
+        kvRow("我的角色", "切换 / 导入 / 删除自己导入的角色") +
+        kvRow("性格", "换形象、换台词、换音色") +
+        kvRow("动作", "手动播放招手 / 摸头 / 生气") +
+        kvRow("设置…", "打开这个窗口"),
+    )}
+
+    ${card(
+      "换个样子",
+      "★",
+      `<div class="note">
+        在「角色」页里：<br />
+        · <strong>导入立绘（单张）</strong>：一张透明背景的画，程序自动做呼吸和弹跳<br />
+        · <strong>导入雪碧图（多帧）</strong>：自己画一整套动作<br />
+        · <strong>素材包模板</strong>：下载一个能照着改的包<br /><br />
+        图片只在本机处理，不会上传。
+      </div>`,
+    )}
+
+    ${card(
+      "觉得它太闹？",
+      "☾",
+      `<div class="note">
+        三个地方都能让它安静下来：<br />
+        · <strong>声音 → 静音</strong>：只关掉音效<br />
+        · <strong>声音 → 勿扰模式</strong>：不出声也不冒台词，动画照常<br />
+        · <strong>行为 → 多久没互动就睡觉 → 不睡</strong>：它就一直醒着（也可以调长时间）<br /><br />
+        另外「行为」里可以关掉双击 / 长按 / 连点这些手势。
+      </div>`,
+    )}`;
+}
 async function pageSystem(): Promise<string> {
   if (!systemInfo) systemInfo = await window.api.getSystemInfo();
 
@@ -362,6 +429,7 @@ const renderers: Record<Page, () => string | Promise<string>> = {
   behavior: pageBehavior,
   chat: pageChat,
   system: pageSystem,
+  help: pageHelp,
   about: pageAbout,
 };
 

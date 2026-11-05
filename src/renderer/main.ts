@@ -1,4 +1,4 @@
-import { PetView } from "./pet-view";
+﻿import { PetView } from "./pet-view";
 import { PACKS } from "./pets";
 import { PetStateMachine } from "./state-machine";
 import { SpeechBubble } from "./bubble";
@@ -19,6 +19,8 @@ const DRAG_THRESHOLD = 4;
 let currentPackId = DEFAULT_PERSONALITY;
 /** 是否正在使用用户导入的角色（此时不再跟随性格设置切换） */
 let usingUserPet = false;
+/** 首次引导是否已经触发过（避免设置回传时重复弹） */
+let guideShown = false;
 
 const view = new PetView(petEl, PACKS[currentPackId]);
 const bubble = new SpeechBubble(bubbleEl);
@@ -202,6 +204,12 @@ function applySettings(settings: Settings): void {
   sound.setMuted(settings.muted);
   sound.setVolume(settings.volume ?? 0.6);
   machine.setIdleTimeout(settings.idleToSleepMs ?? 30_000);
+  // 首次启动：冒一句引导，告诉用户还能怎么玩（只说一次）
+  if (!guideShown && settings.hasSeenGuide === false) {
+    guideShown = true;
+    bubble.show("双击我、长按我都可以试试～右键还有更多", 7000);
+    void window.api.patchSettings({ hasSeenGuide: true });
+  }
 
   if (!usingUserPet && settings.personality) switchPersonality(settings.personality);
 

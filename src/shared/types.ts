@@ -28,6 +28,8 @@ export interface Settings {
   gesturePat: boolean;
   /** 连点生气 */
   gestureAngry: boolean;
+  /** 是否已经看过首次引导 */
+  hasSeenGuide: boolean;
 }
 
 /** preload 通过 contextBridge 暴露给渲染进程的 API */

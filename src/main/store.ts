@@ -21,6 +21,7 @@ const DEFAULTS: Settings = {
   gestureWave: true,
   gesturePat: true,
   gestureAngry: true,
+  hasSeenGuide: false,
 };
 
 let cache: Settings | null = null;
