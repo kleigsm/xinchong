@@ -6,13 +6,13 @@ import { MIN_VISIBLE_PX, WINDOW_HEIGHT, WINDOW_WIDTH } from "../shared/constants
  * 创建桌宠主窗口：透明、无边框、置顶、不占任务栏、不抢焦点。
  * 默认整窗穿透，由 hit-test 在光标进入角色范围时关闭。
  */
-export function createMainWindow(): BrowserWindow {
+export function createMainWindow(alwaysOnTop = true): BrowserWindow {
   const win = new BrowserWindow({
     width: WINDOW_WIDTH,
     height: WINDOW_HEIGHT,
     transparent: true,
     frame: false,
-    alwaysOnTop: true,
+    alwaysOnTop,
     skipTaskbar: true,
     focusable: false,
     resizable: false,
@@ -28,15 +28,15 @@ export function createMainWindow(): BrowserWindow {
     },
   });
 
-  // screen-saver 层级，保证盖住普通窗口
-  win.setAlwaysOnTop(true, "screen-saver");
+  // screen-saver 层级，保证盖住普通窗口（用户可在「外观」里关掉）
+  applyAlwaysOnTop(win, alwaysOnTop);
   win.setIgnoreMouseEvents(true, { forward: true });
 
   win.once("ready-to-show", () => {
     placeAtDefaultPosition(win);
     win.show();
     // show() 之后再声明一次置顶，否则可能被其他窗口盖住
-    win.setAlwaysOnTop(true, "screen-saver");
+    applyAlwaysOnTop(win, alwaysOnTop);
     win.moveTop();
     console.log(`[window] shown visible=${win.isVisible()} onTop=${win.isAlwaysOnTop()}`);
   });
@@ -52,8 +52,19 @@ export function createMainWindow(): BrowserWindow {
   return win;
 }
 
-/** 首次出现时放在当前显示器右下角附近 */
-function placeAtDefaultPosition(win: BrowserWindow): void {
+/**
+ * 应用「始终置顶」。
+ *
+ * 创建窗口、托盘重新显示、设置里切换时都要走这里，
+ * 否则总有一处会把用户关掉的置顶又打开（改这一项时最容易漏的地方）。
+ */
+export function applyAlwaysOnTop(win: BrowserWindow, on: boolean): void {
+  if (win.isDestroyed()) return;
+  win.setAlwaysOnTop(on, "screen-saver");
+  console.log(`[window] alwaysOnTop=${on}`);
+}
+
+/** 首次出现时放在当前显示器右下角附近 */function placeAtDefaultPosition(win: BrowserWindow): void {
   const { workArea } = screen.getPrimaryDisplay();
   // 放在右下角偏内，避免贴着屏幕边缘被任务栏或其他窗口遮挡
   const x = workArea.x + workArea.width - WINDOW_WIDTH - 120;
