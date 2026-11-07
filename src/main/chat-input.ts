@@ -14,12 +14,27 @@ import type { BrowserWindow } from "electron";
  * 此时窗口还没真正拿到键盘焦点，渲染层的 input.focus() 落空。
  * 现在改成 setFocusable → show → focus → webContents.focus，
  * 再**延迟一点**发事件，让渲染层在窗口已经激活后再聚焦输入框。
+ *
+ * ⚠️ 第二个坑（2026-11-08）：输入框打得开、打不了字。
+ * 输入条画在角色**上方**，而窗口的点击穿透只认角色那个命中圆，
+ * 光标一挪到输入框上，整窗就变回穿透——点输入框点不着，IME 也拿不到。
+ * 现在打开期间强制 `setIgnoreMouseEvents(false)`，并由 hit-test 额外放行输入条矩形。
  */
+
+let chatOpen = false;
+
+/** 命中检测用它判断"输入条是不是开着" */
+export function isChatInputOpen(): boolean {
+  return chatOpen;
+}
 
 export function openChatInput(win: BrowserWindow): void {
   if (win.isDestroyed()) return;
 
+  chatOpen = true;
   win.setFocusable(true);
+  // 输入条不在角色的命中圆里，先解除穿透，否则第一下点击会漏到后面的窗口
+  win.setIgnoreMouseEvents(false);
   win.show();
   win.focus();
   // 关键：让 webContents 也拿到焦点，否则 input 收不到键盘事件
@@ -35,6 +50,7 @@ export function openChatInput(win: BrowserWindow): void {
 
 export function closeChatInput(win: BrowserWindow): void {
   if (win.isDestroyed()) return;
+  chatOpen = false;
   win.setFocusable(false);
   console.log("[chat] 关闭输入条，恢复不可聚焦");
 }
