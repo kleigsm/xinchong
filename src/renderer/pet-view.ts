@@ -1,11 +1,23 @@
-﻿import type { AnimationName, AnimationSpec, PetPack } from "../shared/pet-pack";
+import type { AnimationName, AnimationSpec, PetPack } from "../shared/pet-pack";
 
 /** 降帧下限：再低就不像"动"了 */
 const MIN_FPS = 4;
+/** 倍速后的帧率上限。2× 时基准 8fps → 16fps，绝不能超过 20（见 perf-baseline 第八节） */
+const MAX_FPS = 20;
+/**
+ * 循环动画（待机/拖拽/睡觉）在 2× 下的帧率上限。
+ *
+ * 为什么需要单独一条：这些动画是常驻开销，实测待机 4fps→8fps 时空闲 CPU 到 10%，
+ * 超过 8% 红线；封顶 6fps 后回到 7% 左右。一次性动作（点击/招手/生气）播完就回待机，
+ * 不在这个限制里，仍然按完整 2× 播放。
+ */
+const LOOP_FPS_CAP = 6;
 /** 连续多少个慢帧判定为掉帧 */
 const SLOW_TICK_THRESHOLD = 12;
 /** 慢帧判定：实际间隔超过预期的多少倍 */
 const SLOW_FACTOR = 2.5;
+/** 透明度下限：再淡用户会以为宠物消失了 */
+export const MIN_OPACITY = 0.5;
 
 /**
  * 雪碧图动画播放器。
@@ -32,6 +44,10 @@ export class PetView {
   private slowTicks = 0;
   /** L2 单帧立绘的驱动定时器 */
   private staticTimer: number | null = null;
+  /** 动画速度倍率（0.5 / 1 / 2），来自「外观」设置 */
+  private speedFactor = 1;
+  /** 用户设定的不透明度，动画只能在此基础上再乘系数 */
+  private baseOpacity = 1;
 
   constructor(el: HTMLElement, pack: PetPack) {
     this.el = el;
@@ -57,6 +73,40 @@ export class PetView {
     return this.effectiveFps;
   }
 
+  /**
+   * 设置动画速度倍率。
+   *
+   * 注意 2× 不是"越快越好"：透明窗口每帧的合成成本很高，
+   * 内置换算规则见 perf-baseline 第八节（帧率是第一杠杆）。
+   */
+  setSpeed(factor: number): void {
+    const next = Math.min(2, Math.max(0.5, Number.isFinite(factor) ? factor : 1));
+    if (next === this.speedFactor) return;
+    this.speedFactor = next;
+
+    // 雪碧图动画正在播：立刻换到新帧率，不用等下次状态切换
+    if (this.spec && !this.isStatic) {
+      this.effectiveFps = this.frameFps(this.spec);
+      this.slowTicks = 0;
+      this.startTimer();
+    }
+
+    console.log(`[pet-view] speed=${next}x`);
+  }
+
+  /**
+   * 设置不透明度。
+   *
+   * 为什么不直接在 main.ts 里写 el.style.opacity：
+   * 播放器在切动画 / 睡觉 / stop() 时都会重写 opacity，
+   * 外部写一次会被下一帧覆盖。所以透明度必须由播放器持有。
+   */
+  setOpacity(value: number): void {
+    const next = Math.min(1, Math.max(MIN_OPACITY, Number.isFinite(value) ? value : 1));
+    this.baseOpacity = next;
+    this.el.style.opacity = String(next);
+  }
+
   /** 是否为「单帧立绘」（L2）：用 CSS transform 动画，不逐帧重绘 */
   get isStatic(): boolean {
     return this.pack.sprite.columns === 1 && this.pack.sprite.rows === 1;
@@ -77,7 +127,7 @@ export class PetView {
     this.spec = spec;
     this.onFinish = onFinish ?? null;
     this.frameIndex = 0;
-    this.effectiveFps = spec.fps;
+    this.effectiveFps = this.frameFps(spec);
     this.slowTicks = 0;
 
     console.log(`[pet-view] play ${name}`);
@@ -101,7 +151,9 @@ export class PetView {
     const duration = name === "click" ? 420 : 0;
 
     const tick = (): void => {
-      const elapsed = performance.now() - started;
+      // 时间轴乘系数：L2 只有 8fps 的定时器，靠"时间走得更快"实现倍速，
+      // 帧数不变，所以 2× 不会增加 CPU
+      const elapsed = (performance.now() - started) * this.speedFactor;
       this.renderStatic(name, elapsed);
 
       if (name === "click" && elapsed >= duration) {
@@ -130,7 +182,7 @@ export class PetView {
       const phase = (elapsed % 4000) / 4000;
       const wave = Math.sin(phase * Math.PI * 2);
       transform = `scale(${0.97 + wave * 0.008}, ${0.96 + wave * 0.012})`;
-      this.el.style.opacity = "0.94";
+      this.el.style.opacity = String(this.baseOpacity * 0.94);
     } else if (name === "click") {
       // 0.42s 的弹跳：先压扁起跳，再回弹
       const t = Math.min(elapsed / 420, 1);
@@ -139,7 +191,7 @@ export class PetView {
       transform = `translateY(${-lift}px) scale(${1 + (1 - squash) * 0.6}, ${squash})`;
     }
 
-    if (name !== "sleep") this.el.style.opacity = "1";
+    if (name !== "sleep") this.el.style.opacity = String(this.baseOpacity);
     this.el.style.transform = transform;
   }
 
@@ -156,7 +208,14 @@ export class PetView {
     this.current = null;
     this.spec = null;
     this.el.style.transform = "";
-    this.el.style.opacity = "1";
+    this.el.style.opacity = String(this.baseOpacity);
+  }
+
+  /** 当前倍速下的实际帧率（有硬上限，防止 2× 把 CPU 拉高） */
+  private frameFps(spec: AnimationSpec): number {
+    const raw = spec.fps * this.speedFactor;
+    const cap = spec.loop ? Math.min(MAX_FPS, LOOP_FPS_CAP) : MAX_FPS;
+    return Math.min(cap, raw);
   }
 
   private startTimer(): void {

@@ -22,6 +22,9 @@ const DEFAULTS: Settings = {
   gesturePat: true,
   gestureAngry: true,
   hasSeenGuide: false,
+  petOpacity: 1,
+  animationSpeed: 1,
+  alwaysOnTop: true,
 };
 
 let cache: Settings | null = null;

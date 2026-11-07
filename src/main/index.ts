@@ -54,7 +54,7 @@ app.whenReady().then(() => {
 
   initAutoStart();
 
-  const win = createMainWindow();
+  const win = createMainWindow(getSettings().alwaysOnTop);
   registerIpc(win);
   registerSettingsApi(() => (win.isDestroyed() ? null : win));
   createTray(win);

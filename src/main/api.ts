@@ -1,4 +1,4 @@
-﻿import { app, dialog, ipcMain, nativeImage, shell } from "electron";
+import { app, dialog, ipcMain, nativeImage, shell } from "electron";
 import type { BrowserWindow } from "electron";
 import { join } from "node:path";
 import type { Settings } from "../shared/types";
@@ -11,6 +11,7 @@ import { importFromPath, runImportFlow, type ImportMode } from "./import-flow";
 import { exportTemplate } from "./template";
 import { clearChatKey, isEncryptionAvailable, loadChatKey, maskChatKey, saveChatKey } from "./chat-key";
 import { sendChatMessage } from "./chat";
+import { applyAlwaysOnTop } from "./window";
 
 /**
  * 设置窗口用的 IPC 接口（invoke/handle 模式）。
@@ -59,6 +60,11 @@ export function registerSettingsApi(getWindow: () => BrowserWindow | null): void
 
   ipcMain.handle("api:settings:patch", (_event, patch: Partial<Settings>) => {
     const next = updateSettings(patch);
+    // 置顶是窗口属性，不是渲染层的样式：必须在主进程立即应用
+    if (patch.alwaysOnTop !== undefined) {
+      const win = getWindow();
+      if (win) applyAlwaysOnTop(win, next.alwaysOnTop);
+    }
     // 广播给所有窗口（桌宠窗口要实时响应）
     for (const win of [getWindow()]) {
       win?.webContents.send("settings-changed", next);
@@ -146,9 +152,19 @@ export function registerSettingsApi(getWindow: () => BrowserWindow | null): void
   });
 
   ipcMain.handle("api:system:resetSettings", async () => {
-    updateSettings({ muted: false, dnd: false, volume: 0.6, personality: "shy", activePetId: null });
+    updateSettings({
+      muted: false,
+      dnd: false,
+      volume: 0.6,
+      personality: "shy",
+      activePetId: null,
+      petOpacity: 1,
+      animationSpeed: 1,
+      alwaysOnTop: true,
+    });
     const next = getSettings();
     const win = getWindow();
+    if (win) applyAlwaysOnTop(win, next.alwaysOnTop);
     win?.webContents.send("settings-changed", next);
     win?.webContents.send("pet:builtin", next.personality);
     return next;

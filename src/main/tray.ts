@@ -1,4 +1,4 @@
-﻿import { Menu, Tray, dialog, nativeImage } from "electron";
+import { Menu, Tray, dialog, nativeImage } from "electron";
 import type { BrowserWindow } from "electron";
 import { PERSONALITIES } from "../shared/personalities";
 import { runImportFlow } from "./import-flow";
@@ -10,6 +10,7 @@ import { deleteStoredPet, useStoredPet } from "./pet-switch";
 import { showPerfDialog } from "./perf";
 import { applyAutoStart } from "./autostart";
 import { getSettings, updateSettings } from "./store";
+import { applyAlwaysOnTop } from "./window";
 
 /**
  * 32x32 的粉色圆形图标，内嵌 base64。
@@ -210,7 +211,8 @@ function toggleWindow(win: BrowserWindow): void {
   }
 
   win.show();
-  win.setAlwaysOnTop(true, "screen-saver");
+  // 用户可能在「外观」里关掉了置顶，这里不能无条件打开
+  applyAlwaysOnTop(win, getSettings().alwaysOnTop);
   win.moveTop();
   console.log("[tray] window shown");
 }

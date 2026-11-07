@@ -30,6 +30,12 @@ export interface Settings {
   gestureAngry: boolean;
   /** 是否已经看过首次引导 */
   hasSeenGuide: boolean;
+  /** 桌宠不透明度 0.5–1 */
+  petOpacity: number;
+  /** 动画速度倍率：0.5 / 1 / 2 */
+  animationSpeed: number;
+  /** 是否始终置顶 */
+  alwaysOnTop: boolean;
 }
 
 /** preload 通过 contextBridge 暴露给渲染进程的 API */

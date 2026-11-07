@@ -204,6 +204,9 @@ function applySettings(settings: Settings): void {
   sound.setMuted(settings.muted);
   sound.setVolume(settings.volume ?? 0.6);
   machine.setIdleTimeout(settings.idleToSleepMs ?? 30_000);
+  // 外观：速度与透明度都由播放器持有，改一次立刻生效
+  view.setSpeed(settings.animationSpeed ?? 1);
+  view.setOpacity(settings.petOpacity ?? 1);
   // 首次启动：冒一句引导，告诉用户还能怎么玩（只说一次）
   if (!guideShown && settings.hasSeenGuide === false) {
     guideShown = true;

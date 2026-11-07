@@ -7,7 +7,16 @@ declare global {
   }
 }
 
-type Page = "pets" | "personality" | "sound" | "behavior" | "chat" | "system" | "help" | "about";
+type Page =
+  | "pets"
+  | "personality"
+  | "appearance"
+  | "sound"
+  | "behavior"
+  | "chat"
+  | "system"
+  | "help"
+  | "about";
 
 let settings: Settings;
 let pets: PetListItem[] = [];
@@ -177,8 +186,62 @@ function pagePersonality(): string {
     }`;
 }
 
-function pageSound(): string {
-  const percent = Math.round(settings.volume * 100);
+const SPEED_OPTIONS: Array<{ label: string; value: number }> = [
+  { label: "0.5×", value: 0.5 },
+  { label: "1×", value: 1 },
+  { label: "2×", value: 2 },
+];
+
+function pageAppearance(): string {
+  const percent = Math.round((settings.petOpacity ?? 1) * 100);
+  const speed = SPEED_OPTIONS.some((o) => o.value === settings.animationSpeed)
+    ? settings.animationSpeed
+    : 1;
+
+  const opacityRow = `
+    <div class="row">
+      <div>
+        <div class="label">透明度</div>
+        <div class="hint">调低会变淡，但不会消失；最低 50%</div>
+      </div>
+      <div class="control">
+        <input type="range" min="50" max="100" step="5" value="${percent}" data-action="opacity" />
+        <span class="range-value" id="opacity-value">${percent}%</span>
+      </div>
+    </div>`;
+
+  return `
+    <h2 class="page-title">外观</h2>
+    <p class="page-sub">让它淡一点、快一点，或者不再挡在所有窗口前面。</p>
+
+    ${card(
+      "显示",
+      "◐",
+      opacityRow +
+        row(
+          "动画速度",
+          segmented("animationSpeed", SPEED_OPTIONS, speed),
+          "0.5× 更安静，2× 更活泼；速度越高 CPU 占用越高",
+        ) +
+        row(
+          "始终置顶",
+          toggle("alwaysOnTop", settings.alwaysOnTop),
+          "关掉后其它窗口会盖住它；这是预期行为，随时可以再打开",
+        ),
+    )}
+
+    ${card(
+      "说明",
+      "?",
+      `<div class="note">
+        · <strong>透明度</strong>最低 50%：再淡的话，浅色桌面上就真的找不到它了。<br />
+        · <strong>动画速度</strong>只影响动作播放快慢，点击响应不受影响。<br />
+        · <strong>关闭置顶</strong>后，从托盘重新显示也不会再强制浮到最上面。
+      </div>`,
+    )}`;
+}
+
+function pageSound(): string {  const percent = Math.round(settings.volume * 100);
   return `
     <h2 class="page-title">声音</h2>
     <p class="page-sub">默认静音关闭；勿扰模式下不出声也不冒台词。</p>
@@ -389,7 +452,7 @@ async function pageSystem(): Promise<string> {
       row(
         "恢复默认设置",
         `<button class="btn small danger" data-action="reset">重置</button>`,
-        "会清除音量、性格、行为等设置，不删除导入的角色",
+        "会清除外观、音量、性格、行为等设置，不删除导入的角色",
       ),
     )}`;
 }
@@ -425,6 +488,7 @@ function pageAbout(): string {
 const renderers: Record<Page, () => string | Promise<string>> = {
   pets: pagePets,
   personality: pagePersonality,
+  appearance: pageAppearance,
   sound: pageSound,
   behavior: pageBehavior,
   chat: pageChat,
@@ -548,11 +612,21 @@ function bindEvents(): void {
 
   content.addEventListener("input", (event) => {
     const el = event.target as HTMLInputElement;
-    if (el.dataset.action !== "volume") return;
-    const percent = Number(el.value);
-    const label = document.getElementById("volume-value");
-    if (label) label.textContent = `${percent}%`;
-    void window.api.patchSettings({ volume: percent / 100 });
+
+    if (el.dataset.action === "volume") {
+      const percent = Number(el.value);
+      const label = document.getElementById("volume-value");
+      if (label) label.textContent = `${percent}%`;
+      void window.api.patchSettings({ volume: percent / 100 });
+      return;
+    }
+
+    if (el.dataset.action === "opacity") {
+      const percent = Number(el.value);
+      const label = document.getElementById("opacity-value");
+      if (label) label.textContent = `${percent}%`;
+      void window.api.patchSettings({ petOpacity: percent / 100 });
+    }
   });
 }
 
