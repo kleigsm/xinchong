@@ -1,4 +1,4 @@
-﻿/** 窗口与交互的全局常量，主进程和渲染进程共用 */
+/** 窗口与交互的全局常量，主进程和渲染进程共用 */
 
 /**
  * 窗口尺寸。
@@ -12,6 +12,22 @@ export const PET_SIZE = 160;
 
 /** 命中检测半径（略大于 160 的一半，留容差） */
 export const HIT_RADIUS = 82;
+
+/**
+ * 聊天输入条（渲染层 #chat-box）在窗口内的位置。
+ *
+ * 它悬在角色上方，**不在角色那个命中圆里**——而窗口默认整窗穿透，
+ * 光标一离开角色就变成"点击穿过去"，于是输入框点不动、打不了字。
+ * 命中检测在输入条打开期间要额外放行这块矩形。
+ */
+export const CHAT_BOX_WIDTH = 280;
+/** 输入条底边距窗口底部 */
+export const CHAT_BOX_BOTTOM = 168;
+/** 输入条高度（含内边距，实测 49px，留 3px 容差） */
+export const CHAT_BOX_HEIGHT = 52;
+
+/** 放宽命中区域的像素余量：贴边点击时不要突然变回穿透 */
+export const HIT_MARGIN = 6;
 
 /** 光标轮询间隔（ms） */
 export const POLL_INTERVAL_MS = 80;
