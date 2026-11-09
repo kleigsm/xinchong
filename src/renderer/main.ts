@@ -4,11 +4,13 @@ import { PetStateMachine } from "./state-machine";
 import { SpeechBubble } from "./bubble";
 import { LineEngine } from "./line-engine";
 import { SoundPlayer } from "./audio";
+import { playPetpet, stopPetpet } from "./petpet";
 import { DEFAULT_PERSONALITY, isPersonalityId } from "../shared/personalities";
 import type { Point, Settings } from "../shared/types";
 
 // 注意：不能叫 pet，否则和 preload 暴露的 window.pet 冲突（P0-1 踩过的坑）
 const petEl = document.getElementById("pet") as HTMLElement;
+const handEl = document.getElementById("petpet-hand") as HTMLImageElement;
 const bubbleEl = document.getElementById("bubble") as HTMLElement;
 const chatBox = document.getElementById("chat-box") as HTMLElement;
 const chatInput = document.getElementById("chat-input") as HTMLInputElement;
@@ -36,6 +38,9 @@ const isDoNotDisturb = (): boolean => currentSettings?.dnd === true;
 const machine = new PetStateMachine(view, {
   idleToSleepMs: 30_000,
   onStateChange: (_from, to) => {
+    // 摸头是纯视觉反馈，所有形象通用；勿扰模式下也要给反馈
+    if (to === "pat") playPetpet(petEl, handEl, currentSettings?.patHand ?? "cartoon");
+    if (to === "drag") stopPetpet(petEl, handEl);
     if (isDoNotDisturb()) return;
 
     if (to === "click") {
@@ -160,8 +165,15 @@ window.addEventListener("mouseup", () => {
     if (rapidCount >= 3 && currentSettings?.gestureAngry !== false) {
       rapidCount = 0;
       machine.playAngry();
-    } else if (rapidCount === 2 && currentSettings?.gestureWave !== false) {
-      machine.playWave();
+    } else if (rapidCount === 2) {
+      const action = currentSettings?.doubleClickAction ?? "pat";
+      if (action === "pat" && currentSettings?.gesturePat !== false) {
+        machine.playPat();
+      } else if (action === "wave" && currentSettings?.gestureWave !== false) {
+        machine.playWave();
+      } else {
+        machine.onPetClick();
+      }
     } else {
       machine.onPetClick();
     }

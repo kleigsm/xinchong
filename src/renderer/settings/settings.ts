@@ -101,8 +101,8 @@ function toggle(key: keyof Settings, on: boolean): string {
 
 function segmented(
   key: keyof Settings,
-  options: Array<{ label: string; value: number }>,
-  current: number,
+  options: Array<{ label: string; value: string | number }>,
+  current: string | number,
 ): string {
   const items = options
     .map(
@@ -231,6 +231,23 @@ function pageAppearance(): string {
     )}
 
     ${card(
+      "摸头手掌",
+      "✋",
+      row(
+        "手掌样式",
+        segmented(
+          "patHand",
+          [
+            { label: "写实手", value: "real" },
+            { label: "卡通手", value: "cartoon" },
+          ],
+          settings.patHand,
+        ),
+        "只在摸头时出现，随手势一起下压",
+      ),
+    )}
+
+    ${card(
       "说明",
       "?",
       `<div class="note">
@@ -293,7 +310,18 @@ function pageBehavior(): string {
     ${card(
       "手势",
       "✋",
-      row("双击招手", toggle("gestureWave", settings.gestureWave), "连点两下 → 挥手") +
+      row(
+        "双击动作",
+        segmented(
+          "doubleClickAction",
+          [
+            { label: "招手", value: "wave" },
+            { label: "摸头", value: "pat" },
+          ],
+          settings.doubleClickAction,
+        ),
+        "连点两下 → 挥手或摸头",
+      ) +
         row("长按摸头", toggle("gesturePat", settings.gesturePat), "按住 1.2 秒 → 被摸头") +
         row("连点生气", toggle("gestureAngry", settings.gestureAngry), "1.2 秒内点三下 → 生气"),
     )}`;
@@ -375,7 +403,7 @@ function pageHelp(): string {
       "基本交互",
       "✋",
       kvRow("单击", "说话 + 换表情") +
-        kvRow("双击", "招手打招呼") +
+        kvRow("双击", "招手 / 摸头（可在设置里切换）") +
         kvRow("长按 1.2 秒", "被摸头，会脸红") +
         kvRow("1.2 秒内点三下", "生气，别戳太多") +
         kvRow("按住拖动", "拎起来，会喊「要掉下去了」"),
@@ -535,7 +563,8 @@ function bindEvents(): void {
 
     if (action === "segment") {
       const key = el.dataset.key as keyof Settings;
-      const value = Number(el.dataset.value);
+      const raw = el.dataset.value ?? "";
+      const value = raw !== "" && !Number.isNaN(Number(raw)) ? Number(raw) : raw;
       void window.api.patchSettings({ [key]: value }).then((s) => {
         settings = s;
         for (const btn of el.parentElement?.querySelectorAll("button") ?? []) {
