@@ -21,6 +21,8 @@ const DEFAULTS: Settings = {
   gestureWave: true,
   gesturePat: true,
   gestureAngry: true,
+  doubleClickAction: "pat",
+  patHand: "cartoon",
   hasSeenGuide: false,
   petOpacity: 1,
   animationSpeed: 1,

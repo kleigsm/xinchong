@@ -1,4 +1,4 @@
-﻿html,
+html,
 body {
   margin: 0;
   padding: 0;
@@ -34,6 +34,41 @@ body {
 
 #pet.dragging {
   cursor: grabbing;
+}
+
+/**
+ * petpet 摸头：手部盖在宠物上方，宠物由 JS 逐帧压扁/下移。
+ * 手图来自 petpet 模板（112×112），这里按宠物容器 160×160 等比放大。
+ */
+#petpet-hand {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  width: 140px;
+  height: 140px;
+  margin-left: -70px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+#petpet-hand.hand-real {
+  width: 118px;
+  height: 118px;
+  margin-left: -24px;
+  bottom: 66px;
+}
+
+#petpet-hand.hand-cartoon {
+  width: 88px;
+  height: auto;
+  margin-left: -24px;
+  bottom: 100px;
+}
+
+#pet.petpet-playing {
+  /* 滤镜会强制每帧重新栅格化，摸头期间必须关掉 */
+  filter: none;
+  animation: none !important;
 }
 
 /**

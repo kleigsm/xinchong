@@ -1,0 +1,25 @@
+# 统一换行符，避免整文件 "改动"
+#
+# 背景：2026-11-09 有个 PR 把十几个文件从 LF 改成了 CRLF，
+# diff 显示 3000+ 行，实际只改了 60 行，几乎没法评审。
+# 这里规定：仓库内统一存 LF，检出时按平台转换。
+
+* text=auto
+
+# 二进制文件不要做换行转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.zip binary
+*.exe binary
+*.dll binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+
+# 这些必须保持 LF（脚本在 Linux/CI 上跑）
+*.sh text eol=lf
+*.mjs text eol=lf

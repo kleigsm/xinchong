@@ -28,6 +28,10 @@ export interface Settings {
   gesturePat: boolean;
   /** 连点生气 */
   gestureAngry: boolean;
+  /** 双击触发的动作 */
+  doubleClickAction: "wave" | "pat";
+  /** 摸头时的手掌样式 */
+  patHand: "real" | "cartoon";
   /** 是否已经看过首次引导 */
   hasSeenGuide: boolean;
   /** 桌宠不透明度 0.5–1 */

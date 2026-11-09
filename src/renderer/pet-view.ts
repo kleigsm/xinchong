@@ -112,6 +112,12 @@ export class PetView {
     return this.pack.sprite.columns === 1 && this.pack.sprite.rows === 1;
   }
 
+  /** 角色包是否提供某个动作（4/5 行素材没有新动作） */
+  hasAnimation(name: AnimationName): boolean {
+    const spec = this.pack.animations[name];
+    return spec !== undefined && spec.frames.length > 0;
+  }
+
   /** 播放某段动画；非循环动画播完后调用 onFinish */
   play(name: AnimationName, onFinish?: () => void): void {
     const spec = this.pack.animations[name];

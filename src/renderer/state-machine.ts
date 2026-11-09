@@ -38,6 +38,7 @@ export class PetStateMachine {
   private view: PetView;
   private state: PetState | null = null;
   private sleepTimer: number | null = null;
+  private oneShotTimer: number | null = null;
   private idleToSleepMs: number;
   private onStateChange?: (from: PetState | null, to: PetState) => void;
 
@@ -115,6 +116,7 @@ export class PetStateMachine {
   /** 销毁：清掉所有定时器 */
   destroy(): void {
     this.clearSleepTimer();
+    this.clearOneShotTimer();
     this.view.stop();
   }
 
@@ -125,6 +127,7 @@ export class PetStateMachine {
 
     this.state = next;
     this.clearSleepTimer();
+    this.clearOneShotTimer();
 
     console.log(`[state] t=${Math.round(performance.now())}ms ${from ?? "init"} → ${next}`);
     this.onStateChange?.(from, next);
@@ -155,10 +158,30 @@ export class PetStateMachine {
       case "stretch":
       case "pat":
       case "angry":
-        this.view.play(next, () => {
-          if (this.state === next) this.enter("idle");
-        });
+        // 4/5 行素材没有这四个动作：直接给一段占位时长再回待机，
+        // 视觉上的摸头由渲染层的 petpet 效果负责。
+        this.playOneShot(next, 700);
         break;
+    }
+  }
+
+  /** 一次性动作：有素材就播，没有素材就定时回待机（避免卡在动作状态） */
+  private playOneShot(name: PetState, fallbackMs: number): void {
+    if (this.view.hasAnimation(name)) {
+      this.view.play(name, () => {
+        if (this.state === name) this.enter("idle");
+      });
+      return;
+    }
+    this.oneShotTimer = window.setTimeout(() => {
+      if (this.state === name) this.enter("idle");
+    }, fallbackMs);
+  }
+
+  private clearOneShotTimer(): void {
+    if (this.oneShotTimer !== null) {
+      window.clearTimeout(this.oneShotTimer);
+      this.oneShotTimer = null;
     }
   }
 
