@@ -44,9 +44,13 @@
 - 提交信息用中文，一句话说清做了什么
 - 不提交 `node_modules/`、`.next/`、安装包、`.env*`
 - 不确定的事写进 `docs/DECISIONS.md` 提问，不要在代码里自行发明
+- **发现任何问题先记进 [`docs/testing/issues.md`](docs/testing/issues.md)**（测试期统一收集，攒够一批再改）；
+  用 `pnpm run issues` 可以按严重度列出待修项
 
 ## 6. 环境
 
 - Node 24 + pnpm 10
 - 仓库根目录即客户端工程根目录（不是 monorepo，不建 `client/` 子目录）
 - 门户网站在另一个仓库：[kleigsm/xinchong-site](https://github.com/kleigsm/xinchong-site)
+- **三种启动方式行为不同，验证时要各跑一遍**：
+  `pnpm dev`（渲染层走 Vite，不产出 out/renderer）、`pnpm start`（preview，会构建）、打包 exe
