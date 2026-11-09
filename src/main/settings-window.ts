@@ -1,4 +1,4 @@
-﻿import { BrowserWindow } from "electron";
+import { BrowserWindow } from "electron";
 import { join } from "node:path";
 
 /**
@@ -61,9 +61,20 @@ export function openSettingsWindow(): BrowserWindow {
     }
   });
 
-  const pagePath = join(__dirname, "../renderer/settings/index.html");
-  console.log(`[settings] loading ${pagePath}`);
-  void win.loadFile(pagePath);
+  // ⚠️ 必须区分开发/生产：
+  // 开发模式下渲染层由 Vite 开发服务器提供，out/renderer 里**没有**这个文件，
+  // 硬编码 loadFile 会导致设置窗口一片白（2026-11-09 队友踩到的 bug）。
+  // 桌宠主窗口在 window.ts 里做了这个判断，这里之前漏了。
+  const devUrl = process.env.ELECTRON_RENDERER_URL;
+  if (devUrl) {
+    const url = `${devUrl}/settings/index.html`;
+    console.log(`[settings] loading ${url}（dev）`);
+    void win.loadURL(url);
+  } else {
+    const pagePath = join(__dirname, "../renderer/settings/index.html");
+    console.log(`[settings] loading ${pagePath}`);
+    void win.loadFile(pagePath);
+  }
 
   settingsWindow = win;
   return win;
