@@ -64,6 +64,20 @@ describe("LineEngine", () => {
     expect(engine.pick("click")).toBe("a");
   });
 
+  it("12 条 click 连取 12 次，全部不重复", () => {
+    const twelve: LineBank = {
+      click: Array.from({ length: 12 }, (_, i) => `line-${i}`),
+      drag: [],
+      idleLong: [],
+      sleep: [],
+      morning: [],
+      night: [],
+    };
+    const engine = new LineEngine(twelve);
+    const seen = new Set(Array.from({ length: 12 }, () => engine.pick("click")));
+    expect(seen.size).toBe(12);
+  });
+
   it("hasScene：有内容才返回 true", () => {
     const engine = new LineEngine(bank);
     expect(engine.hasScene("click")).toBe(true);

@@ -1,0 +1,404 @@
+{
+  "sounds": [
+    {
+      "pack": "dog",
+      "action": "click",
+      "variant": 1,
+      "file": "dog/click-1.ogg",
+      "source": "more/creature80/barking_01.ogg",
+      "license": "CC0",
+      "credit": "80 CC0 creature SFX / rubberduck",
+      "duration": 0.35
+    },
+    {
+      "pack": "dog",
+      "action": "click",
+      "variant": 2,
+      "file": "dog/click-2.ogg",
+      "source": "more/creature80/barking_02.ogg",
+      "license": "CC0",
+      "credit": "80 CC0 creature SFX / rubberduck",
+      "duration": 0.35
+    },
+    {
+      "pack": "dog",
+      "action": "drag",
+      "variant": 1,
+      "file": "dog/drag-1.ogg",
+      "source": "more/dog/Dog/Sad Dog 1.wav",
+      "license": "CC0",
+      "credit": "Dog sounds / pauliuw",
+      "duration": 1.0
+    },
+    {
+      "pack": "dog",
+      "action": "drag",
+      "variant": 2,
+      "file": "dog/drag-2.ogg",
+      "source": "more/dog/Dog/Sad Dog.wav",
+      "license": "CC0",
+      "credit": "Dog sounds / pauliuw",
+      "duration": 1.0
+    },
+    {
+      "pack": "dog",
+      "action": "sleep",
+      "variant": 1,
+      "file": "dog/sleep-1.ogg",
+      "source": "more/dog/Dog/Dog 1.wav",
+      "license": "CC0",
+      "credit": "Dog sounds / pauliuw",
+      "duration": 1.5
+    },
+    {
+      "pack": "dog",
+      "action": "sleep",
+      "variant": 2,
+      "file": "dog/sleep-2.ogg",
+      "source": "more/dog/Dog/Dog 2.wav",
+      "license": "CC0",
+      "credit": "Dog sounds / pauliuw",
+      "duration": 1.5
+    },
+    {
+      "pack": "dog",
+      "action": "appear",
+      "variant": 1,
+      "file": "dog/appear-1.ogg",
+      "source": "more/dog/Dog/Dog Bark 1.wav",
+      "license": "CC0",
+      "credit": "Dog sounds / pauliuw",
+      "duration": 0.21
+    },
+    {
+      "pack": "dog",
+      "action": "appear",
+      "variant": 2,
+      "file": "dog/appear-2.ogg",
+      "source": "more/dog/Dog/Dog Bark 2.wav",
+      "license": "CC0",
+      "credit": "Dog sounds / pauliuw",
+      "duration": 0.32
+    },
+    {
+      "pack": "dog",
+      "action": "confirm",
+      "variant": 1,
+      "file": "dog/confirm-1.ogg",
+      "source": "more/dog/Dog/Dog Bark 3.wav",
+      "license": "CC0",
+      "credit": "Dog sounds / pauliuw",
+      "duration": 0.32
+    },
+    {
+      "pack": "dog",
+      "action": "confirm",
+      "variant": 2,
+      "file": "dog/confirm-2.ogg",
+      "source": "more/dog/Dog/Dog Bark.wav",
+      "license": "CC0",
+      "credit": "Dog sounds / pauliuw",
+      "duration": 0.39
+    },
+    {
+      "pack": "cat",
+      "action": "click",
+      "variant": 1,
+      "file": "cat/click-1.ogg",
+      "source": "more/cat_mewfood.wav",
+      "license": "CC0",
+      "credit": "Cat Purr & Meow / Kerzoven",
+      "duration": 0.35
+    },
+    {
+      "pack": "cat",
+      "action": "click",
+      "variant": 2,
+      "file": "cat/click-2.ogg",
+      "source": "more/cat_softmew.wav",
+      "license": "CC0",
+      "credit": "Cat Purr & Meow / Kerzoven",
+      "duration": 0.35
+    },
+    {
+      "pack": "cat",
+      "action": "drag",
+      "variant": 1,
+      "file": "cat/drag-1.ogg",
+      "source": "more/cat_mewpurr.wav",
+      "license": "CC0",
+      "credit": "Cat Purr & Meow / Kerzoven",
+      "duration": 1.0
+    },
+    {
+      "pack": "cat",
+      "action": "drag",
+      "variant": 2,
+      "file": "cat/drag-2.ogg",
+      "source": "more/cat_mewpurr2.wav",
+      "license": "CC0",
+      "credit": "Cat Purr & Meow / Kerzoven",
+      "duration": 1.0
+    },
+    {
+      "pack": "cat",
+      "action": "sleep",
+      "variant": 1,
+      "file": "cat/sleep-1.ogg",
+      "source": "more/cat_purrsleepy_loop.wav",
+      "license": "CC0",
+      "credit": "Cat Purr & Meow / Kerzoven",
+      "duration": 1.5
+    },
+    {
+      "pack": "cat",
+      "action": "sleep",
+      "variant": 2,
+      "file": "cat/sleep-2.ogg",
+      "source": "more/cat_purractive_loop.wav",
+      "license": "CC0",
+      "credit": "Cat Purr & Meow / Kerzoven",
+      "duration": 1.5
+    },
+    {
+      "pack": "cat",
+      "action": "appear",
+      "variant": 1,
+      "file": "cat/appear-1.ogg",
+      "source": "baby-animals/Meow.ogg",
+      "license": "CC0",
+      "credit": "Baby Animals / Technopeasant",
+      "duration": 0.8
+    },
+    {
+      "pack": "cat",
+      "action": "appear",
+      "variant": 2,
+      "file": "cat/appear-2.ogg",
+      "source": "more/cat_purractive_loop.wav",
+      "license": "CC0",
+      "credit": "Cat Purr & Meow / Kerzoven",
+      "duration": 0.8
+    },
+    {
+      "pack": "cat",
+      "action": "confirm",
+      "variant": 1,
+      "file": "cat/confirm-1.ogg",
+      "source": "more/cat_softmew.wav",
+      "license": "CC0",
+      "credit": "Cat Purr & Meow / Kerzoven",
+      "duration": 0.5
+    },
+    {
+      "pack": "cat",
+      "action": "confirm",
+      "variant": 2,
+      "file": "cat/confirm-2.ogg",
+      "source": "more/cat_purractive_loop.wav",
+      "license": "CC0",
+      "credit": "Cat Purr & Meow / Kerzoven",
+      "duration": 0.5
+    },
+    {
+      "pack": "bird",
+      "action": "click",
+      "variant": 1,
+      "file": "bird/click-1.ogg",
+      "source": "baby-animals/Peeps.ogg",
+      "license": "CC0",
+      "credit": "Baby Animals / Technopeasant",
+      "duration": 0.35
+    },
+    {
+      "pack": "bird",
+      "action": "click",
+      "variant": 2,
+      "file": "bird/click-2.ogg",
+      "source": "baby-animals/Peeps.ogg",
+      "license": "CC0",
+      "credit": "Baby Animals / Technopeasant",
+      "duration": 0.35
+    },
+    {
+      "pack": "bird",
+      "action": "drag",
+      "variant": 1,
+      "file": "bird/drag-1.ogg",
+      "source": "more/birdchirping071414.wav",
+      "license": "CC0",
+      "credit": "Bird chirping / syncopika",
+      "duration": 1.0
+    },
+    {
+      "pack": "bird",
+      "action": "drag",
+      "variant": 2,
+      "file": "bird/drag-2.ogg",
+      "source": "baby-animals/Peeps.ogg",
+      "license": "CC0",
+      "credit": "Baby Animals / Technopeasant",
+      "duration": 0.6
+    },
+    {
+      "pack": "bird",
+      "action": "sleep",
+      "variant": 1,
+      "file": "bird/sleep-1.ogg",
+      "source": "more/birdchirping071414.wav",
+      "license": "CC0",
+      "credit": "Bird chirping / syncopika",
+      "duration": 1.5
+    },
+    {
+      "pack": "bird",
+      "action": "sleep",
+      "variant": 2,
+      "file": "bird/sleep-2.ogg",
+      "source": "baby-animals/Peeps.ogg",
+      "license": "CC0",
+      "credit": "Baby Animals / Technopeasant",
+      "duration": 1.5
+    },
+    {
+      "pack": "bird",
+      "action": "appear",
+      "variant": 1,
+      "file": "bird/appear-1.ogg",
+      "source": "baby-animals/Peeps.ogg",
+      "license": "CC0",
+      "credit": "Baby Animals / Technopeasant",
+      "duration": 0.7
+    },
+    {
+      "pack": "bird",
+      "action": "appear",
+      "variant": 2,
+      "file": "bird/appear-2.ogg",
+      "source": "more/birdchirping071414.wav",
+      "license": "CC0",
+      "credit": "Bird chirping / syncopika",
+      "duration": 0.8
+    },
+    {
+      "pack": "bird",
+      "action": "confirm",
+      "variant": 1,
+      "file": "bird/confirm-1.ogg",
+      "source": "baby-animals/Peeps.ogg",
+      "license": "CC0",
+      "credit": "Baby Animals / Technopeasant",
+      "duration": 0.5
+    },
+    {
+      "pack": "bird",
+      "action": "confirm",
+      "variant": 2,
+      "file": "bird/confirm-2.ogg",
+      "source": "more/birdchirping071414.wav",
+      "license": "CC0",
+      "credit": "Bird chirping / syncopika",
+      "duration": 0.5
+    },
+    {
+      "pack": "pig",
+      "action": "click",
+      "variant": 1,
+      "file": "pig/click-1.ogg",
+      "source": "more/pig_idle2.mp3",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 0.35
+    },
+    {
+      "pack": "pig",
+      "action": "click",
+      "variant": 2,
+      "file": "pig/click-2.ogg",
+      "source": "more/pig_idle3.mp3",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 0.35
+    },
+    {
+      "pack": "pig",
+      "action": "drag",
+      "variant": 1,
+      "file": "pig/drag-1.ogg",
+      "source": "more/pig_idle4.mp3",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 1.0
+    },
+    {
+      "pack": "pig",
+      "action": "drag",
+      "variant": 2,
+      "file": "pig/drag-2.ogg",
+      "source": "more/pig_hit1.mp3",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 0.57
+    },
+    {
+      "pack": "pig",
+      "action": "sleep",
+      "variant": 1,
+      "file": "pig/sleep-1.ogg",
+      "source": "more/pig_idle.mp3",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 1.5
+    },
+    {
+      "pack": "pig",
+      "action": "sleep",
+      "variant": 2,
+      "file": "pig/sleep-2.ogg",
+      "source": "more/pig_idle4.mp3",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 1.5
+    },
+    {
+      "pack": "pig",
+      "action": "appear",
+      "variant": 1,
+      "file": "pig/appear-1.ogg",
+      "source": "more/pig_idle.mp3",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 0.8
+    },
+    {
+      "pack": "pig",
+      "action": "appear",
+      "variant": 2,
+      "file": "pig/appear-2.ogg",
+      "source": "more/pig_idle3.mp3",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 0.37
+    },
+    {
+      "pack": "pig",
+      "action": "confirm",
+      "variant": 1,
+      "file": "pig/confirm-1.ogg",
+      "source": "more/pig_hit1.mp3",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 0.5
+    },
+    {
+      "pack": "pig",
+      "action": "confirm",
+      "variant": 2,
+      "file": "pig/confirm-2.ogg",
+      "source": "more/pig_hit2.mp3",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 0.5
+    }
+  ]
+}

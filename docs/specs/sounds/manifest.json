@@ -1,0 +1,126 @@
+{
+  "source": "本仓库原创合成",
+  "license": "CC0-1.0",
+  "sounds": [
+    {
+      "personality": "shy",
+      "category": "click",
+      "label": "点击",
+      "file": "shy/click.wav",
+      "duration": 0.26,
+      "license": "CC0-1.0"
+    },
+    {
+      "personality": "shy",
+      "category": "drag",
+      "label": "拖拽",
+      "file": "shy/drag.wav",
+      "duration": 0.55,
+      "license": "CC0-1.0"
+    },
+    {
+      "personality": "shy",
+      "category": "sleep",
+      "label": "睡觉",
+      "file": "shy/sleep.wav",
+      "duration": 1.3,
+      "license": "CC0-1.0"
+    },
+    {
+      "personality": "shy",
+      "category": "appear",
+      "label": "出现",
+      "file": "shy/appear.wav",
+      "duration": 0.75,
+      "license": "CC0-1.0"
+    },
+    {
+      "personality": "shy",
+      "category": "confirm",
+      "label": "确认",
+      "file": "shy/confirm.wav",
+      "duration": 0.4,
+      "license": "CC0-1.0"
+    },
+    {
+      "personality": "cheerful",
+      "category": "click",
+      "label": "点击",
+      "file": "cheerful/click.wav",
+      "duration": 0.22,
+      "license": "CC0-1.0"
+    },
+    {
+      "personality": "cheerful",
+      "category": "drag",
+      "label": "拖拽",
+      "file": "cheerful/drag.wav",
+      "duration": 0.45,
+      "license": "CC0-1.0"
+    },
+    {
+      "personality": "cheerful",
+      "category": "sleep",
+      "label": "睡觉",
+      "file": "cheerful/sleep.wav",
+      "duration": 1.1,
+      "license": "CC0-1.0"
+    },
+    {
+      "personality": "cheerful",
+      "category": "appear",
+      "label": "出现",
+      "file": "cheerful/appear.wav",
+      "duration": 0.8,
+      "license": "CC0-1.0"
+    },
+    {
+      "personality": "cheerful",
+      "category": "confirm",
+      "label": "确认",
+      "file": "cheerful/confirm.wav",
+      "duration": 0.42,
+      "license": "CC0-1.0"
+    },
+    {
+      "personality": "tsundere",
+      "category": "click",
+      "label": "点击",
+      "file": "tsundere/click.wav",
+      "duration": 0.24,
+      "license": "CC0-1.0"
+    },
+    {
+      "personality": "tsundere",
+      "category": "drag",
+      "label": "拖拽",
+      "file": "tsundere/drag.wav",
+      "duration": 0.38,
+      "license": "CC0-1.0"
+    },
+    {
+      "personality": "tsundere",
+      "category": "sleep",
+      "label": "睡觉",
+      "file": "tsundere/sleep.wav",
+      "duration": 0.9,
+      "license": "CC0-1.0"
+    },
+    {
+      "personality": "tsundere",
+      "category": "appear",
+      "label": "出现",
+      "file": "tsundere/appear.wav",
+      "duration": 0.55,
+      "license": "CC0-1.0"
+    },
+    {
+      "personality": "tsundere",
+      "category": "confirm",
+      "label": "确认",
+      "file": "tsundere/confirm.wav",
+      "duration": 0.32,
+      "license": "CC0-1.0"
+    }
+  ]
+}
