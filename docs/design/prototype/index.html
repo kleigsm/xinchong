@@ -1,0 +1,1018 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>芯宠 · 交互原型 v1</title>
+    <style>
+      :root {
+        --accent: #f0603c;
+        --accent-soft: #fdeee9;
+        --text: #1f1f21;
+        --muted: #8a8a90;
+        --line: #ececef;
+        --card: #ffffff;
+        --card-2: #f5f5f7;
+        --bubble-bg: #fffdfa;
+        --bubble-text: #3a2a2e;
+        --radius: 14px;
+        font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: #16171b;
+        color: var(--text);
+      }
+
+      .stage {
+        display: flex;
+        gap: 16px;
+        height: 100%;
+        padding: 16px;
+      }
+
+      /* ---------------- 设计说明面板 ---------------- */
+      .panel {
+        width: 300px;
+        flex: none;
+        background: var(--card);
+        border-radius: 16px;
+        padding: 16px;
+        overflow: auto;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .panel h1 { font-size: 15px; margin: 0 0 4px; }
+      .panel h2 {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin: 18px 0 8px;
+        font-weight: 600;
+      }
+      .panel p.sub { color: var(--muted); margin: 0 0 12px; font-size: 12px; }
+
+      .scenario {
+        display: block;
+        width: 100%;
+        text-align: left;
+        background: var(--card-2);
+        border: 1px solid transparent;
+        border-radius: 10px;
+        padding: 8px 10px;
+        margin-bottom: 6px;
+        font: inherit;
+        color: var(--text);
+        cursor: pointer;
+      }
+      .scenario:hover { border-color: #dededf; }
+      .scenario b { font-weight: 600; }
+      .scenario span { display: block; color: var(--muted); font-size: 11.5px; }
+
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 6px 2px;
+        border-bottom: 1px solid var(--line);
+      }
+      .row:last-child { border-bottom: 0; }
+      .row label { color: #4a4a50; }
+
+      .seg { display: inline-flex; background: var(--card-2); border-radius: 8px; padding: 2px; }
+      .seg button {
+        border: 0; background: transparent; font: inherit; font-size: 12px;
+        padding: 4px 9px; border-radius: 6px; cursor: pointer; color: var(--muted);
+      }
+      .seg button.on { background: #fff; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+
+      .state {
+        margin-top: 8px;
+        background: #1f1f21;
+        color: #d9d9de;
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-family: Consolas, monospace;
+        font-size: 11.5px;
+        line-height: 1.7;
+        white-space: pre-wrap;
+      }
+
+      /* ---------------- 假桌面 ---------------- */
+      .desktop {
+        position: relative;
+        flex: 1;
+        border-radius: 14px;
+        overflow: hidden;
+        background: linear-gradient(160deg, #dce7f5 0%, #cdd9ea 52%, #e6e2ef 100%);
+      }
+
+      .win {
+        position: absolute;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 14px 40px rgba(30, 40, 70, 0.16);
+        overflow: hidden;
+      }
+      .win .titlebar {
+        height: 30px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 10px;
+        font-size: 11.5px;
+        color: #6a6a70;
+        border-bottom: 1px solid #eeeef2;
+      }
+      .win .dot { width: 8px; height: 8px; border-radius: 50%; background: #e4e4e9; }
+      .win .body { padding: 14px; }
+      .line { height: 8px; border-radius: 4px; background: #eef0f4; margin-bottom: 10px; }
+      .line.w60 { width: 60%; }
+      .line.w80 { width: 80%; }
+      .line.w40 { width: 40%; }
+      .chip {
+        display: inline-block;
+        background: #eef0f4;
+        color: #7c7c86;
+        border-radius: 6px;
+        padding: 2px 7px;
+        font-size: 10.5px;
+        margin-right: 6px;
+      }
+
+      .taskbar {
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
+        height: 44px;
+        background: rgba(22, 23, 27, 0.82);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 14px;
+      }
+      .taskbar i { width: 22px; height: 22px; border-radius: 6px; background: rgba(255,255,255,.16); }
+      .taskbar .clock { margin-left: auto; color: #d7d7dd; font-size: 11px; }
+
+      /* ---------------- 桌宠窗口（320×340 透明层） ---------------- */
+      .petwin {
+        position: absolute;
+        right: 26px;
+        bottom: 56px;
+        width: 320px;
+        height: 340px;
+        transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .petwin.docked { transform: translateX(168px); }
+      .petwin.docked:hover { transform: translateX(96px); }
+
+      .pet {
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: 160px;
+        height: 160px;
+        margin-left: -80px;
+        background-repeat: no-repeat;
+        background-size: 400% 900%;
+        transform-origin: 50% 100%;
+        cursor: grab;
+        will-change: background-position, transform;
+      }
+      .pet.dragging { cursor: grabbing; }
+      .pet.pat { animation: pat 0.32s ease-out; }
+      .pet.bounce { animation: bounce 0.42s cubic-bezier(0.34, 1.56, 0.64, 1); }
+      .pet.no-art {
+        background: radial-gradient(circle at 50% 42%, #ffd9a8 0 46%, #f6b26b 47% 100%);
+        border-radius: 50% 50% 44% 44%;
+      }
+      @keyframes pat {
+        0%, 100% { transform: scale(1, 1); }
+        40% { transform: scale(1.06, 0.94); }
+      }
+      @keyframes bounce {
+        0% { transform: translateY(0) scale(1, 1); }
+        30% { transform: translateY(-10px) scale(0.96, 1.05); }
+        60% { transform: translateY(2px) scale(1.04, 0.96); }
+        100% { transform: translateY(0) scale(1, 1); }
+      }
+
+      /* 台词气泡 */
+      .bubble {
+        position: absolute;
+        left: 50%;
+        bottom: 168px;
+        transform: translate(-50%, 4px);
+        max-width: 280px;
+        padding: 8px 14px;
+        border-radius: var(--radius);
+        background: var(--bubble-bg);
+        color: var(--bubble-text);
+        font-size: 13px;
+        line-height: 1.5;
+        text-align: center;
+        box-shadow: 0 4px 14px rgba(90, 40, 60, 0.18);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 140ms ease, transform 140ms ease;
+      }
+      .bubble.visible { opacity: 1; transform: translate(-50%, 0); }
+
+      /* 聊天输入条 */
+      .chatbox {
+        position: absolute;
+        left: 50%;
+        bottom: 168px;
+        transform: translateX(-50%);
+        width: 280px;
+        padding: 8px;
+        border-radius: var(--radius);
+        background: var(--bubble-bg);
+        box-shadow: 0 6px 18px rgba(90, 40, 60, 0.22);
+      }
+      .chatbox input {
+        width: 100%;
+        border: 1px solid #ecd9d2;
+        border-radius: 9px;
+        padding: 8px 10px;
+        font: inherit;
+        font-size: 13px;
+        outline: none;
+        color: var(--bubble-text);
+        background: #fff;
+      }
+      .chatbox input:focus { border-color: #ef7d97; }
+
+      /* 浮球 */
+      .balls { position: absolute; inset: 0; }
+      .ball {
+        position: absolute;
+        width: 44px;
+        height: 44px;
+        margin: -22px 0 0 -22px;
+        border-radius: 50%;
+        border: 1.5px solid #ffe2d6;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 17px;
+        line-height: 1;
+        cursor: pointer;
+        box-shadow: 0 5px 14px rgba(120, 60, 70, 0.16);
+        transform: scale(0.6);
+        opacity: 0;
+        transition: transform 120ms cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 120ms ease;
+      }
+      .balls.open .ball { transform: scale(1); opacity: 1; }
+      .ball:hover { transform: scale(1.12); }
+      .ball .label {
+        position: absolute;
+        bottom: 46px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px;
+        color: #5f5f66;
+        white-space: nowrap;
+        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
+      }
+      .ball.on { border-color: var(--accent); background: var(--accent-soft); }
+      .ball.on::after {
+        content: "";
+        position: absolute;
+        right: 2px;
+        bottom: 2px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+
+      /* 右键菜单（HTML 版，只为原型） */
+      .ctxmenu {
+        position: absolute;
+        width: 210px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 16px 40px rgba(20, 20, 30, 0.24);
+        padding: 6px;
+        font-size: 13px;
+        z-index: 40;
+      }
+      .ctxmenu .item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px;
+        border-radius: 7px;
+        cursor: default;
+        color: #2b2b2e;
+      }
+      .ctxmenu .item:hover { background: var(--card-2); }
+      .ctxmenu .item .ico { width: 16px; text-align: center; color: #8a8a90; }
+      .ctxmenu .item .hint { margin-left: auto; color: #b0b0b8; font-size: 11px; }
+      .ctxmenu .sep { height: 1px; background: var(--line); margin: 5px 6px; }
+      .ctxmenu .group {
+        font-size: 10px;
+        color: #a3a3aa;
+        letter-spacing: 0.06em;
+        padding: 4px 8px 2px;
+      }
+
+      /* 设置窗（原型） */
+      .settings-mock {
+        position: absolute;
+        right: 380px;
+        bottom: 110px;
+        width: 360px;
+        background: #faf7f5;
+        border-radius: 14px;
+        box-shadow: 0 24px 60px rgba(20, 20, 30, 0.28);
+        overflow: hidden;
+        z-index: 30;
+      }
+      .settings-mock .head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        font-size: 12px;
+        color: #6a6a70;
+        background: #fff;
+        border-bottom: 1px solid var(--line);
+      }
+      .settings-mock .content { padding: 14px; }
+      .settings-mock h3 { font-size: 14px; margin: 0 0 2px; }
+      .settings-mock .hint { font-size: 11.5px; color: var(--muted); margin-bottom: 12px; }
+      .settings-mock .card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 12px;
+      }
+      .settings-mock .row { border-bottom: 0; }
+      input[type="range"] { width: 120px; accent-color: var(--accent); }
+
+      /* 标注层 */
+      .annotate { position: absolute; inset: 0; pointer-events: none; display: none; z-index: 60; }
+      .annotate.on { display: block; }
+      .annotate .box {
+        position: absolute;
+        border: 1px dashed rgba(240, 96, 60, 0.9);
+        border-radius: 4px;
+      }
+      .annotate .box::after {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        top: -16px;
+        font-size: 10px;
+        color: #d24a26;
+        background: rgba(255, 255, 255, 0.92);
+        padding: 1px 5px;
+        border-radius: 4px;
+        white-space: nowrap;
+      }
+      .annotate .circle {
+        position: absolute;
+        border: 1px dashed rgba(60, 120, 240, 0.75);
+        border-radius: 50%;
+      }
+
+      .badge {
+        position: absolute;
+        left: 50%;
+        bottom: 344px;
+        transform: translateX(-50%);
+        background: #1f1f21;
+        color: #fff;
+        font-size: 10.5px;
+        padding: 3px 9px;
+        border-radius: 999px;
+        opacity: 0;
+        transition: opacity 160ms ease;
+        white-space: nowrap;
+      }
+      .badge.visible { opacity: 0.86; }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <!-- ================= 说明 / 场景 ================= -->
+      <aside class="panel">
+        <h1>芯宠 · 交互原型 v1</h1>
+        <p class="sub">2026-11-09 · 长按浮球 + 右键菜单改版 + 贴边收纳</p>
+
+        <h2>试一下</h2>
+        <button class="scenario" data-act="hint-longpress">
+          <b>① 长按 2 秒 → 浮球</b>
+          <span>按住桌宠不放：1.2 s 摸头，2 s 弹出 4 个球</span>
+        </button>
+        <button class="scenario" data-act="menu-variant">
+          <b>② 右键菜单：现在 vs 改版</b>
+          <span>切换后右键桌宠对比两版信息架构</span>
+        </button>
+        <button class="scenario" data-act="dock">
+          <b>③ 贴边收纳</b>
+          <span>拖到右边收一半，鼠标移上去再滑出来</span>
+        </button>
+        <button class="scenario" data-act="chat">
+          <b>④ 说句话</b>
+          <span>浮球里的第一个：输入条 + 回车</span>
+        </button>
+        <button class="scenario" data-act="power">
+          <b>⑤ 省电模式</b>
+          <span>动画停住，只保留点击反应</span>
+        </button>
+        <button class="scenario" data-act="reset">
+          <b>↺ 重置</b>
+          <span>回到初始状态</span>
+        </button>
+
+        <h2>右键菜单版本</h2>
+        <div class="row">
+          <label>当前渲染</label>
+          <div class="seg" id="variant-seg">
+            <button data-variant="now" class="on">现在</button>
+            <button data-variant="next">改版</button>
+          </div>
+        </div>
+
+        <h2>标注</h2>
+        <div class="row">
+          <label>显示命中区域 / 尺寸</label>
+          <div class="seg" id="annotate-seg">
+            <button data-annotate="off" class="on">关</button>
+            <button data-annotate="on">开</button>
+          </div>
+        </div>
+
+        <h2>状态</h2>
+        <div class="state" id="state"></div>
+      </aside>
+
+      <!-- ================= 假桌面 ================= -->
+      <div class="desktop" id="desktop">
+        <div class="win" style="left: 56px; top: 48px; width: 430px">
+          <div class="titlebar"><i class="dot"></i><i class="dot"></i><i class="dot"></i> 课设文档.md</div>
+          <div class="body">
+            <div class="line w80"></div>
+            <div class="line w60"></div>
+            <div class="line"></div>
+            <div class="line w40"></div>
+          </div>
+        </div>
+
+        <div class="win" style="left: 330px; top: 250px; width: 380px">
+          <div class="titlebar"><i class="dot"></i><i class="dot"></i><i class="dot"></i> 浏览器</div>
+          <div class="body">
+            <span class="chip">标签页</span><span class="chip">搜索</span>
+            <div style="height: 10px"></div>
+            <div class="line"></div>
+            <div class="line w80"></div>
+            <div class="line w60"></div>
+          </div>
+        </div>
+
+        <div class="taskbar">
+          <i></i><i></i><i></i><i></i>
+          <span class="clock">22:04 · 2026/11/09</span>
+        </div>
+
+        <!-- 桌宠窗口：320×340 透明层 -->
+        <div class="petwin" id="petwin">
+          <div class="bubble" id="bubble"></div>
+
+          <div class="chatbox" id="chatbox" hidden>
+            <input id="chatinput" maxlength="200" placeholder="和它说句话…（回车发送，Esc 取消）" />
+          </div>
+
+          <div class="pet" id="pet"></div>
+
+          <div class="balls" id="balls" hidden>
+            <button class="ball" data-ball="chat" style="left: 75px; top: 202px">💬<span class="label">说句话</span></button>
+            <button class="ball" data-ball="personality" style="left: 128px; top: 163px">🎭<span class="label">换性格</span></button>
+            <button class="ball" data-ball="mute" style="left: 192px; top: 163px">🔕<span class="label">静音</span></button>
+            <button class="ball" data-ball="settings" style="left: 245px; top: 202px">⚙<span class="label">设置</span></button>
+          </div>
+
+          <div class="badge" id="badge"></div>
+
+          <div class="annotate" id="annotate">
+            <div class="box" style="left: 0; top: 0; width: 320px; height: 340px" data-label="窗口 320×340（透明）"></div>
+            <div class="box" style="left: 20px; top: 122px; width: 280px; height: 52px" data-label="输入条 280×49 @bottom:168"></div>
+            <div class="box" style="left: 80px; top: 180px; width: 160px; height: 160px" data-label="角色 160×160"></div>
+            <div class="circle" style="left: 160px; top: 262px; width: 164px; height: 164px; margin: -82px 0 0 -82px"
+                 data-label="命中圆 r=82"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ---------------- 素材 ----------------
+      const SPRITES = {
+        shy: "../../../src/renderer/assets/pet-shy.png",
+        cheerful: "../../../src/renderer/assets/pet-cheerful.png",
+        tsundere: "../../../src/renderer/assets/pet-tsundere.png",
+      };
+      const PERSONALITY_NAME = { shy: "害羞", cheerful: "开朗", tsundere: "傲娇" };
+      const LINES = {
+        shy: ["……诶？", "别、别突然戳我啦", "嗯？"],
+        cheerful: ["哇！", "来玩吗来玩吗！", "今天心情超好！"],
+        tsundere: ["哼，才不是想理你", "干嘛啦", "就这一次哦"],
+      };
+
+      const el = {
+        desktop: document.getElementById("desktop"),
+        petwin: document.getElementById("petwin"),
+        pet: document.getElementById("pet"),
+        bubble: document.getElementById("bubble"),
+        chatbox: document.getElementById("chatbox"),
+        chatinput: document.getElementById("chatinput"),
+        balls: document.getElementById("balls"),
+        badge: document.getElementById("badge"),
+        state: document.getElementById("state"),
+        annotate: document.getElementById("annotate"),
+      };
+
+      // ---------------- 状态 ----------------
+      const state = {
+        personality: "shy",
+        muted: false,
+        dnd: false,
+        menuOpen: false,
+        chatOpen: false,
+        docked: false,
+        powerSave: false,
+        menuVariant: "now",
+        annotate: false,
+        frame: 0,
+      };
+
+      // ---------------- 雪碧图动画（4fps，和真实实现一致） ----------------
+      const FRAMES = { idle: [0, 1, 2, 3, 4, 5, 6, 7], fps: 4, columns: 4 };
+      let animTimer = null;
+
+      function setSpriteFrame(index) {
+        const col = index % 4;
+        const row = Math.floor(index / 4);
+        el.pet.style.backgroundPosition = `${(col / 3) * 100}% ${(row / 8) * 100}%`;
+      }
+
+      function startIdle() {
+        stopIdle();
+        if (state.powerSave) return;
+        animTimer = setInterval(() => {
+          state.frame = (state.frame + 1) % FRAMES.idle.length;
+          setSpriteFrame(FRAMES.idle[state.frame]);
+        }, 1000 / FRAMES.fps);
+      }
+      function stopIdle() {
+        if (animTimer) clearInterval(animTimer);
+        animTimer = null;
+      }
+
+      // 持有引用：Image 对象被 GC 掉的话 onload/onerror 可能永远不触发
+      const spriteCache = new Map();
+
+      function loadSprite() {
+        const url = SPRITES[state.personality];
+        const cached = spriteCache.get(url);
+        const probe = cached ?? new Image();
+        spriteCache.set(url, probe);
+
+        const apply = () => {
+          el.pet.classList.remove("no-art");
+          el.pet.style.backgroundImage = `url("${url}")`;
+          setSpriteFrame(0);
+          startIdle();
+        };
+        const fallback = () => {
+          // 注意：不能用内联 background-image: none，它会盖掉 .no-art 的渐变
+          el.pet.style.backgroundImage = "";
+          el.pet.classList.add("no-art");
+        };
+
+        if (probe.complete && probe.naturalWidth > 0) {
+          apply();
+          return;
+        }
+        probe.onload = apply;
+        probe.onerror = fallback;
+        probe.src = url;
+      }
+
+      // ---------------- 气泡 ----------------
+      let bubbleTimer = null;
+      function say(text, ms = 2600) {
+        el.bubble.textContent = text;
+        el.bubble.classList.add("visible");
+        clearTimeout(bubbleTimer);
+        bubbleTimer = setTimeout(() => el.bubble.classList.remove("visible"), ms);
+      }
+
+      function flash(text) {
+        el.badge.textContent = text;
+        el.badge.classList.add("visible");
+        setTimeout(() => el.badge.classList.remove("visible"), 900);
+      }
+
+      // ---------------- 浮球 ----------------
+      let menuTimer = null;
+
+      function openMenu(reason) {
+        closeChat();
+        state.menuOpen = true;
+        el.balls.hidden = false;
+        // 下一帧加 class，才能触发过渡
+        requestAnimationFrame(() => el.balls.classList.add("open"));
+        syncBallStates();
+        clearTimeout(menuTimer);
+        menuTimer = setTimeout(() => closeMenu("5 秒自动收回"), 5000);
+        render();
+        if (reason) flash(reason);
+      }
+
+      function closeMenu(reason) {
+        if (!state.menuOpen) return;
+        state.menuOpen = false;
+        clearTimeout(menuTimer);
+        el.balls.classList.remove("open");
+        setTimeout(() => {
+          if (!state.menuOpen) el.balls.hidden = true;
+        }, 140);
+        render();
+        if (reason) flash(reason);
+      }
+
+      function syncBallStates() {
+        el.balls.querySelector('[data-ball="mute"]').classList.toggle("on", state.muted);
+        el.balls.querySelector('[data-ball="dnd"]')?.classList.toggle("on", state.dnd);
+      }
+
+      el.balls.addEventListener("click", (event) => {
+        const ball = event.target.closest(".ball");
+        if (!ball) return;
+        const action = ball.dataset.ball;
+        closeMenu();
+        if (action === "chat") openChat();
+        if (action === "personality") cyclePersonality();
+        if (action === "mute") toggleMute();
+        if (action === "settings") openSettings();
+      });
+
+      // ---------------- 手势 ----------------
+      let press = null;
+      let patTimer = null;
+      let holdTimer = null;
+
+      function cancelTimers() {
+        clearTimeout(patTimer);
+        clearTimeout(holdTimer);
+      }
+
+      el.pet.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0) return;
+        const rect = el.petwin.getBoundingClientRect();
+        const desk = el.desktop.getBoundingClientRect();
+        press = {
+          x: event.clientX,
+          y: event.clientY,
+          left: rect.left - desk.left,
+          top: rect.top - desk.top,
+          dragging: false,
+        };
+        cancelTimers();
+
+        patTimer = setTimeout(() => {
+          if (!press || press.dragging) return;
+          el.pet.classList.add("pat");
+          setTimeout(() => el.pet.classList.remove("pat"), 340);
+          say("（被摸头，脸红了）", 1400);
+          render();
+        }, 1200);
+
+        holdTimer = setTimeout(() => {
+          if (!press || press.dragging) return;
+          press.openedMenu = true;
+          openMenu("长按 2 秒 → 浮球");
+        }, 2000);
+      });
+
+      // 移动/松手都挂在 window 上：指针移出角色、甚至移出窗口时也不会卡住
+      window.addEventListener("pointermove", (event) => {
+        if (!press) return;
+        const dx = event.clientX - press.x;
+        const dy = event.clientY - press.y;
+
+        if (!press.dragging && Math.hypot(dx, dy) > 4) {
+          press.dragging = true;
+          cancelTimers();
+          el.pet.classList.add("dragging");
+          closeMenu();
+        }
+        if (!press.dragging) return;
+
+        const desk = el.desktop.getBoundingClientRect();
+        const maxLeft = Math.max(0, desk.width - 320);
+        const maxTop = Math.max(0, desk.height - 340);
+        const left = Math.min(Math.max(0, press.left + dx), maxLeft);
+        const top = Math.min(Math.max(0, press.top + dy), maxTop);
+        el.petwin.classList.remove("docked");
+        el.petwin.style.right = "auto";
+        el.petwin.style.bottom = "auto";
+        el.petwin.style.left = `${left}px`;
+        el.petwin.style.top = `${top}px`;
+      });
+
+      window.addEventListener("pointerup", () => {
+        if (!press) return;
+        cancelTimers();
+        el.pet.classList.remove("dragging");
+        const wasDragging = press.dragging;
+        const openedMenu = press.openedMenu === true;
+        press = null;
+        if (wasDragging) {
+          render();
+          return;
+        }
+        // 长按弹出的菜单，松手后保持打开（拖拽/点击才收起）
+        if (openedMenu) {
+          render();
+          return;
+        }
+        if (state.menuOpen) {
+          closeMenu("点角色收起");
+          return;
+        }
+        el.pet.classList.add("bounce");
+        setTimeout(() => el.pet.classList.remove("bounce"), 440);
+        const pool = LINES[state.personality];
+        say(pool[Math.floor(Math.random() * pool.length)]);
+        render();
+      });
+
+      // ---------------- 右键菜单 ----------------
+      let ctxmenu = null;
+      el.pet.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        closeMenu();
+        closeChat();
+        showContextMenu(event.clientX, event.clientY);
+      });
+
+      function showContextMenu(x, y) {
+        ctxmenu?.remove();
+        const now = [
+          ["显示 / 隐藏", ""],
+          ["说句话…", ""],
+          ["我的角色", "›"],
+          ["性格", "›"],
+          ["动作", "›"],
+          ["静音", ""],
+          ["勿扰模式", ""],
+          ["音量", "›"],
+          ["开机自启", ""],
+          ["性能信息", ""],
+          ["设置…", ""],
+          ["退出芯宠", ""],
+        ];
+        const next = [
+          ["group", "常用"],
+          ["💬 说句话…", ""],
+          ["🎭 换性格", "›"],
+          ["🧸 我的角色", "›"],
+          ["sep"],
+          ["group", "安静"],
+          ["🔇 静音", state.muted ? "✓" : ""],
+          ["🌙 勿扰模式", ""],
+          ["🔊 音量", "›"],
+          ["sep"],
+          ["group", "系统"],
+          ["⚙ 设置…", "Ctrl+,"],
+          ["📊 性能信息", ""],
+          ["👋 退出芯宠", ""],
+        ];
+        const rows = state.menuVariant === "now" ? now : next;
+
+        const menu = document.createElement("div");
+        menu.className = "ctxmenu";
+        menu.innerHTML = rows
+          .map((r) => {
+            if (r[0] === "sep") return '<div class="sep"></div>';
+            if (r[0] === "group") return `<div class="group">${r[1]}</div>`;
+            const [label, hint] = r;
+            const icon = state.menuVariant === "next" ? "" : "";
+            return `<div class="item"><span class="ico">${icon}</span><span>${label}</span>${
+              hint ? `<span class="hint">${hint}</span>` : ""
+            }</div>`;
+          })
+          .join("");
+
+        document.querySelector(".desktop").appendChild(menu);
+        const desk = document.querySelector(".desktop").getBoundingClientRect();
+        const rect = menu.getBoundingClientRect();
+        const left = Math.min(Math.max(8, x - desk.left), desk.width - rect.width - 8);
+        const top = Math.min(Math.max(8, y - desk.top), desk.height - rect.height - 8);
+        menu.style.left = `${left}px`;
+        menu.style.top = `${top}px`;
+        ctxmenu = menu;
+
+        const close = () => {
+          menu.remove();
+          ctxmenu = null;
+          document.removeEventListener("pointerdown", close);
+        };
+        setTimeout(() => document.addEventListener("pointerdown", close), 0);
+      }
+
+      // ---------------- 聊天 ----------------
+      function openChat() {
+        state.chatOpen = true;
+        el.chatbox.hidden = false;
+        el.chatinput.value = "";
+        setTimeout(() => el.chatinput.focus(), 30);
+        render();
+      }
+
+      function closeChat() {
+        if (!state.chatOpen) return;
+        state.chatOpen = false;
+        el.chatbox.hidden = true;
+        render();
+      }
+
+      el.chatinput.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeChat();
+          return;
+        }
+        if (event.key !== "Enter") return;
+        const text = el.chatinput.value.trim();
+        closeChat();
+        if (!text) return;
+        say("……", 700);
+        setTimeout(() => {
+          say(`（原型里不调用 API）我听到「${text.slice(0, 12)}」了`, 2800);
+        }, 700);
+      });
+
+      // ---------------- 动作 ----------------
+      function cyclePersonality() {
+        const order = ["shy", "cheerful", "tsundere"];
+        state.personality = order[(order.indexOf(state.personality) + 1) % order.length];
+        loadSprite();
+        say(`换成${PERSONALITY_NAME[state.personality]}啦`, 2000);
+        render();
+      }
+
+      function toggleMute() {
+        state.muted = !state.muted;
+        syncBallStates();
+        say(state.muted ? "好，我安静一会儿" : "可以说话啦", 2000);
+        render();
+      }
+
+      // ---------------- 设置窗（原型） ----------------
+      let settingsWin = null;
+      function openSettings() {
+        settingsWin?.remove();
+        const win = document.createElement("div");
+        win.className = "settings-mock";
+        win.innerHTML = `
+          <div class="head"><span>⚙</span> 芯宠 · 设置 <span style="margin-left:auto">✕</span></div>
+          <div class="content">
+            <h3>外观</h3>
+            <div class="hint">让它淡一点、快一点，或者不再挡在所有窗口前面。</div>
+            <div class="card">
+              <div class="row"><label>透明度</label>
+                <span><input id="mock-opacity" type="range" min="50" max="100" step="5" value="100" />
+                <b id="mock-opacity-val" style="font-size:12px;color:#8a8a90">100%</b></span>
+              </div>
+              <div class="row"><label>动画速度</label>
+                <div class="seg"><button class="on">0.5×</button><button>1×</button><button>2×</button></div>
+              </div>
+              <div class="row"><label>始终置顶</label>
+                <div class="seg"><button class="on">开</button><button>关</button></div>
+              </div>
+            </div>
+          </div>`;
+        document.querySelector(".desktop").appendChild(win);
+        settingsWin = win;
+        win.querySelector(".head span:last-child").addEventListener("click", () => {
+          win.remove();
+          settingsWin = null;
+        });
+        win.querySelector("#mock-opacity").addEventListener("input", (event) => {
+          const value = Number(event.target.value);
+          el.petwin.style.opacity = String(value / 100);
+          win.querySelector("#mock-opacity-val").textContent = `${value}%`;
+        });
+      }
+
+      // ---------------- 场景按钮 ----------------
+      document.querySelector(".panel").addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-act]");
+        if (!btn) return;
+        const act = btn.dataset.act;
+        if (act === "hint-longpress") {
+          say("按住我不放试试～", 2000);
+          flash("按住桌宠 2 秒");
+        }
+        if (act === "menu-variant") {
+          setVariant(state.menuVariant === "now" ? "next" : "now");
+          flash(`右键菜单：${state.menuVariant === "now" ? "现在" : "改版"}（右键桌宠看看）`);
+        }
+        if (act === "dock") {
+          state.docked = !state.docked;
+          el.petwin.classList.toggle("docked", state.docked);
+          flash(state.docked ? "贴边收纳（鼠标移上去会滑出）" : "恢复");
+          render();
+        }
+        if (act === "chat") openChat();
+        if (act === "power") {
+          state.powerSave = !state.powerSave;
+          if (state.powerSave) stopIdle();
+          else startIdle();
+          if (state.powerSave) say("我先不动了，省点电", 2200);
+          else say("我动起来啦", 1800);
+          render();
+        }
+        if (act === "reset") resetAll();
+      });
+
+      document.getElementById("variant-seg").addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-variant]");
+        if (btn) setVariant(btn.dataset.variant);
+      });
+
+      function setVariant(variant) {
+        state.menuVariant = variant;
+        for (const b of document.querySelectorAll("#variant-seg button")) {
+          b.classList.toggle("on", b.dataset.variant === variant);
+        }
+      }
+
+      document.getElementById("annotate-seg").addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-annotate]");
+        if (!btn) return;
+        state.annotate = btn.dataset.annotate === "on";
+        el.annotate.classList.toggle("on", state.annotate);
+        for (const b of document.querySelectorAll("#annotate-seg button")) {
+          b.classList.toggle("on", b.dataset.annotate === btn.dataset.annotate);
+        }
+      });
+
+      // ---------------- 全局键 ----------------
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeMenu("Esc");
+          closeChat();
+        }
+      });
+
+      // ---------------- 状态栏 ----------------
+      function render() {
+        const flags = [
+          `性格 ${PERSONALITY_NAME[state.personality]}`,
+          state.muted ? "静音" : "有声",
+          state.menuOpen ? "浮球开" : "浮球关",
+          state.chatOpen ? "输入条开" : "输入条关",
+          state.powerSave ? "省电" : "动画中",
+          state.docked ? "贴边" : "自由",
+          `菜单版本 ${state.menuVariant === "now" ? "现在" : "改版"}`,
+        ];
+        el.state.textContent = flags.join("\n");
+      }
+
+      function resetAll() {
+        closeMenu();
+        closeChat();
+        settingsWin?.remove();
+        settingsWin = null;
+        state.muted = false;
+        state.dnd = false;
+        state.powerSave = false;
+        state.docked = false;
+        el.petwin.classList.remove("docked");
+        el.petwin.style.left = "";
+        el.petwin.style.top = "";
+        el.petwin.style.right = "";
+        el.petwin.style.bottom = "";
+        el.petwin.style.opacity = "1";
+        state.personality = "shy";
+        loadSprite();
+        startIdle();
+        render();
+        flash("已重置");
+      }
+
+      // ---------------- 启动 ----------------
+      loadSprite();
+      render();
+    </script>
+  </body>
+</html>
