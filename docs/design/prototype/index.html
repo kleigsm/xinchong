@@ -513,10 +513,12 @@
 
     <script>
       // ---------------- 素材 ----------------
+      // 贴图放在同目录的 assets/ 下，这样**双击 index.html 也能直接打开**
+      // （之前用 ../../../src/... 的相对路径，必须从仓库根目录起服务才显示）
       const SPRITES = {
-        shy: "../../../src/renderer/assets/pet-shy.png",
-        cheerful: "../../../src/renderer/assets/pet-cheerful.png",
-        tsundere: "../../../src/renderer/assets/pet-tsundere.png",
+        shy: "./assets/pet-shy.png",
+        cheerful: "./assets/pet-cheerful.png",
+        tsundere: "./assets/pet-tsundere.png",
       };
       const PERSONALITY_NAME = { shy: "害羞", cheerful: "开朗", tsundere: "傲娇" };
       const LINES = {
