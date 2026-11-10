@@ -1,4 +1,4 @@
-﻿# 问题池
+# 问题池
 
 > 测试期间发现的所有问题都记在这里。**不要直接改代码，先记一条。**
 
@@ -150,10 +150,10 @@
   1. 导入并切换到任意自定义角色
   2. 右键托盘 → 性格 → 害羞
   3. 菜单勾选变了，但角色仍是自定义形象
-- **期望**：立即换回内置角色，清空 ctivePetId
+- **期望**：立即换回内置角色，清空 activePetId
 - **严重度**：P1
 - **状态**：🔄 修中
-- **备注**：	ray.ts 的「性格」菜单只调 updateSettings，没走 useBuiltInPet()；
+- **备注**：tray.ts 的「性格」菜单只调 updateSettings，没走 useBuiltInPet()；
   渲染层 pplySettings 又有 if (!usingUserPet) 守卫。本 PR 已改为 useBuiltInPet()。
 
 ### BUG-017 morning 台词没有触发入口
