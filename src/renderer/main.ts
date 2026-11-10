@@ -37,6 +37,14 @@ let lineEngine = new LineEngine(PACKS[currentPackId].lines);
 let currentSettings: Settings | null = null;
 const isDoNotDisturb = (): boolean => currentSettings?.dnd === true;
 
+/** 本地日期键（YYYY-MM-DD），用于判断「当天第一次交互」 */
+function todayKey(): string {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+
 const machine = new PetStateMachine(view, {
   idleToSleepMs: 30_000,
   onStateChange: (_from, to) => {
@@ -51,9 +59,18 @@ const machine = new PetStateMachine(view, {
 
     if (to === "click") {
       sound.play("click");
-      // 深夜有 30% 概率说"夜里的话"。白天 pick("night") 返回 null，会自动跳过。
-      const nightLine = Math.random() < 0.3 ? lineEngine.pick("night") : null;
-      const line = nightLine ?? lineEngine.pick("click");
+
+      // 当天第一次交互说 morning（BUG-017：这个场景之前没有触发入口）。
+      // 用本地日期字符串比较，跨天才会触发一次。
+      const today = todayKey();
+      const isFirstToday = currentSettings?.lastActiveDate !== today;
+      if (isFirstToday) void window.api.patchSettings({ lastActiveDate: today });
+
+      // 优先级：当天第一句 → 深夜（30% 概率）→ 普通点击
+      const morningLine = isFirstToday ? lineEngine.pick("morning") : null;
+      const nightLine =
+        morningLine === null && Math.random() < 0.3 ? lineEngine.pick("night") : null;
+      const line = morningLine ?? nightLine ?? lineEngine.pick("click");
       if (line) bubble.show(line);
     }
 

@@ -24,6 +24,7 @@ const DEFAULTS: Settings = {
   doubleClickAction: "pat",
   patHand: "cartoon",
   hasSeenGuide: false,
+  lastActiveDate: "",
   petOpacity: 1,
   animationSpeed: 1,
   alwaysOnTop: true,

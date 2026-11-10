@@ -45,6 +45,23 @@ export interface SpriteSpec {
 // 兼容仍从 ./pet-pack 引 LineBank 的旧导入（如 default-lines.ts）。
 export type { LineBank };
 
+/**
+ * 音效名。
+ *
+ * 和 AnimationName 不是一回事：`appear`（出现）和 `confirm`（确认）没有对应动画，
+ * 但音效要用到。所以单独定义，别复用 AnimationName。
+ */
+export type SoundName =
+  | "click"
+  | "drag"
+  | "sleep"
+  | "appear"
+  | "wave"
+  | "stretch"
+  | "pat"
+  | "angry"
+  | "confirm";
+
 /** 一个完整的角色包 */
 export interface PetPack {
   id: string;
@@ -53,6 +70,6 @@ export interface PetPack {
   sprite: SpriteSpec;
   animations: Partial<Record<AnimationName, AnimationSpec>>;
   lines: LineBank;
-  /** 音效文件（可选，暂未接入） */
-  sounds?: Partial<Record<AnimationName, string>>;
+  /** 音效文件 URL（可选）。缺哪个就用合成音兜底 */
+  sounds?: Partial<Record<SoundName, string>>;
 }

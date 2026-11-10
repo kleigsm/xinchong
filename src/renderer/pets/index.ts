@@ -5,6 +5,25 @@ import shySheet from "../assets/pet-shy.png";
 import cheerfulSheet from "../assets/pet-cheerful.png";
 import tsundereSheet from "../assets/pet-tsundere.png";
 
+// 音效（C2）。缺哪个 kind 就由 SoundPlayer 用合成音兜底。
+import shyAppear from "../assets/sounds/shy/appear.wav";
+import shyClick from "../assets/sounds/shy/click.wav";
+import shyConfirm from "../assets/sounds/shy/confirm.wav";
+import shyDrag from "../assets/sounds/shy/drag.wav";
+import shySleep from "../assets/sounds/shy/sleep.wav";
+
+import cheerfulAppear from "../assets/sounds/cheerful/appear.wav";
+import cheerfulClick from "../assets/sounds/cheerful/click.wav";
+import cheerfulConfirm from "../assets/sounds/cheerful/confirm.wav";
+import cheerfulDrag from "../assets/sounds/cheerful/drag.wav";
+import cheerfulSleep from "../assets/sounds/cheerful/sleep.wav";
+
+import tsundereAppear from "../assets/sounds/tsundere/appear.wav";
+import tsundereClick from "../assets/sounds/tsundere/click.wav";
+import tsundereConfirm from "../assets/sounds/tsundere/confirm.wav";
+import tsundereDrag from "../assets/sounds/tsundere/drag.wav";
+import tsundereSleep from "../assets/sounds/tsundere/sleep.wav";
+
 /**
  * 内置角色包：三套统一使用 9 行布局（36 帧，含四个性格动作）。
  * 布局与帧号定义见 src/main/sheet-layout.ts。
@@ -109,6 +128,13 @@ export const PACKS: Record<PersonalityId, PetPack> = {
         "今天也一起吧",
       ],
     },
+    sounds: {
+      appear: shyAppear,
+      click: shyClick,
+      confirm: shyConfirm,
+      drag: shyDrag,
+      sleep: shySleep,
+    },
   },
 
   cheerful: {
@@ -196,6 +222,13 @@ export const PACKS: Record<PersonalityId, PetPack> = {
         "出发出发！",
       ],
     },
+    sounds: {
+      appear: cheerfulAppear,
+      click: cheerfulClick,
+      confirm: cheerfulConfirm,
+      drag: cheerfulDrag,
+      sleep: cheerfulSleep,
+    },
   },
 
   tsundere: {
@@ -282,6 +315,13 @@ export const PACKS: Record<PersonalityId, PetPack> = {
         "（递给你一杯水）",
         "今天也别太勉强",
       ],
+    },
+    sounds: {
+      appear: tsundereAppear,
+      click: tsundereClick,
+      confirm: tsundereConfirm,
+      drag: tsundereDrag,
+      sleep: tsundereSleep,
     },
   },
 

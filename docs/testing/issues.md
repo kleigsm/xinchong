@@ -163,8 +163,9 @@
 - **现象**：三套各 4 条 morning 台词，但没有任何地方调用 pick(morning)
 - **期望**：当天第一次交互时优先播 morning，或删掉这个场景
 - **严重度**：P2
-- **状态**：⬜ 待修
+- **状态**：✅ 已修
 - **备注**：main.ts 只有 click 的 night 分支；line-engine.ts 支持 morning，只缺触发方。
+  已修：新增 `lastActiveDate` 设置，当天第一次点击优先播 morning。
 
 ### BUG-018 用户不能自定义音效
 

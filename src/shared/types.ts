@@ -34,6 +34,8 @@ export interface Settings {
   patHand: "real" | "cartoon";
   /** 是否已经看过首次引导 */
   hasSeenGuide: boolean;
+  /** 上次交互日期（YYYY-MM-DD）。用于判断"当天第一次见面"→ 播 morning 台词 */
+  lastActiveDate: string;
   /** 桌宠不透明度 0.5–1 */
   petOpacity: number;
   /** 动画速度倍率：0.5 / 1 / 2 */
