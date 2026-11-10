@@ -1,5 +1,6 @@
 import type { Settings } from "../../shared/types";
 import type { PetListItem, PersonalityInfo, SettingsApi, SystemInfo } from "../../shared/settings-api";
+import { SOUND_THEMES } from "../../shared/sound-themes";
 
 declare global {
   interface Window {
@@ -258,7 +259,8 @@ function pageAppearance(): string {
     )}`;
 }
 
-function pageSound(): string {  const percent = Math.round(settings.volume * 100);
+function pageSound(): string {
+  const percent = Math.round(settings.volume * 100);
   return `
     <h2 class="page-title">声音</h2>
     <p class="page-sub">默认静音关闭；勿扰模式下不出声也不冒台词。</p>
@@ -276,6 +278,20 @@ function pageSound(): string {  const percent = Math.round(settings.volume * 100
            <span class="range-value" id="volume-value">${percent}%</span>
          </div>
        </div>`,
+    )}
+
+    ${card(
+      "音效主题",
+      "◇",
+      row(
+        "用哪套音效",
+        `<div class="segmented">${SOUND_THEMES.map(
+          (t) =>
+            `<button data-action="segment-text" data-key="soundTheme" data-value="${t.id}"
+               class="${settings.soundTheme === t.id ? "active" : ""}">${esc(t.label)}</button>`,
+        ).join("")}</div>`,
+        "「跟随性格」是三套角色的原生音色；其余是萌宠语音包，每种音效有 2 个变体随机播放",
+      ),
     )}
 
     ${card(

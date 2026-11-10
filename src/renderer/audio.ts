@@ -1,4 +1,5 @@
 import type { PetPack, SoundName } from "../shared/pet-pack";
+import { SOUND_PACKS, type SoundTheme } from "./sound-packs";
 
 /** 音效名统一在 shared/pet-pack.ts 定义，这里再导出方便渲染层引用 */
 export type SoundKind = SoundName;
@@ -15,6 +16,8 @@ export class SoundPlayer {
   private pack: PetPack;
   private volume = 0.6;
   private muted = false;
+  /** 音效主题：personality = 跟随角色；其它 = 萌宠语音包 */
+  private theme: SoundTheme = "personality";
   /** 文件音效缓存，避免每次点击都重新加载 */
   private audioCache = new Map<string, HTMLAudioElement>();
 
@@ -34,18 +37,37 @@ export class SoundPlayer {
     this.muted = muted;
   }
 
+  /** 切换音效主题（设置里改，立即生效） */
+  setTheme(theme: SoundTheme): void {
+    this.theme = theme;
+  }
+
   play(kind: SoundKind): void {
     if (this.muted || this.volume <= 0.001) {
       console.log(`[audio] skip ${kind} (muted=${this.muted}, volume=${this.volume})`);
       return;
     }
 
-    const file = (this.pack.sounds as Record<string, string | undefined> | undefined)?.[kind];
+    // 1) 萌宠语音包（用户选的主题）：每种音效有 2 个变体，随机取一个
+    if (this.theme !== "personality") {
+      const pool = SOUND_PACKS[this.theme][kind];
+      if (pool && pool.length > 0) {
+        const url = pool[Math.floor(Math.random() * pool.length)];
+        console.log(`[audio] play ${kind} (pack=${this.theme})`);
+        this.playFile(url);
+        return;
+      }
+    }
+
+    // 2) 角色自带音效（跟随性格）
+    const file = this.pack.sounds?.[kind];
     if (file) {
       console.log(`[audio] play ${kind} (file)`);
       this.playFile(file);
       return;
     }
+
+    // 3) 兜底：Web Audio 合成
     console.log(`[audio] play ${kind} (synth, base=${this.baseFrequency()}Hz)`);
     this.synthesize(kind);
   }
