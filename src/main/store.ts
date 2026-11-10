@@ -17,6 +17,7 @@ const DEFAULTS: Settings = {
   personality: "shy",
   activePetId: null,
   volume: 0.6,
+  soundTheme: "personality",
   idleToSleepMs: 30_000,
   gestureWave: true,
   gesturePat: true,

@@ -238,6 +238,7 @@ function applySettings(settings: Settings): void {
   currentSettings = settings;
   sound.setMuted(settings.muted);
   sound.setVolume(settings.volume ?? 0.6);
+  sound.setTheme(settings.soundTheme ?? "personality");
   machine.setIdleTimeout(settings.idleToSleepMs ?? 30_000);
   // 外观：速度与透明度都由播放器持有，改一次立刻生效
   view.setSpeed(settings.animationSpeed ?? 1);

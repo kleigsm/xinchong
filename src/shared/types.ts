@@ -20,6 +20,8 @@ export interface Settings {
   activePetId: string | null;
   /** 音量 0–1 */
   volume: number;
+  /** 音效主题：跟随性格 / 狗狗 / 猫咪 / 小鸟 / 小猪 */
+  soundTheme: "personality" | "dog" | "cat" | "bird" | "pig";
   /** 多久没互动进入睡觉（毫秒）；0 = 不自动睡 */
   idleToSleepMs: number;
   /** 双击招手 */
