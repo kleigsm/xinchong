@@ -1,14 +1,7 @@
-import type { PetPack } from "../shared/pet-pack";
+import type { PetPack, SoundName } from "../shared/pet-pack";
 
-export type SoundKind =
-  | "click"
-  | "drag"
-  | "sleep"
-  | "appear"
-  | "wave"
-  | "stretch"
-  | "pat"
-  | "angry";
+/** 音效名统一在 shared/pet-pack.ts 定义，这里再导出方便渲染层引用 */
+export type SoundKind = SoundName;
 
 /**
  * 音效播放器。
@@ -135,6 +128,11 @@ export class SoundPlayer {
       case "angry":
         // 短促的下滑方波，像"哼"
         this.slide(ctx, now, base * 0.9, base * 0.55, 0.16, "square");
+        break;
+      case "confirm":
+        // 轻快的两声上扬，用于"操作成功"
+        this.blip(ctx, now, base * 1.2, 0.07, "sine");
+        this.blip(ctx, now + 0.08, base * 1.6, 0.1, "sine");
         break;
     }
   }

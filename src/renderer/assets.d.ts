@@ -10,6 +10,22 @@ declare module "*.webp" {
   export default src;
 }
 
+// 音效文件（C2）：Vite 会把它们转成 URL 字符串
+declare module "*.wav" {
+  const src: string;
+  export default src;
+}
+
+declare module "*.ogg" {
+  const src: string;
+  export default src;
+}
+
+declare module "*.mp3" {
+  const src: string;
+  export default src;
+}
+
 declare module "*.css" {
   const content: string;
   export default content;
