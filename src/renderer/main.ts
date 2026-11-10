@@ -5,12 +5,14 @@ import { SpeechBubble } from "./bubble";
 import { LineEngine } from "./line-engine";
 import { SoundPlayer } from "./audio";
 import { playPetpet, stopPetpet } from "./petpet";
+import { playFx } from "./fx";
 import { DEFAULT_PERSONALITY, isPersonalityId } from "../shared/personalities";
 import type { Point, Settings } from "../shared/types";
 
 // 注意：不能叫 pet，否则和 preload 暴露的 window.pet 冲突（P0-1 踩过的坑）
 const petEl = document.getElementById("pet") as HTMLElement;
 const handEl = document.getElementById("petpet-hand") as HTMLImageElement;
+const fxLayer = document.getElementById("fx-layer") as HTMLElement;
 const bubbleEl = document.getElementById("bubble") as HTMLElement;
 const chatBox = document.getElementById("chat-box") as HTMLElement;
 const chatInput = document.getElementById("chat-input") as HTMLInputElement;
@@ -38,6 +40,10 @@ const isDoNotDisturb = (): boolean => currentSettings?.dnd === true;
 const machine = new PetStateMachine(view, {
   idleToSleepMs: 30_000,
   onStateChange: (_from, to) => {
+    // 动作小特效：纯视觉反馈，勿扰模式下也保留
+    if (to === "click" || to === "pat" || to === "angry") {
+      playFx(fxLayer, petEl, to, currentSettings?.animationSpeed ?? 1);
+    }
     // 摸头是纯视觉反馈，所有形象通用；勿扰模式下也要给反馈
     if (to === "pat") playPetpet(petEl, handEl, currentSettings?.patHand ?? "cartoon");
     if (to === "drag") stopPetpet(petEl, handEl);

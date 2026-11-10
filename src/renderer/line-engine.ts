@@ -5,7 +5,7 @@ import type { LineBank, Scene } from "../shared/lines";
  * 随机源和「当前时间」都靠构造参数注入，不碰 window / DOM / 全局时间。
  */
 export interface LineEngineOptions {
-  /** 同一场景里，最近多少条不重复。默认 10 */
+  /** 同一场景里，最近多少条不重复。默认 20（大于 12 条 click 池，保证先轮完再重复） */
   historySize?: number;
   /** 注入随机源，方便测试。默认 Math.random */
   random?: () => number;
@@ -32,7 +32,7 @@ export class LineEngine {
 
   constructor(bank: LineBank, options: LineEngineOptions = {}) {
     this.bank = bank;
-    this.historySize = options.historySize ?? 10;
+    this.historySize = options.historySize ?? 20;
     this.random = options.random ?? Math.random;
     this.now = options.now ?? (() => new Date());
   }

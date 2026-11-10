@@ -197,3 +197,61 @@ body {
 #chat-input:focus {
   border-color: #ef7d97;
 }
+
+/* ============================================================
+   通用动作小特效（click / pat / angry）
+   只用 DOM + transform/opacity，见 src/renderer/fx.ts
+   ============================================================ */
+
+#fx-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  overflow: hidden;
+}
+
+.fx {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  line-height: 1;
+  font-family: "Segoe UI Symbol", "Segoe UI Emoji", sans-serif;
+  animation-name: fx-float;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
+  animation-fill-mode: forwards;
+  will-change: transform, opacity;
+}
+
+.fx-click {
+  color: #ffd76a;
+  text-shadow: 0 0 6px rgba(255, 200, 80, 0.9);
+}
+
+.fx-pat {
+  color: #ff8fa8;
+  text-shadow: 0 0 8px rgba(255, 120, 150, 0.8);
+}
+
+.fx-angry {
+  color: #ff5a4a;
+  text-shadow: 0 0 6px rgba(255, 90, 70, 0.55);
+}
+
+@keyframes fx-float {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(
+        calc(-50% + var(--fx-dx, 0px)),
+        calc(-50% + var(--fx-dy, -30px))
+      )
+      scale(1.15) rotate(var(--fx-rot, 0deg));
+  }
+}

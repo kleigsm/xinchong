@@ -6,7 +6,7 @@ import { openSettingsWindow } from "./settings-window";
 import { loadChatKey } from "./chat-key";
 import { openChatInput } from "./chat-input";
 import { listPetSummaries } from "./pet-payload";
-import { deleteStoredPet, useStoredPet } from "./pet-switch";
+import { deleteStoredPet, useBuiltInPet, useStoredPet } from "./pet-switch";
 import { showPerfDialog } from "./perf";
 import { applyAutoStart } from "./autostart";
 import { getSettings, updateSettings } from "./store";
@@ -117,7 +117,8 @@ export function buildMenu(win: BrowserWindow): Menu {
         type: "radio" as const,
         checked: settings.personality === personality.id,
         click: () => {
-          updateSettings({ personality: personality.id });
+          // 自定义角色下也要能切回内置形象：useBuiltInPet 会清 activePetId 并通知渲染层
+          useBuiltInPet(win, personality.id);
           refreshMenu(win);
           notifySettings(win);
         },
