@@ -1,6 +1,6 @@
 import { BrowserWindow, screen } from "electron";
 import { join } from "node:path";
-import { MIN_VISIBLE_PX, WINDOW_HEIGHT, WINDOW_WIDTH } from "../shared/constants";
+import { PET_EDGE_MARGIN, PET_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH } from "../shared/constants";
 
 /**
  * 创建桌宠主窗口：透明、无边框、置顶、不占任务栏、不抢焦点。
@@ -74,10 +74,13 @@ export function applyAlwaysOnTop(win: BrowserWindow, on: boolean): void {
 }
 
 /**
- * 把目标位置夹到「至少有 MIN_VISIBLE_PX 留在工作区内」。
+ * 把目标位置夹到「角色中心仍在工作区内」。
  *
  * 拖拽过程中每帧都要调用：即使松手事件丢失（光标已在窗口外），
- * 宠物也不会被拖到完全看不见的地方。
+ * 宠物也不会被拖到看不见的地方。
+ *
+ * 注意是按**角色中心**算，不是按窗口边缘——
+ * 角色贴在窗口底部，窗口露 60px 时角色早就没了（BUG-011）。
  */
 export function clampPosition(
   x: number,
@@ -88,10 +91,14 @@ export function clampPosition(
   const display = screen.getDisplayMatching({ x, y, width, height });
   const area = display.workArea;
 
-  const minX = area.x - width + MIN_VISIBLE_PX;
-  const maxX = area.x + area.width - MIN_VISIBLE_PX;
-  const minY = area.y - height + MIN_VISIBLE_PX;
-  const maxY = area.y + area.height - MIN_VISIBLE_PX;
+  // 角色：水平居中、贴底
+  const petCenterX = width / 2;
+  const petCenterY = height - PET_SIZE / 2;
+
+  const minX = area.x + PET_EDGE_MARGIN - petCenterX;
+  const maxX = area.x + area.width - PET_EDGE_MARGIN - petCenterX;
+  const minY = area.y + PET_EDGE_MARGIN - petCenterY;
+  const maxY = area.y + area.height - PET_EDGE_MARGIN - petCenterY;
 
   return {
     x: clamp(x, minX, maxX),
@@ -100,7 +107,7 @@ export function clampPosition(
 }
 
 /**
- * 保证窗口至少有 MIN_VISIBLE_PX 留在某个显示器的工作区内。
+ * 保证角色中心仍在某个显示器的工作区内。
  * 用于处理：拖出屏幕边缘、显示器被拔掉、分辨率变化。
  */
 export function clampToVisibleArea(win: BrowserWindow): void {

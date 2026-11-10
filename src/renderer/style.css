@@ -30,6 +30,14 @@ body {
   will-change: background-position, transform;
   /* 立绘动画以"脚底"为支点，呼吸/倾斜才自然 */
   transform-origin: 50% 100%;
+  /**
+   * 两段变换在这里合成：
+   *   --pet-anim-transform  呼吸/点击/拖拽（PetView 写）
+   *   --petpet-transform    摸头时被按扁（petpet 写）
+   * 以前两边都直接写 style.transform，结果互相覆盖（BUG-012）。
+   * 变量没设置时替换结果为空，按 transform: none 处理。
+   */
+  transform: var(--petpet-transform,) var(--pet-anim-transform,);
 }
 
 #pet.dragging {
