@@ -60,3 +60,8 @@
 - Pixabay 猫叫/卡通猫叫（可商用，但不能单独再分发音频）：
   https://pixabay.com/sound-effects/nature-cat-meow-321642/
 - 80 CC0 包里的 `cute_01..10`、`grunt_01..05`：可做“通用萌宠/人声替代”备选
+
+## 新增 4 个动作的派生说明
+
+wave / stretch / pat / angry 是在各自动物已有 5 类音效上派生的：变调、低通、拼接，不引入新的第三方素材。
+
