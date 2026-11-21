@@ -1,0 +1,175 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>芯宠的小屋</title>
+<style>
+  :root {
+    --wall: #e8d6bd;
+    --wall-2: #dfc9aa;
+    --wood: #b98255;
+    --wood-dark: #6b4329;
+    --paper: #f7ecd9;
+    --ink: #3b2a1e;
+    --coral: #ef6a45;
+    --sage: #7d9b7a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1040px; height: 700px; overflow: hidden; }
+  body {
+    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+    color: var(--ink);
+    background:
+      repeating-linear-gradient(90deg, rgba(107,67,41,.045) 0 1px, transparent 1px 26px),
+      linear-gradient(180deg, var(--wall) 0 72%, #c99a6e 72% 100%);
+    position: relative;
+    user-select: none;
+  }
+  .baseboard { position: absolute; left: 0; right: 0; top: 504px; height: 14px; background: #8f5f3d; border-top: 2px solid #5b3a26; border-bottom: 2px solid #5b3a26; }
+  .floor-lines { position: absolute; left: 0; right: 0; top: 518px; bottom: 0; background: repeating-linear-gradient(90deg, rgba(90,50,30,.12) 0 2px, transparent 2px 92px); }
+
+  .brand { position: absolute; left: 34px; top: 26px; }
+  .brand h1 { margin: 0; font-family: Georgia, "Songti SC", serif; font-size: 27px; letter-spacing: .04em; }
+  .brand .sub { margin-top: 3px; font-size: 10px; letter-spacing: .18em; color: rgba(59,42,30,.6); }
+  .weather { position: absolute; right: 34px; top: 30px; text-align: right; font-size: 10px; color: rgba(59,42,30,.62); letter-spacing: .08em; }
+  .weather b { display: block; font-family: Georgia, serif; font-size: 17px; color: var(--ink); letter-spacing: 0; }
+
+  /* 墙上的木牌导航 */
+  .plaques { position: absolute; left: 34px; top: 112px; display: flex; flex-direction: column; gap: 11px; }
+  .plaque {
+    width: 172px; height: 50px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 12px;
+    background: var(--paper);
+    border: 2px solid var(--wood-dark);
+    box-shadow: 3px 3px 0 rgba(107,67,41,.35);
+    border-radius: 3px;
+    cursor: pointer;
+    transform: rotate(-.6deg);
+    transition: transform .12s, background .12s;
+  }
+  .plaque:nth-child(2n) { transform: rotate(.5deg); }
+  .plaque:hover { transform: rotate(0) translateX(2px); }
+  .plaque.active { background: var(--coral); color: #fff8ef; border-color: #7c2f1c; box-shadow: 3px 3px 0 #7c2f1c; transform: rotate(.8deg); }
+  .plaque .n { font: 10px/1 "Cascadia Mono", Consolas, monospace; opacity: .55; }
+  .plaque .t { font-size: 13px; font-weight: 700; letter-spacing: .04em; }
+  .plaque .pin { width: 6px; height: 6px; border-radius: 50%; background: #a9784f; margin-left: auto; box-shadow: inset 0 1px 0 rgba(0,0,0,.2); }
+  .plaque.active .pin { background: #ffd9c9; }
+
+  /* 窗户 */
+  .window {
+    position: absolute; right: 58px; top: 72px; width: 262px; height: 166px;
+    border: 7px solid #7d5436; border-radius: 4px;
+    background: linear-gradient(180deg, #a9dbe2, #d9edf0 70%, #f4e7cf);
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.35), 6px 6px 0 rgba(107,67,41,.18);
+    overflow: hidden;
+  }
+  .window::before, .window::after { content: ""; position: absolute; background: #7d5436; }
+  .window::before { left: 50%; top: 0; bottom: 0; width: 5px; margin-left: -2px; }
+  .window::after { top: 50%; left: 0; right: 0; height: 5px; margin-top: -2px; }
+  .sun { position: absolute; right: 34px; top: 26px; width: 38px; height: 38px; border-radius: 50%; background: #ffd88a; box-shadow: 0 0 26px #ffe3a8; }
+  .cloud { position: absolute; height: 18px; border-radius: 999px; background: rgba(255,255,255,.8); }
+  .cloud.a { left: 26px; top: 52px; width: 78px; }
+  .cloud.b { left: 62px; top: 82px; width: 108px; opacity: .7; }
+  .curtain { position: absolute; top: 66px; right: 40px; width: 34px; height: 180px; background: repeating-linear-gradient(90deg, #e8b7a8 0 8px, #dd9e8d 8px 16px); border: 2px solid #8e5a48; border-radius: 3px; transform: skewX(-3deg); }
+
+  /* 衣柜/形象架 */
+  .shelf { position: absolute; right: 62px; top: 330px; width: 270px; height: 18px; background: #8a5c3c; border: 2px solid #5b3a26; box-shadow: 4px 5px 0 rgba(107,67,41,.25); }
+  .shelf-label { position: absolute; right: 62px; top: 232px; font-size: 10px; letter-spacing: .16em; color: rgba(59,42,30,.65); }
+  .closet { position: absolute; right: 64px; top: 252px; display: flex; gap: 10px; align-items: flex-end; }
+  .box {
+    width: 62px; height: 78px; background: var(--paper); border: 2px solid var(--wood-dark);
+    box-shadow: 3px 3px 0 rgba(107,67,41,.3); display: flex; align-items: flex-end; justify-content: center;
+    transform: rotate(-1deg); cursor: pointer;
+  }
+  .box:nth-child(2) { transform: rotate(1deg); }
+  .box img { height: 68px; }
+  .box span { position: absolute; margin-bottom: -16px; font-size: 8px; color: rgba(59,42,30,.65); }
+
+  /* 地毯 + 宠物 */
+  .rug {
+    position: absolute; left: 50%; bottom: 56px; width: 520px; height: 118px; margin-left: -260px;
+    background: radial-gradient(ellipse at center, #e7a48f 0 58%, #d88772 59% 66%, #c97562 67% 100%);
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 6px rgba(255,255,255,.18);
+  }
+  .pet-wrap { position: absolute; left: 50%; bottom: 84px; width: 280px; margin-left: -140px; display: flex; justify-content: center; }
+  .pet-wrap img { height: 270px; filter: drop-shadow(0 18px 16px rgba(70,40,20,.25)); }
+  .glow { position: absolute; left: 50%; bottom: 68px; width: 280px; height: 120px; margin-left: -140px; border-radius: 50%; background: #f06c8a; opacity: .28; filter: blur(26px); }
+
+  /* 名牌 */
+  .nameplate {
+    position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
+    width: 430px; padding: 9px 14px 10px;
+    background: var(--paper); border: 2px solid var(--wood-dark);
+    box-shadow: 4px 4px 0 rgba(107,67,41,.35);
+    border-radius: 3px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .nameplate .who b { display: block; font-family: Georgia, serif; font-size: 16px; }
+  .nameplate .who span { font-size: 9px; color: rgba(59,42,30,.65); letter-spacing: .06em; }
+  .nameplate .tags { margin-left: auto; display: flex; gap: 6px; }
+  .tag { height: 26px; padding: 0 9px; display: flex; align-items: center; gap: 5px; border: 1px solid var(--wood-dark); border-radius: 3px; background: #fff8ec; font-size: 10px; font-weight: 600; cursor: pointer; }
+  .tag:hover { background: var(--coral); color: #fff; }
+
+  .plant { position: absolute; left: 210px; bottom: 74px; width: 54px; height: 44px; background: #b96a4c; border: 2px solid #6b3e2a; border-radius: 4px 4px 14px 14px; }
+  .plant::before, .plant::after { content: ""; position: absolute; bottom: 36px; width: 22px; height: 52px; border-radius: 50% 50% 40% 40%; background: var(--sage); border: 2px solid #4f6b4e; }
+  .plant::before { left: 4px; transform: rotate(-24deg); }
+  .plant::after { right: 4px; transform: rotate(22deg); }
+
+  .hint { position: absolute; left: 50%; bottom: 2px; transform: translateX(-50%); font-size: 8px; color: rgba(59,42,30,.45); letter-spacing: .12em; }
+</style>
+</head>
+<body>
+  <div class="baseboard"></div>
+  <div class="floor-lines"></div>
+
+  <div class="brand">
+    <h1>芯宠的小屋</h1>
+    <div class="sub">XINCHONG'S ROOM · 下午好</div>
+  </div>
+  <div class="weather"><b>22°</b>多云 · 适合发呆</div>
+
+  <div class="plaques">
+    <div class="plaque active"><span class="n">01</span><span class="t">我的形象</span><span class="pin"></span></div>
+    <div class="plaque"><span class="n">02</span><span class="t">外观大厅</span><span class="pin"></span></div>
+    <div class="plaque"><span class="n">03</span><span class="t">声音与台词</span><span class="pin"></span></div>
+    <div class="plaque"><span class="n">04</span><span class="t">行为</span><span class="pin"></span></div>
+    <div class="plaque"><span class="n">05</span><span class="t">系统</span><span class="pin"></span></div>
+    <div class="plaque"><span class="n">06</span><span class="t">关于</span><span class="pin"></span></div>
+  </div>
+
+  <div class="window">
+    <div class="sun"></div>
+    <div class="cloud a"></div>
+    <div class="cloud b"></div>
+  </div>
+  <div class="curtain"></div>
+
+  <div class="shelf-label">衣柜 / 已收藏 3 套</div>
+  <div class="closet">
+    <div class="box"><img src="assets/pet-shy.png" alt="" /></div>
+    <div class="box"><img src="assets/pet-cheerful.png" alt="" /></div>
+    <div class="box"><img src="assets/pet-tsundere.png" alt="" /></div>
+  </div>
+  <div class="shelf"></div>
+
+  <div class="rug"></div>
+  <div class="glow"></div>
+  <div class="pet-wrap"><img src="assets/pet-shy.png" alt="" /></div>
+
+  <div class="nameplate">
+    <div class="who"><b>小芯</b><span>害羞 · 内置 · 使用中</span></div>
+    <div class="tags">
+      <div class="tag">招手</div>
+      <div class="tag">摸头</div>
+      <div class="tag">睡觉</div>
+      <div class="tag">隐藏</div>
+    </div>
+  </div>
+
+  <div class="plant"></div>
+  <div class="hint">点击墙上的木牌切换 · 衣柜里是已收藏的形象</div>
+</body>
+</html>
+

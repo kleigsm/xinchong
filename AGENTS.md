@@ -38,6 +38,7 @@
 
 ## 5. 干活规矩
 
+- **开工前先查上游**，再看 [`docs/WORKFLOW.md`](docs/WORKFLOW.md) 的四道闸；**收工前清理工作区**
 - **一个任务 = 一个分支 = 一个 PR**，分支名 `feat/<任务号>-<短描述>`，如 `feat/p1-3-personality`
 - 改代码的 PR **必须同时更新** `docs/STATUS.md` 和一篇 `docs/log/YYYY-MM-DD-<任务号>.md`
 - **日志按任务建文件，不按天合并** —— 两个人同一天做不同任务时不会改同一个文件，也就不会冲突
@@ -54,3 +55,14 @@
 - 门户网站在另一个仓库：[kleigsm/xinchong-site](https://github.com/kleigsm/xinchong-site)
 - **三种启动方式行为不同，验证时要各跑一遍**：
   `pnpm dev`（渲染层走 Vite，不产出 out/renderer）、`pnpm start`（preview，会构建）、打包 exe
+
+## 7. 每次开工 / 收工
+
+固定流程见 [`docs/WORKFLOW.md`](docs/WORKFLOW.md)：
+
+1. **开工**：查上游 → 读 STATUS/BACKLOG/日志/DECISIONS → 盘点工作区
+2. **想法**：产品定位闸 → 分工闸 → 方案对比 → 验收标准，过了才建分支
+3. **执行**：一个任务一个分支，小步提交
+4. **收工**：typecheck/test/build → STATUS/日志/issues → PR → 清理工作区
+
+**开工第一件事查上游，收工最后一件清理工作区。**

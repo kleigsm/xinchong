@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>桌宠光晕 · 调色板</title>
+<style>
+  :root {
+    --paper: #fbf3e4;
+    --card: #fffdf7;
+    --ink: #2e2521;
+    --muted: #8a7568;
+    --coral: #f0603c;
+    --glow: #f06c8a;
+    --glow-alpha: .55;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 820px; height: 620px; overflow: hidden; }
+  body {
+    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(500px 300px at 85% 0%, #ffe5cf, transparent 65%),
+      radial-gradient(400px 300px at 0% 100%, #f7e6cf, transparent 65%),
+      var(--paper);
+    user-select: none;
+  }
+  body.dark {
+    --paper: #17181c; --card: #1e2026; --ink: #f3eee8; --muted: #a89a8c;
+    --coral: #5ee0d0; --glow: #5ee0d0;
+    background:
+      radial-gradient(500px 300px at 85% 0%, #1d3a37, transparent 65%),
+      radial-gradient(400px 300px at 0% 100%, #1b1d23, transparent 65%),
+      var(--paper);
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0;
+    background-image: radial-gradient(#d9c3aa 1px, transparent 1px);
+    background-size: 18px 18px; opacity: .3; pointer-events: none;
+  }
+  body.dark::before { background-image: radial-gradient(#3a3d45 1px, transparent 1px); opacity: .35; }
+  .wrap { position: relative; z-index: 1; height: 100%; padding: 22px 26px; }
+  .head { display: flex; align-items: flex-end; gap: 12px; margin-bottom: 14px; }
+  .head h1 { margin: 0; font-size: 22px; letter-spacing: -.3px; }
+  .head .sub { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .head .grow { flex: 1; }
+  .close { width: 30px; height: 26px; border: 2px solid var(--ink); border-radius: 8px; background: var(--card); box-shadow: 2px 2px 0 var(--ink); font-size: 14px; color: var(--ink); cursor: pointer; }
+  .main {
+    height: 528px; display: flex; gap: 18px;
+    background: var(--card); border: 2px solid var(--ink); border-radius: 22px;
+    box-shadow: 6px 6px 0 #e7cdb4; padding: 18px;
+  }
+  body.dark .main { box-shadow: 6px 6px 0 #08090b; }
+  .stage {
+    width: 300px; flex: 0 0 300px; border: 2px solid var(--ink); border-radius: 16px;
+    background:
+      radial-gradient(240px 200px at 50% 35%, #fff6ea, transparent 70%),
+      linear-gradient(160deg, #fffdf7, #ffe8d8);
+    position: relative; overflow: hidden;
+  }
+  body.dark .stage { background: radial-gradient(240px 200px at 50% 35%, #15302d, transparent 70%), linear-gradient(160deg, #1e2026, #15302d); }
+  .stage .floor { position: absolute; left: 50%; bottom: 58px; width: 190px; height: 22px; margin-left: -95px; border-radius: 50%; background: radial-gradient(ellipse, rgba(70,40,30,.18), transparent 70%); }
+  body.dark .stage .floor { background: radial-gradient(ellipse, rgba(0,0,0,.4), transparent 70%); }
+  .halo {
+    position: absolute; left: 50%; bottom: 54px; width: 236px; height: 150px;
+    margin-left: -118px; border-radius: 50%;
+    background: var(--glow); opacity: var(--glow-alpha);
+    filter: blur(24px); transition: opacity .15s, background .15s;
+  }
+  .halo.inner { width: 150px; height: 96px; margin-left: -75px; bottom: 82px; filter: blur(14px); opacity: calc(var(--glow-alpha) * 1.15); }
+  .pet { position: absolute; left: 50%; bottom: 58px; height: 218px; margin-left: -109px; filter: drop-shadow(0 12px 14px rgba(80,40,20,.16)); }
+  .stage .hint {
+    position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%);
+    font-size: 10px; color: var(--muted); white-space: nowrap;
+  }
+  .stage .badge {
+    position: absolute; top: 12px; left: 12px;
+    font-size: 9px; font-weight: 700; letter-spacing: .5px;
+    padding: 4px 8px; border: 2px solid var(--ink); border-radius: 7px;
+    background: #fff2a8; color: #2e2521; box-shadow: 2px 2px 0 var(--ink);
+    transform: rotate(-2deg);
+  }
+  body.dark .stage .badge { background: #2a2c33; color: #f3eee8; border-color: #5ee0d0; box-shadow: 2px 2px 0 #5ee0d0; }
+
+  .controls { flex: 1; padding: 4px 4px 0; min-width: 0; }
+  .row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #ece1d5; }
+  body.dark .row { border-color: #2c2f36; }
+  .row .l { font-size: 12px; font-weight: 600; }
+  .row .d { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .sw { width: 40px; height: 22px; border: 2px solid var(--ink); border-radius: 999px; background: #e7d8c8; position: relative; cursor: pointer; }
+  .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2); transition: left .14s; }
+  .sw.on { background: var(--coral); }
+  .sw.on::after { left: 20px; }
+
+  .label { font-size: 10px; color: var(--muted); font-weight: 700; letter-spacing: .4px; margin: 12px 0 7px; }
+  .swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+  .dot {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 2px solid var(--ink); cursor: pointer; position: relative;
+    box-shadow: 2px 2px 0 #e7cdb4;
+  }
+  .dot.sel::after { content: ""; position: absolute; inset: -5px; border: 2px solid var(--ink); border-radius: 50%; }
+  body.dark .dot { box-shadow: 2px 2px 0 #08090b; }
+  .custom { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  input[type="color"] { width: 34px; height: 30px; padding: 0; border: 2px solid var(--ink); border-radius: 7px; background: transparent; cursor: pointer; }
+  input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+  input[type="color"]::-webkit-color-swatch { border: none; border-radius: 4px; }
+  .hex { width: 86px; height: 30px; border: 2px solid var(--ink); border-radius: 7px; background: var(--card); color: var(--ink); font: 600 11px "Cascadia Mono", Consolas, monospace; padding: 0 8px; outline: none; }
+  .eye { height: 30px; padding: 0 10px; border: 2px solid var(--ink); border-radius: 7px; background: var(--card); color: var(--ink); font-size: 10px; font-weight: 700; cursor: pointer; box-shadow: 2px 2px 0 #e7cdb4; }
+  body.dark .eye { box-shadow: 2px 2px 0 #08090b; }
+
+  .slider-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  input[type="range"] { flex: 1; accent-color: var(--coral); }
+  .val { width: 36px; text-align: right; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .recent { display: flex; gap: 6px; margin-top: 7px; }
+  .mini { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--ink); }
+  .foot { display: flex; align-items: center; justify-content: space-between; margin-top: 13px; }
+  .reset { border: 0; background: transparent; color: var(--coral); font-size: 10px; font-weight: 700; cursor: pointer; }
+  .note { font-size: 9px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>桌宠光晕</h1>
+    <div class="sub">外观 · 只影响桌宠周围，不影响控制中心</div>
+    <div class="grow"></div>
+    <button class="close">×</button>
+  </div>
+
+  <div class="main">
+    <div class="stage">
+      <div class="badge">LIVE PREVIEW</div>
+      <div class="halo" id="halo"></div>
+      <div class="halo inner" id="haloInner"></div>
+      <img class="pet" src="assets/pet-shy.png" alt="" />
+      <div class="floor"></div>
+      <div class="hint">光晕会跟随呼吸轻轻起伏</div>
+    </div>
+
+    <div class="controls">
+      <div class="row">
+        <div><div class="l">显示光晕</div><div class="d">关闭后桌宠周围完全透明</div></div>
+        <div class="sw on" id="enabled" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="row">
+        <div><div class="l">跟随性格</div><div class="d">害羞粉 / 开朗橙 / 傲娇玫红</div></div>
+        <div class="sw" id="follow" onclick="this.classList.toggle('on')"></div>
+      </div>
+
+      <div class="label">预设颜色</div>
+      <div class="swatches" id="swatches"></div>
+
+      <div class="label">自定义</div>
+      <div class="custom">
+        <input type="color" id="picker" value="#f06c8a" />
+        <input class="hex" id="hex" value="#F06C8A" maxlength="7" />
+        <button class="eye" id="eye">吸管取色</button>
+      </div>
+
+      <div class="label">强度</div>
+      <div class="slider-row">
+        <input type="range" id="range" min="0" max="100" value="55" />
+        <div class="val" id="val">55%</div>
+      </div>
+
+      <div class="label">最近使用</div>
+      <div class="recent">
+        <div class="mini" style="background:#f06c8a"></div>
+        <div class="mini" style="background:#ff9a62"></div>
+        <div class="mini" style="background:#5ee0b8"></div>
+        <div class="mini" style="background:#62b6ff"></div>
+        <div class="mini" style="background:#b08cff"></div>
+      </div>
+
+      <div class="foot">
+        <span class="note">颜色太接近背景时，会自动加一圈淡描边</span>
+        <button class="reset" id="reset">恢复默认</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const COLORS = [
+    ["#f06c8a","樱花粉"],["#ff9a62","蜜桃橙"],["#ffd166","柠檬黄"],["#5ee0b8","薄荷"],
+    ["#62b6ff","天空蓝"],["#b08cff","薰衣草"],["#f2e9e4","月白"],["#2e2521","墨夜"]
+  ];
+  const root = document.documentElement;
+  const swatches = document.getElementById("swatches");
+  const hex = document.getElementById("hex");
+  const picker = document.getElementById("picker");
+  const range = document.getElementById("range");
+  const val = document.getElementById("val");
+  const halos = [document.getElementById("halo"), document.getElementById("haloInner")];
+  let active = "#f06c8a";
+
+  function setGlow(color) {
+    active = color;
+    root.style.setProperty("--glow", color);
+    hex.value = color.toUpperCase();
+    picker.value = color;
+    [...swatches.children].forEach((el) => el.classList.toggle("sel", el.dataset.color.toLowerCase() === color.toLowerCase()));
+    halos.forEach((h) => h.style.background = color);
+  }
+  function setAlpha() {
+    const v = Number(range.value) / 100;
+    root.style.setProperty("--glow-alpha", String(0.15 + v * 0.7));
+    val.textContent = range.value + "%";
+  }
+
+  COLORS.forEach(([c, name]) => {
+    const d = document.createElement("div");
+    d.className = "dot";
+    d.dataset.color = c;
+    d.title = name;
+    d.style.background = c;
+    d.onclick = () => setGlow(c);
+    swatches.appendChild(d);
+  });
+  picker.oninput = () => setGlow(picker.value);
+  hex.onchange = () => { if (/^#[0-9a-fA-F]{6}$/.test(hex.value)) setGlow(hex.value); };
+  range.oninput = setAlpha;
+
+  document.getElementById("eye").onclick = async () => {
+    if (!window.EyeDropper) { alert("当前 Windows 版本不支持吸管，请用色板或 HEX"); return; }
+    try {
+      const result = await new EyeDropper().open();
+      setGlow(result.sRGBHex);
+    } catch {}
+  };
+  document.getElementById("reset").onclick = () => { setGlow("#f06c8a"); range.value = 55; setAlpha(); };
+  document.getElementById("enabled").onclick = () => {
+    const on = document.getElementById("enabled").classList.toggle("on");
+    halos.forEach((h) => h.style.display = on ? "" : "none");
+  };
+  document.getElementById("follow").onclick = () => {
+    document.getElementById("follow").classList.toggle("on");
+  };
+
+  setGlow(active);
+  setAlpha();
+  if (location.search.includes("dark")) document.body.classList.add("dark");
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="immersive.css" />
+<link rel="stylesheet" href="immersive-light.css" />
+<style>
+  .atmo.green { filter: blur(90px) hue-rotate(120deg) saturate(1.15) brightness(.5); }
+  .filters { display: flex; gap: 7px; margin: -2px 0 9px; }
+  .fchip { height: 26px; padding: 0 10px; border-radius: 7px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); color: var(--muted); font-size: 10px; font-weight: 600; cursor: pointer; }
+  .fchip.active { background: var(--accent); border-color: var(--accent); color: #2a170f; }
+  .info .license { margin-top: 12px; display: flex; gap: 14px; font: 9px/1.6 "Cascadia Mono", Consolas, monospace; color: rgba(255,255,255,.46); letter-spacing: .04em; }
+  .info .license b { color: rgba(255,255,255,.7); font-weight: 600; }
+  .item.mint::before { background: radial-gradient(180px 140px at 50% 72%, rgba(123,224,208,.25), transparent 70%); }
+  .item.mint.active { border-color: var(--mint); box-shadow: 0 18px 40px rgba(0,0,0,.45), 0 0 0 1px var(--mint) inset; }
+  .item.mint.active .name { color: var(--mint); }
+</style>
+</head>
+<body>
+  <div class="atmo green"></div>
+  <div class="veil"></div>
+
+  <div class="page">
+    <header class="top">
+      <div class="logo"><i>芯</i>芯宠</div>
+      <nav class="tabs">
+        <div class="tab">我的形象</div>
+        <div class="tab active">外观大厅</div>
+        <div class="tab">声音</div>
+        <div class="tab">行为</div>
+        <div class="tab">系统</div>
+        <div class="tab">关于</div>
+      </nav>
+      <div class="grow"></div>
+      <div class="icon-btn">⌕</div>
+      <div class="icon-btn">⚙</div>
+    </header>
+
+    <div class="main">
+      <div class="stage">
+        <div class="tag">CURATED LOOK / 06</div>
+        <div class="halo" style="background:radial-gradient(circle, rgba(123,224,208,.32), transparent 65%)"></div>
+        <img src="assets/pet-cheerful.png" style="filter:hue-rotate(120deg) saturate(.92) drop-shadow(0 30px 30px rgba(0,0,0,.45))" alt="" />
+        <div class="floor"></div>
+      </div>
+
+      <aside class="info">
+        <div class="kicker" style="color:var(--mint)">CURATED / 06</div>
+        <h1>薄荷汽水</h1>
+        <div class="sub">by 芯宠官方 · 2026-11-18</div>
+        <p>夏日限定配色，清爽的薄荷绿。适合午后一起打盹，也适合在屏幕角落安静地冒泡。</p>
+        <div class="chips">
+          <span class="chip on" style="background:var(--mint);border-color:var(--mint)">官方</span>
+          <span class="chip">夏日</span>
+          <span class="chip">猫</span>
+        </div>
+        <div class="license">
+          <span>许可 <b>CC0</b></span>
+          <span>大小 <b>2.4 MB</b></span>
+          <span>版本 <b>v1</b></span>
+        </div>
+        <div class="actions">
+          <button class="btn primary" style="background:var(--mint);border-color:var(--mint);color:#062522">下载并使用</button>
+          <button class="btn">预览</button>
+          <button class="btn">我的形象</button>
+        </div>
+      </aside>
+    </div>
+
+    <div class="shelf-wrap">
+      <div class="filters">
+        <button class="fchip active">全部</button>
+        <button class="fchip">猫</button>
+        <button class="fchip">狗</button>
+        <button class="fchip">鸟</button>
+        <button class="fchip">幻想</button>
+        <button class="fchip">节日</button>
+      </div>
+      <div class="shelf-head">
+        <h2>外观大厅</h2>
+        <div class="line"></div>
+        <div class="hint">← → 浏览 · ENTER 查看 · D 下载</div>
+      </div>
+      <div class="shelf">
+        <div class="item mint active">
+          <div class="tag">官方</div>
+          <img src="assets/pet-cheerful.png" style="filter:hue-rotate(120deg) drop-shadow(0 10px 12px rgba(0,0,0,.4))" alt="" />
+          <div class="name">薄荷汽水</div>
+        </div>
+        <div class="item">
+          <div class="tag">官方</div>
+          <img src="assets/pet-tsundere.png" style="filter:hue-rotate(260deg) drop-shadow(0 10px 12px rgba(0,0,0,.4))" alt="" />
+          <div class="name">夜樱狐</div>
+        </div>
+        <div class="item">
+          <div class="tag">内置</div>
+          <img src="assets/pet-shy.png" style="filter:sepia(.35) drop-shadow(0 10px 12px rgba(0,0,0,.4))" alt="" />
+          <div class="name">焦糖布丁</div>
+        </div>
+        <div class="item">
+          <div class="tag">精选</div>
+          <img src="assets/pet-cheerful.png" style="filter:hue-rotate(200deg) drop-shadow(0 10px 12px rgba(0,0,0,.4))" alt="" />
+          <div class="name">云朵兔</div>
+        </div>
+        <div class="item">
+          <div class="tag">精选</div>
+          <img src="assets/pet-tsundere.png" style="filter:hue-rotate(320deg) drop-shadow(0 10px 12px rgba(0,0,0,.4))" alt="" />
+          <div class="name">樱花猫</div>
+        </div>
+        <div class="item">
+          <div class="tag">官方</div>
+          <img src="assets/pet-shy.png" style="filter:hue-rotate(40deg) drop-shadow(0 10px 12px rgba(0,0,0,.4))" alt="" />
+          <div class="name">星尘犬</div>
+        </div>
+      </div>
+      <div class="fade-left"></div>
+      <div class="fade-right"></div>
+    </div>
+  </div>
+<script>if (location.search.includes("light")) document.body.classList.add("light");</script>
+</body>
+</html>
+
+

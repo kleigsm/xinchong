@@ -1,0 +1,107 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="immersive.css" />
+<link rel="stylesheet" href="immersive-light.css" />
+<style>
+  .settings-main { flex: 1; display: grid; grid-template-columns: 1fr 300px; gap: 22px; padding: 30px 28px 26px; min-height: 0; }
+  .form-panel {
+    background: var(--glass); border: 1px solid var(--line); border-radius: 18px;
+    backdrop-filter: blur(24px); padding: 26px 26px 20px; align-self: start;
+  }
+  .form-panel h1 { margin: 8px 0 4px; font-size: 32px; letter-spacing: -.03em; }
+  .form-panel .lede { margin: 10px 0 6px; font-size: 12px; color: rgba(246,239,231,.62); line-height: 1.7; max-width: 520px; }
+  .srow { display: flex; align-items: center; gap: 20px; padding: 15px 0; border-top: 1px solid rgba(255,255,255,.08); }
+  .srow:first-of-type { border-top: 0; }
+  .srow .left { min-width: 0; }
+  .srow .label { font-size: 13px; font-weight: 600; }
+  .srow .hint { margin-top: 3px; font-size: 10px; color: rgba(255,255,255,.42); line-height: 1.6; }
+  .srow .control { margin-left: auto; display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+  .seg { display: flex; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 10px; padding: 3px; gap: 2px; }
+  .seg button { height: 27px; padding: 0 10px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font-size: 10px; font-weight: 600; cursor: pointer; }
+  .seg button.on { background: var(--accent); color: #2a170f; }
+  .slider { width: 150px; accent-color: var(--accent); }
+  .val { width: 34px; text-align: right; font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .tog { width: 38px; height: 21px; border-radius: 999px; background: rgba(255,255,255,.16); position: relative; cursor: pointer; border: 0; }
+  .tog::after { content: ""; position: absolute; top: 3px; left: 3px; width: 15px; height: 15px; border-radius: 50%; background: #fff; transition: left .14s; }
+  .tog.on { background: var(--accent); }
+  .tog.on::after { left: 20px; }
+  .preview-panel { border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,.03); padding: 16px; align-self: start; }
+  .preview-stage { height: 250px; border-radius: 12px; background: radial-gradient(180px 160px at 50% 60%, rgba(255,178,122,.22), transparent 70%); display: flex; align-items: flex-end; justify-content: center; overflow: hidden; }
+  .preview-stage img { height: 220px; filter: drop-shadow(0 16px 18px rgba(0,0,0,.4)); }
+  .preview-panel .cap { margin-top: 12px; font-size: 12px; font-weight: 600; }
+  .preview-panel .note { margin-top: 3px; font-size: 10px; color: rgba(255,255,255,.42); line-height: 1.6; }
+  .preview-panel .listen { margin-top: 12px; width: 100%; height: 34px; border: 1px solid var(--line); border-radius: 9px; background: rgba(255,255,255,.06); color: var(--ink); font-size: 11px; font-weight: 600; cursor: pointer; }
+  .preview-panel .listen:hover { background: rgba(255,255,255,.12); }
+</style>
+</head>
+<body>
+  <div class="atmo"></div>
+  <div class="veil"></div>
+
+  <div class="page">
+    <header class="top">
+      <div class="logo"><i>芯</i>芯宠</div>
+      <nav class="tabs">
+        <div class="tab">我的形象</div>
+        <div class="tab">外观大厅</div>
+        <div class="tab active">声音</div>
+        <div class="tab">行为</div>
+        <div class="tab">系统</div>
+        <div class="tab">关于</div>
+      </nav>
+      <div class="grow"></div>
+      <div class="icon-btn">⌕</div>
+      <div class="icon-btn">⚙</div>
+    </header>
+
+    <main class="settings-main">
+      <section class="form-panel">
+        <div class="kicker">PREFERENCES / 03</div>
+        <h1>声音与台词</h1>
+        <p class="lede">换一套音效，或者让桌宠安静一点。所有改动立即生效。</p>
+
+        <div class="srow">
+          <div class="left"><div class="label">音效主题</div><div class="hint">跟随性格 = 三套角色各自的音色；其余是萌宠语音包</div></div>
+          <div class="control">
+            <div class="seg">
+              <button class="on">跟随性格</button><button>狗</button><button>猫</button><button>鸟</button><button>猪</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="srow">
+          <div class="left"><div class="label">音量</div><div class="hint">拖动即时试听</div></div>
+          <div class="control"><input class="slider" type="range" min="0" max="100" value="70" /><span class="val">70%</span></div>
+        </div>
+
+        <div class="srow">
+          <div class="left"><div class="label">静音</div><div class="hint">关掉所有音效，不影响动画</div></div>
+          <div class="control"><button class="tog"></button></div>
+        </div>
+
+        <div class="srow">
+          <div class="left"><div class="label">勿扰模式</div><div class="hint">不冒台词、不出声，动画照常</div></div>
+          <div class="control"><button class="tog"></button></div>
+        </div>
+
+        <div class="srow">
+          <div class="left"><div class="label">台词试听</div><div class="hint">在当前性格的台词库里随机抽一句</div></div>
+          <div class="control"><button class="btn">试听一句</button></div>
+        </div>
+      </section>
+
+      <aside class="preview-panel">
+        <div class="preview-stage"><img src="assets/pet-shy.png" alt="" /></div>
+        <div class="cap">小芯 · 害羞</div>
+        <div class="note">试听使用当前音效主题，不会打断桌宠动画。</div>
+        <button class="listen">▶ 播放当前音效</button>
+      </aside>
+    </main>
+  </div>
+<script>if (location.search.includes("light")) document.body.classList.add("light");</script>
+</body>
+</html>
+
+

@@ -1,0 +1,152 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>芯宠 · 形象图鉴（编辑版）</title>
+<style>
+  :root {
+    --paper: #c8b99a;
+    --ink: #0b3d2e;
+    --accent: #e4572e;
+    --cream: #f3ead8;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1040px; height: 700px; overflow: hidden; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Georgia, "Songti SC", "SimSun", serif;
+    position: relative;
+  }
+  /* 印刷颗粒 */
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 5;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(11,61,46,.035) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, rgba(228,87,46,.025) 0 1px, transparent 1px 4px);
+    mix-blend-mode: multiply;
+  }
+  .page { position: relative; z-index: 1; height: 100%; padding: 30px 34px 22px; display: flex; flex-direction: column; }
+
+  .top { display: flex; align-items: flex-end; gap: 18px; border-bottom: 2px solid var(--ink); padding-bottom: 10px; }
+  .brand { font-size: 30px; font-weight: 700; letter-spacing: .06em; line-height: 1; }
+  .brand span { color: var(--accent); }
+  .top .meta { margin-left: auto; font: 10px/1.5 "Cascadia Mono", Consolas, monospace; letter-spacing: .16em; text-align: right; }
+  .top .meta b { display: block; font-weight: 700; }
+
+  .body { flex: 1; display: grid; grid-template-columns: 1.15fr .85fr; gap: 34px; padding-top: 22px; min-height: 0; }
+
+  .left { display: flex; flex-direction: column; min-width: 0; }
+  .kicker { font: 700 10px/1 "Cascadia Mono", Consolas, monospace; letter-spacing: .24em; color: var(--accent); }
+  h1 { margin: 10px 0 0; font-size: 104px; line-height: .86; font-weight: 700; letter-spacing: -.06em; }
+  h1 .en { display: block; font-family: "Bahnschrift Condensed", "Arial Narrow", sans-serif; font-size: 40px; letter-spacing: .02em; color: var(--accent); margin-top: 10px; }
+  .lede { margin: 16px 0 0; max-width: 470px; font-size: 13px; line-height: 1.9; color: rgba(11,61,46,.78); }
+
+  .index { margin-top: auto; border-top: 2px solid var(--ink); }
+  .row {
+    display: grid; grid-template-columns: 34px 1fr 24px; align-items: baseline; gap: 8px;
+    padding: 9px 0 8px; border-bottom: 1px solid rgba(11,61,46,.4); cursor: pointer;
+  }
+  .row .num { font: 10px/1 "Cascadia Mono", Consolas, monospace; letter-spacing: .08em; }
+  .row .name { font-size: 25px; line-height: 1; letter-spacing: -.01em; transition: color .12s; }
+  .row .arr { font-family: "Cascadia Mono", Consolas, monospace; font-size: 14px; text-align: right; opacity: 0; transition: opacity .12s; }
+  .row:hover .name, .row.active .name { color: var(--accent); }
+  .row:hover .arr, .row.active .arr { opacity: 1; }
+  .row.active { border-bottom: 2px solid var(--ink); }
+  .row.active .num { color: var(--accent); }
+
+  .foot { display: flex; gap: 16px; margin-top: 12px; font: 9px/1.4 "Cascadia Mono", Consolas, monospace; letter-spacing: .1em; color: rgba(11,61,46,.65); }
+  .foot .grow { flex: 1; }
+
+  .right { position: relative; border: 2px solid var(--ink); background: var(--ink); overflow: hidden; }
+  .right::before {
+    content: ""; position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(243,234,216,.18) 1px, transparent 1px);
+    background-size: 9px 9px; opacity: .55;
+  }
+  .right .ghost {
+    position: absolute; left: -10px; top: -18px;
+    font-family: "Bahnschrift Condensed", "Arial Narrow", sans-serif;
+    font-size: 210px; line-height: .8; letter-spacing: -.02em;
+    color: rgba(243,234,216,.09); white-space: nowrap;
+  }
+  .right .side-label {
+    position: absolute; right: 12px; top: 14px;
+    writing-mode: vertical-rl; font: 700 10px/1 "Cascadia Mono", Consolas, monospace;
+    letter-spacing: .28em; color: var(--cream);
+  }
+  .right .frame {
+    position: absolute; left: 50%; bottom: 46px; width: 330px; height: 396px;
+    transform: translateX(-50%);
+    border: 1px solid rgba(243,234,216,.5);
+    display: flex; align-items: flex-end; justify-content: center;
+    background:
+      linear-gradient(180deg, rgba(243,234,216,.06), rgba(243,234,216,.02));
+  }
+  .right .frame img { height: 344px; margin-bottom: 0; filter: drop-shadow(0 18px 18px rgba(0,0,0,.25)); }
+  .right .caption {
+    position: absolute; left: 16px; bottom: 32px;
+    color: var(--cream); font: 10px/1.6 "Cascadia Mono", Consolas, monospace; letter-spacing: .08em;
+  }
+  .right .caption b { display: block; font-family: Georgia, serif; font-size: 17px; letter-spacing: 0; font-weight: 700; }
+  .right .stamp {
+    position: absolute; right: 18px; bottom: 34px;
+    width: 64px; height: 64px; border: 2px solid var(--accent); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    color: var(--accent); font: 700 9px/1.2 "Cascadia Mono", Consolas, monospace;
+    letter-spacing: .1em; transform: rotate(-12deg);
+  }
+
+  .ticker {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 20px;
+    background: var(--accent); color: var(--cream);
+    font: 700 9px/20px "Cascadia Mono", Consolas, monospace; letter-spacing: .22em;
+    overflow: hidden; white-space: nowrap; z-index: 2;
+  }
+  .ticker span { display: inline-block; padding-left: 100%; animation: tick 26s linear infinite; }
+  @keyframes tick { to { transform: translateX(-100%); } }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <div class="brand">芯<span>宠</span></div>
+    <div class="meta"><b>LOOKBOOK / 2026</b>DESKTOP COMPANION<br />ISSUE 01</div>
+  </header>
+
+  <div class="body">
+    <div class="left">
+      <div class="kicker">INDEX / 形象图鉴</div>
+      <h1>把今天<br />想见的<span style="color:var(--accent)">.</span><span class="en">PICK A COMPANION</span></h1>
+      <p class="lede">不是设置面板，是一本可以翻的图鉴。每一页是一只桌宠，挑一只，让它住到你的桌面上。</p>
+
+      <nav class="index">
+        <div class="row active"><span class="num">01</span><span class="name">我的形象</span><span class="arr">→</span></div>
+        <div class="row"><span class="num">02</span><span class="name">外观大厅</span><span class="arr">→</span></div>
+        <div class="row"><span class="num">03</span><span class="name">声音与台词</span><span class="arr">→</span></div>
+        <div class="row"><span class="num">04</span><span class="name">行为</span><span class="arr">→</span></div>
+        <div class="row"><span class="num">05</span><span class="name">系统</span><span class="arr">→</span></div>
+        <div class="row"><span class="num">06</span><span class="name">关于</span><span class="arr">→</span></div>
+      </nav>
+
+      <div class="foot">
+        <span>芯宠 / XINCHONG</span>
+        <span class="grow"></span>
+        <span>04 只形象 · 3 套性格 · 1 只正在陪你</span>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="ghost">SHY</div>
+      <div class="side-label">PORTRAIT / 01</div>
+      <div class="frame"><img src="assets/pet-shy.png" alt="" /></div>
+      <div class="caption"><b>小芯</b>害羞 · 内置 · L3 36 帧</div>
+      <div class="stamp">IN USE<br />使用中</div>
+    </div>
+  </div>
+
+  <div class="ticker"><span>芯宠 · 形象图鉴 · 把今天想见的，留在桌面上 · XINCHONG LOOKBOOK 2026 · 芯宠 · 形象图鉴 · 把今天想见的，留在桌面上 ·</span></div>
+</div>
+</body>
+</html>
+

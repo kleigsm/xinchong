@@ -1,0 +1,170 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="mockup.css" />
+<link rel="stylesheet" href="sticker.css" />
+<title>芯宠控制中心 · 我的形象</title>
+</head>
+<body class="app sticker">
+
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-paw" viewBox="0 0 24 24">
+    <ellipse cx="7" cy="8" rx="2" ry="2.6" fill="currentColor" stroke="none"/>
+    <ellipse cx="12" cy="6.4" rx="2" ry="2.8" fill="currentColor" stroke="none"/>
+    <ellipse cx="17" cy="8" rx="2" ry="2.6" fill="currentColor" stroke="none"/>
+    <path d="M12 11.2c-3.6 0-6.2 2.4-6.2 4.8 0 2 1.8 3.2 3.9 3.2 1 0 1.5-.5 2.3-.5s1.3.5 2.3.5c2.1 0 3.9-1.2 3.9-3.2 0-2.4-2.6-4.8-6.2-4.8Z" fill="currentColor" stroke="none"/>
+  </symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.7 5.1L19 10l-5.3 1.9L12 17l-1.7-5.1L5 10l5.3-1.9L12 3Z"/><path d="M18.5 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z"/></symbol>
+  <symbol id="i-vol" viewBox="0 0 24 24"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4v-5Z"/><path d="M16 8.5a5 5 0 0 1 0 7"/><path d="M18.5 6a8.5 8.5 0 0 1 0 12"/></symbol>
+  <symbol id="i-slider" viewBox="0 0 24 24"><path d="M5 6h14M5 12h14M5 18h14"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="18" r="2"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M9 20h6M12 16.5V20"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 10.5V17M12 7.4v.2"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10A4.2 4.2 0 0 1 12 7.4 4.2 4.2 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10Z"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M8 12V6.5a1.5 1.5 0 0 1 3 0V11M11 10V5.2a1.5 1.5 0 0 1 3 0V10M14 10V6.6a1.5 1.5 0 0 1 3 0V13c0 4-2.4 6.5-6 6.5S6 17 6 13v-1.8a1.4 1.4 0 0 1 2.8 0V13"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5 8 8 0 1 0 19.5 14.5Z"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M3 12s3.4-5.5 9-5.5S21 12 21 12s-3.4 5.5-9 5.5S3 12 3 12Z"/><circle cx="12" cy="12" r="2.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-min" viewBox="0 0 24 24"><path d="M6 12h12"/></symbol>
+  <symbol id="i-max" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="1.5"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M14 7l5 5-5 5"/></symbol>
+</svg>
+
+<div class="titlebar">
+  <div class="brandmark">芯</div>
+  <div class="title">芯宠控制中心</div>
+  <div class="sub">/ 我的形象</div>
+  <div class="spacer"></div>
+  <div class="winbtns">
+    <button class="winbtn"><svg class="ic" width="14" height="14"><use href="#i-min"/></svg></button>
+    <button class="winbtn"><svg class="ic" width="12" height="12"><use href="#i-max"/></svg></button>
+    <button class="winbtn close"><svg class="ic" width="12" height="12"><use href="#i-x"/></svg></button>
+  </div>
+</div>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="side-head">
+      <div class="logo">芯</div>
+      <div>
+        <div class="name">芯宠</div>
+        <div class="tag">DESKTOP COMPANION</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active"><svg class="ic"><use href="#i-paw"/></svg>我的形象</button>
+      <button class="nav-item"><svg class="ic"><use href="#i-spark"/></svg>外观大厅<span class="badge">6</span></button>
+      <button class="nav-item"><svg class="ic"><use href="#i-vol"/></svg>声音台词</button>
+      <button class="nav-item"><svg class="ic"><use href="#i-slider"/></svg>行为</button>
+      <button class="nav-item"><svg class="ic"><use href="#i-monitor"/></svg>系统</button>
+      <button class="nav-item"><svg class="ic"><use href="#i-info"/></svg>关于</button>
+    </nav>
+
+    <div class="side-promo">
+      <div class="k">外观大厅</div>
+      <div class="t">本周上新 6 套</div>
+      <div class="s">去看看 <svg class="ic" width="12" height="12"><use href="#i-arrow"/></svg></div>
+    </div>
+
+    <div class="side-foot">
+      <div class="row">
+        <div class="avatar">🐾</div>
+        <div>
+          <div class="who">小芯 · 害羞</div>
+          <div class="ver">v0.1.1 · 已同步</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div>
+        <h1>我的形象</h1>
+        <p class="sub">管理你的桌宠，换一只今天想见的</p>
+      </div>
+      <div class="grow"></div>
+      <div class="search"><svg class="ic"><use href="#i-search"/></svg>搜索形象</div>
+      <button class="btn primary"><svg class="ic"><use href="#i-plus"/></svg>导入新形象</button>
+    </div>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="chips">
+          <span class="chip">使用中</span>
+          <span class="chip green">L3 · 36 帧</span>
+          <span class="chip">内置</span>
+        </div>
+        <h2>小芯</h2>
+        <p class="desc">害羞的性格，说话轻轻的。今天想和你一起发呆，或者被你摸头。</p>
+        <div class="actions">
+          <button class="action"><svg class="ic"><use href="#i-hand"/></svg>招手</button>
+          <button class="action"><svg class="ic"><use href="#i-heart"/></svg>摸头</button>
+          <button class="action"><svg class="ic"><use href="#i-moon"/></svg>睡觉</button>
+          <button class="action"><svg class="ic"><use href="#i-eye"/></svg>隐藏</button>
+        </div>
+      </div>
+      <div class="hero-stage">
+        <div class="glow"></div>
+        <img src="assets/pet-shy.png" alt="小芯" />
+        <div class="floor"></div>
+      </div>
+    </section>
+
+    <div class="section-head">
+      <h3>我的形象</h3>
+      <span class="count">4 个</span>
+      <div class="grow"></div>
+      <button class="link">管理全部 →</button>
+    </div>
+
+    <div class="grid">
+      <div class="card active">
+        <span class="tag on">使用中</span>
+        <div class="thumb"><img src="assets/pet-shy.png" alt="" /></div>
+        <div class="name">小芯</div>
+        <div class="meta">害羞 · 内置</div>
+      </div>
+      <div class="card">
+        <span class="tag">内置</span>
+        <div class="thumb"><img src="assets/pet-cheerful.png" alt="" /></div>
+        <div class="name">阿橙</div>
+        <div class="meta">开朗 · 内置</div>
+        <span class="use">使用</span>
+      </div>
+      <div class="card">
+        <span class="tag">内置</span>
+        <div class="thumb"><img src="assets/pet-tsundere.png" alt="" /></div>
+        <div class="name">桃桃</div>
+        <div class="meta">傲娇 · 内置</div>
+        <span class="use">使用</span>
+      </div>
+      <div class="card import">
+        <div class="plus">+</div>
+        <div class="t">导入新形象</div>
+        <div class="s">立绘 / 雪碧图</div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h3>最近使用</h3>
+      <div class="grow"></div>
+      <button class="link">清空</button>
+    </div>
+    <div class="recent">
+      <span class="rchip"><img src="assets/pet-shy.png" alt="" />小芯</span>
+      <span class="rchip"><img src="assets/pet-cheerful.png" alt="" />阿橙</span>
+      <span class="rchip"><img src="assets/pet-tsundere.png" alt="" />桃桃</span>
+    </div>
+  </main>
+</div>
+
+<script>
+  if (location.search.includes("dark")) document.body.classList.add("dark");
+</script>
+</body>
+</html>
+
