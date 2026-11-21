@@ -1,0 +1,148 @@
+/* 贴纸手账风格覆盖：奶油纸 + 墨线 + 硬偏移阴影 + 轻微旋转 */
+body.sticker {
+  --bg: #fbf3e4;
+  --bg-2: #fffdf7;
+  --card: #fffdf7;
+  --ink: #2e2521;
+  --muted: #8a7568;
+  --line: #2e2521;
+  --accent: #f0603c;
+  --accent-2: #ffb38a;
+  --accent-soft: #ffe8d8;
+  --shadow: 6px 6px 0 #e7cdb4;
+  --shadow-sm: 4px 4px 0 #e7cdb4;
+}
+
+body.sticker::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(#d9c3aa 1px, transparent 1px);
+  background-size: 18px 18px;
+  opacity: 0.28;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.sticker .titlebar,
+body.sticker .shell { position: relative; z-index: 1; }
+
+body.sticker .sidebar {
+  background: #fffdf7;
+  border: 2px solid #2e2521;
+  box-shadow: 4px 4px 0 #2e2521;
+  border-radius: 20px;
+}
+
+body.sticker .nav-item { border-radius: 10px; color: #6c5a4e; }
+body.sticker .nav-item.active {
+  background: #ffe8d8;
+  border: 2px solid #2e2521;
+  border-radius: 10px;
+  box-shadow: 3px 3px 0 #2e2521;
+  transform: rotate(-1deg);
+}
+
+body.sticker .side-promo {
+  background: #fff2a8;
+  border: 2px solid #2e2521;
+  box-shadow: 3px 3px 0 #2e2521;
+  transform: rotate(-1deg);
+  border-radius: 12px;
+}
+
+body.sticker .hero {
+  background:
+    radial-gradient(420px 260px at 78% 18%, rgba(255, 255, 255, 0.92), transparent 70%),
+    linear-gradient(120deg, #fffdf7 0%, #fff3e8 55%, #ffe0c8 100%);
+  border: 2px solid #2e2521;
+  box-shadow: 7px 7px 0 #e7cdb4;
+  border-radius: 24px;
+}
+
+body.sticker .chip {
+  background: #fffdf7;
+  border: 1.5px solid #2e2521;
+  box-shadow: 2px 2px 0 #e7cdb4;
+  border-radius: 8px;
+}
+
+body.sticker .action,
+body.sticker .btn,
+body.sticker .search {
+  border: 2px solid #2e2521;
+  box-shadow: 3px 3px 0 #e7cdb4;
+  border-radius: 10px;
+}
+
+body.sticker .btn.primary {
+  border: 2px solid #2e2521;
+  box-shadow: 3px 3px 0 #2e2521;
+  border-radius: 10px;
+}
+
+body.sticker .card {
+  border: 2px solid #2e2521;
+  border-radius: 14px;
+  box-shadow: 4px 4px 0 #e7cdb4;
+  background: #fffdf7;
+}
+body.sticker .card.active { box-shadow: 4px 4px 0 #2e2521; }
+body.sticker .card:nth-child(2) { transform: rotate(1deg); }
+body.sticker .card:nth-child(3) { transform: rotate(-1deg); }
+body.sticker .card.import { border: 2px dashed #2e2521; box-shadow: none; }
+
+body.sticker .section-head h3 {
+  display: inline-block;
+  background: #fff2a8;
+  border: 2px solid #2e2521;
+  box-shadow: 2px 2px 0 #2e2521;
+  padding: 3px 10px;
+  border-radius: 7px;
+  transform: rotate(-1deg);
+}
+
+body.sticker .rchip {
+  border: 2px solid #2e2521;
+  box-shadow: 2px 2px 0 #e7cdb4;
+  border-radius: 8px;
+  background: #fffdf7;
+}
+
+body.sticker .recent .rchip:nth-child(2) { transform: rotate(1deg); }
+
+/* 深色：夜光手账 */
+body.sticker.dark {
+  --bg: #17181c;
+  --bg-2: #1e2026;
+  --card: #1e2026;
+  --ink: #f3eee8;
+  --muted: #a89a8c;
+  --line: #f3eee8;
+  --accent: #5ee0d0;
+  --accent-2: #8cf0e4;
+  --accent-soft: #17302f;
+  --shadow: 6px 6px 0 #08090b;
+  --shadow-sm: 4px 4px 0 #08090b;
+}
+body.sticker.dark::before { background-image: radial-gradient(#3a3d45 1px, transparent 1px); opacity: .35; }
+body.sticker.dark .sidebar { background: #1e2026; border-color: #f3eee8; box-shadow: 4px 4px 0 #08090b; }
+body.sticker.dark .nav-item { color: #a89a8c; }
+body.sticker.dark .nav-item.active { background: #17302f; border-color: #5ee0d0; box-shadow: 3px 3px 0 #5ee0d0; }
+body.sticker.dark .side-promo { background: #2a2c33; border-color: #5ee0d0; box-shadow: 3px 3px 0 #5ee0d0; }
+body.sticker.dark .hero {
+  background:
+    radial-gradient(420px 260px at 78% 18%, rgba(94, 224, 208, .14), transparent 70%),
+    linear-gradient(120deg, #1e2026 0%, #1a2426 55%, #15302d 100%);
+  border-color: #f3eee8;
+  box-shadow: 7px 7px 0 #08090b;
+}
+body.sticker.dark .chip { background: #1e2026; border-color: #f3eee8; box-shadow: 2px 2px 0 #08090b; }
+body.sticker.dark .action,
+body.sticker.dark .btn,
+body.sticker.dark .search { background: #1e2026; border-color: #f3eee8; box-shadow: 3px 3px 0 #08090b; }
+body.sticker.dark .btn.primary { background: #5ee0d0; border-color: #f3eee8; color: #062522; box-shadow: 3px 3px 0 #f3eee8; }
+body.sticker.dark .card { background: #1e2026; border-color: #f3eee8; box-shadow: 4px 4px 0 #08090b; }
+body.sticker.dark .card.active { box-shadow: 4px 4px 0 #5ee0d0; }
+body.sticker.dark .section-head h3 { background: #2a2c33; border-color: #5ee0d0; box-shadow: 2px 2px 0 #5ee0d0; }
+body.sticker.dark .rchip { background: #1e2026; border-color: #f3eee8; box-shadow: 2px 2px 0 #08090b; }

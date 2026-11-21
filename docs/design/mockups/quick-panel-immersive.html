@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>快捷面板 · 沉浸式</title>
+<style>
+  :root {
+    --bg: #0d0c11;
+    --ink: #f6efe7;
+    --muted: #a49b91;
+    --accent: #ffb27a;
+    --mint: #7be0d0;
+    --glass: rgba(24, 22, 28, 0.72);
+    --line: rgba(255,255,255,.12);
+    --tile: rgba(255,255,255,.06);
+    --field: rgba(255,255,255,.08);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 380px; height: 460px; overflow: hidden; }
+  body {
+    background:
+      radial-gradient(400px 300px at 75% 0%, rgba(255,178,122,.22), transparent 65%),
+      radial-gradient(320px 300px at 0% 100%, rgba(123,224,208,.12), transparent 65%),
+      #15131a;
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+    color: var(--ink); user-select: none;
+  }
+  body.light {
+    --bg: #f3ece2; --ink: #2a211c; --muted: #8a7b6e;
+    --accent: #e8663c; --mint: #2f9e8f;
+    --glass: rgba(255,255,255,.72); --line: rgba(42,33,28,.14);
+    --tile: rgba(255,255,255,.55); --field: rgba(255,255,255,.65);
+    background:
+      radial-gradient(400px 300px at 75% 0%, rgba(232,102,60,.18), transparent 65%),
+      radial-gradient(320px 300px at 0% 100%, rgba(47,158,143,.12), transparent 65%),
+      #e9dfd2;
+  }
+  .qp {
+    width: 306px; border-radius: 20px; padding: 14px;
+    background: var(--glass); border: 1px solid var(--line);
+    backdrop-filter: blur(26px);
+    box-shadow: 0 30px 70px rgba(0,0,0,.5);
+  }
+  body.light .qp { box-shadow: 0 24px 50px rgba(80,55,35,.18); }
+  .head { display: flex; align-items: center; gap: 10px; }
+  .ava { width: 42px; height: 42px; border-radius: 12px; background: rgba(255,178,122,.16); display: flex; align-items: flex-end; justify-content: center; overflow: hidden; }
+  .ava img { height: 40px; }
+  .nm { font-size: 14px; font-weight: 700; }
+  .st { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--mint); display: inline-block; margin-right: 4px; }
+  .x { margin-left: auto; width: 24px; height: 24px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); cursor: pointer; font-size: 13px; }
+  .acts { display: grid; grid-template-columns: repeat(4,1fr); gap: 7px; margin-top: 12px; }
+  .act { height: 56px; border: 1px solid var(--line); border-radius: 11px; background: var(--tile); color: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 10px; font-weight: 600; cursor: pointer; }
+  .act:hover { border-color: var(--accent); }
+  .act .ic { font-size: 16px; color: var(--accent); }
+  .hr { height: 1px; background: var(--line); margin: 12px 0; }
+  .label { font-size: 9px; color: var(--muted); font-weight: 700; letter-spacing: .08em; margin-bottom: 6px; }
+  .seg { display: flex; background: var(--field); border: 1px solid var(--line); border-radius: 9px; padding: 3px; gap: 2px; }
+  .seg button { flex: 1; height: 26px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font-size: 10px; font-weight: 600; cursor: pointer; }
+  .seg button.on { background: var(--accent); color: #2a170f; }
+  .vol { display: flex; align-items: center; gap: 9px; margin-top: 4px; }
+  .track { flex: 1; height: 4px; border-radius: 3px; background: rgba(255,255,255,.14); position: relative; }
+  body.light .track { background: rgba(42,33,28,.14); }
+  .track::after { content: ""; position: absolute; left: 0; top: 0; height: 4px; width: 70%; border-radius: 3px; background: var(--accent); }
+  .knob { position: absolute; left: 70%; top: 50%; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); transform: translate(-50%,-50%); }
+  .num { font-size: 10px; color: var(--muted); width: 28px; text-align: right; }
+  .togs { display: flex; gap: 7px; margin-top: 10px; }
+  .tg { flex: 1; height: 32px; border: 1px solid var(--line); border-radius: 9px; background: var(--tile); color: var(--muted); font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; padding: 0 9px; cursor: pointer; }
+  .tg .sw { width: 24px; height: 14px; border-radius: 999px; background: rgba(255,255,255,.16); position: relative; }
+  body.light .tg .sw { background: rgba(42,33,28,.16); }
+  .tg .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%; background: #fff; }
+  .tg.on { color: var(--ink); }
+  .tg.on .sw { background: var(--accent); }
+  .tg.on .sw::after { left: 12px; }
+  .foot { display: flex; gap: 7px; margin-top: 12px; }
+  .open { flex: 1; height: 34px; border: 0; border-radius: 9px; background: var(--accent); color: #2a170f; font-size: 11px; font-weight: 700; cursor: pointer; }
+  .quit { width: 58px; height: 34px; border: 1px solid var(--line); border-radius: 9px; background: transparent; color: var(--muted); font-size: 10px; cursor: pointer; }
+</style>
+</head>
+<body>
+  <div class="qp">
+    <div class="head">
+      <div class="ava"><img src="assets/pet-shy.png" alt="" /></div>
+      <div><div class="nm">小芯</div><div class="st"><span class="dot"></span>害羞 · 使用中</div></div>
+      <button class="x">×</button>
+    </div>
+
+    <div class="acts">
+      <button class="act"><span class="ic">✋</span>招手</button>
+      <button class="act"><span class="ic">♡</span>摸头</button>
+      <button class="act"><span class="ic">☾</span>睡觉</button>
+      <button class="act"><span class="ic">◉</span>隐藏</button>
+    </div>
+
+    <div class="hr"></div>
+    <div class="label">性格</div>
+    <div class="seg"><button class="on">害羞</button><button>开朗</button><button>傲娇</button></div>
+
+    <div class="label" style="margin-top:10px">音量</div>
+    <div class="vol"><div class="track"><div class="knob"></div></div><div class="num">70%</div></div>
+
+    <div class="togs">
+      <button class="tg">静音<span class="sw"></span></button>
+      <button class="tg">勿扰<span class="sw"></span></button>
+    </div>
+
+    <div class="foot">
+      <button class="open">打开控制中心</button>
+      <button class="quit">退出</button>
+    </div>
+  </div>
+  <script>if (location.search.includes("light")) document.body.classList.add("light");</script>
+</body>
+</html>

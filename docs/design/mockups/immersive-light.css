@@ -1,0 +1,121 @@
+/* 沉浸式 · 浅色“黎明纸感” */
+body.light {
+  --bg: #f3ece2;
+  --ink: #2a211c;
+  --muted: #8a7b6e;
+  --accent: #e8663c;
+  --mint: #2f9e8f;
+  --glass: rgba(255, 255, 255, 0.62);
+  --line: rgba(42, 33, 28, 0.14);
+  background: var(--bg);
+  color: var(--ink);
+}
+
+body.light .atmo {
+  filter: blur(90px) saturate(1.1) brightness(1.02);
+  opacity: 0.32;
+}
+body.light .veil {
+  background:
+    radial-gradient(700px 420px at 50% 38%, rgba(243, 236, 226, 0) 0%, rgba(243, 236, 226, 0.55) 62%, rgba(243, 236, 226, 0.94) 100%),
+    linear-gradient(180deg, rgba(243, 236, 226, 0.78), transparent 24%, transparent 62%, rgba(243, 236, 226, 0.96));
+}
+body.light .top { border-bottom-color: rgba(42, 33, 28, 0.12); }
+body.light .tab { color: rgba(42, 33, 28, 0.55); }
+body.light .tab.active { color: var(--ink); }
+body.light .tab:hover { color: var(--ink); }
+body.light .icon-btn {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(42, 33, 28, 0.14);
+  color: rgba(42, 33, 28, 0.6);
+}
+body.light .icon-btn:hover { color: var(--ink); border-color: rgba(42, 33, 28, 0.3); }
+body.light .logo i { color: #fff8ef; }
+
+body.light .stage img { filter: drop-shadow(0 24px 26px rgba(90, 60, 40, 0.22)); }
+body.light .stage .tag { color: rgba(42, 33, 28, 0.42); }
+body.light .stage .floor { background: radial-gradient(ellipse, rgba(90, 60, 40, 0.18), transparent 70%); }
+
+body.light .info {
+  background: rgba(255, 255, 255, 0.66);
+  border-color: rgba(42, 33, 28, 0.14);
+  box-shadow: 0 20px 50px rgba(80, 55, 35, 0.08);
+}
+body.light .info h1 { color: var(--ink); }
+body.light .info .sub { color: var(--muted); }
+body.light .info p { color: rgba(42, 33, 28, 0.68); }
+body.light .info .kicker { color: var(--accent); }
+body.light .chip {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(42, 33, 28, 0.14);
+  color: rgba(42, 33, 28, 0.6);
+}
+body.light .chip.on { background: var(--accent); border-color: var(--accent); color: #fff8ef; }
+body.light .btn {
+  background: rgba(255, 255, 255, 0.68);
+  border-color: rgba(42, 33, 28, 0.16);
+  color: var(--ink);
+}
+body.light .btn:hover { background: #fff; }
+body.light .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff8ef; }
+body.light .btn.primary:hover { background: #f27750; }
+
+body.light .shelf-head h2 { color: rgba(42, 33, 28, 0.72); }
+body.light .shelf-head .line { background: rgba(42, 33, 28, 0.12); }
+body.light .shelf-head .hint { color: rgba(42, 33, 28, 0.38); }
+body.light .item {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: rgba(42, 33, 28, 0.12);
+}
+body.light .item::before {
+  background: radial-gradient(180px 140px at 50% 72%, rgba(232, 102, 60, 0.14), transparent 70%);
+}
+body.light .item img { filter: drop-shadow(0 10px 12px rgba(90, 60, 40, 0.16)); }
+body.light .item .name { color: var(--ink); text-shadow: none; }
+body.light .item .tag { background: rgba(255, 255, 255, 0.7); color: rgba(42, 33, 28, 0.55); }
+body.light .item.active {
+  border-color: var(--accent);
+  box-shadow: 0 16px 30px rgba(90, 60, 40, 0.16), 0 0 0 1px var(--accent) inset;
+}
+body.light .item.active .name { color: var(--accent); }
+body.light .fade-left { background: linear-gradient(90deg, var(--bg), transparent); }
+body.light .fade-right { background: linear-gradient(270deg, var(--bg), transparent); }
+
+/* 大厅 */
+body.light .fchip {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(42, 33, 28, 0.14);
+  color: var(--muted);
+}
+body.light .fchip.active { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+body.light .info .license { color: rgba(42, 33, 28, 0.48); }
+body.light .info .license b { color: rgba(42, 33, 28, 0.72); }
+
+/* 设置页 */
+body.light .form-panel {
+  background: rgba(255, 255, 255, 0.66);
+  border-color: rgba(42, 33, 28, 0.14);
+  box-shadow: 0 20px 50px rgba(80, 55, 35, 0.08);
+}
+body.light .form-panel h1 { color: var(--ink); }
+body.light .form-panel .lede { color: rgba(42, 33, 28, 0.62); }
+body.light .srow { border-top-color: rgba(42, 33, 28, 0.1); }
+body.light .srow .hint { color: rgba(42, 33, 28, 0.46); }
+body.light .seg { background: rgba(255, 255, 255, 0.6); border-color: rgba(42, 33, 28, 0.14); }
+body.light .seg button { color: rgba(42, 33, 28, 0.55); }
+body.light .seg button.on { background: var(--accent); color: #fff8ef; }
+body.light .tog { background: rgba(42, 33, 28, 0.18); }
+body.light .tog.on { background: var(--accent); }
+body.light .preview-panel {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: rgba(42, 33, 28, 0.14);
+}
+body.light .preview-stage {
+  background: radial-gradient(180px 160px at 50% 60%, rgba(232, 102, 60, 0.14), transparent 70%);
+}
+body.light .preview-panel .note { color: rgba(42, 33, 28, 0.46); }
+body.light .preview-panel .listen {
+  background: rgba(255, 255, 255, 0.68);
+  border-color: rgba(42, 33, 28, 0.16);
+  color: var(--ink);
+}
