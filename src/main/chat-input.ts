@@ -22,6 +22,8 @@ import type { BrowserWindow } from "electron";
  */
 
 let chatOpen = false;
+/** 失焦收起用；关输入条时要摘掉，避免越挂越多 */
+let blurHandler: (() => void) | null = null;
 
 /** 命中检测用它判断"输入条是不是开着" */
 export function isChatInputOpen(): boolean {
@@ -40,6 +42,16 @@ export function openChatInput(win: BrowserWindow): void {
   // 关键：让 webContents 也拿到焦点，否则 input 收不到键盘事件
   win.webContents.focus();
 
+  // 点别处（别的窗口）时自动收起：以前只有回车 / Esc 两个出口，输入条会一直挂着（BUG-010）
+  detachBlur(win);
+  blurHandler = () => {
+    if (!chatOpen) return;
+    console.log("[chat] 窗口失焦，自动收起输入条");
+    closeChatInput(win);
+    if (!win.isDestroyed()) win.webContents.send("pet:chat-close");
+  };
+  win.on("blur", blurHandler);
+
   setTimeout(() => {
     if (win.isDestroyed()) return;
     win.webContents.send("pet:chat-input");
@@ -50,7 +62,14 @@ export function openChatInput(win: BrowserWindow): void {
 
 export function closeChatInput(win: BrowserWindow): void {
   if (win.isDestroyed()) return;
+  detachBlur(win);
   chatOpen = false;
   win.setFocusable(false);
   console.log("[chat] 关闭输入条，恢复不可聚焦");
+}
+
+function detachBlur(win: BrowserWindow): void {
+  if (!blurHandler) return;
+  win.removeListener("blur", blurHandler);
+  blurHandler = null;
 }

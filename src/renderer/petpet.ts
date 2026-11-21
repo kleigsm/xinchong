@@ -47,7 +47,9 @@ function cleanup(petEl: HTMLElement, handEl: HTMLImageElement, keepHand: boolean
     window.clearTimeout(easeTimer);
     easeTimer = null;
   }
-  petEl.style.transform = "";
+  // 用 CSS 变量而不是直接写 transform：L2 的呼吸动画也在写 transform，
+  // 直接赋值会互相覆盖（BUG-012），由 style.css 组合两段变换
+  petEl.style.removeProperty("--petpet-transform");
   petEl.style.transformOrigin = "";
   petEl.style.transition = "";
   petEl.classList.remove("petpet-playing");
@@ -110,7 +112,10 @@ export function playPetpet(
     const offsetX = ((1 - widthScale) * 0.5 + 0.1) * SIZE;
     const offsetY = ((1 - heightScale) - 0.08) * SIZE;
 
-    petEl.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${widthScale}, ${heightScale})`;
+    petEl.style.setProperty(
+      "--petpet-transform",
+      `translate(${offsetX}px, ${offsetY}px) scale(${widthScale}, ${heightScale})`,
+    );
     handEl.src = hands[Math.floor(i / 2)];
 
     timer = window.setTimeout(tick, STEP_MS);

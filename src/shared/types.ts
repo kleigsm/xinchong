@@ -59,6 +59,8 @@ export interface PetApi {
   ready(): void;
   /** 订阅「要用户说话」事件（右键菜单里点「说句话…」） */
   onShowChatInput(callback: () => void): () => void;
+  /** 订阅「主进程让我收起输入条」（窗口失焦时触发） */
+  onChatClose(callback: () => void): () => void;
   /** 告诉主进程：输入条关了，恢复不可聚焦 */
   chatInputClosed(): void;
   /** 订阅「换回内置角色」事件 */
