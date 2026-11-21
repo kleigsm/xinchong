@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "id": "poc-dog",
+  "name": "POC 小狗",
+  "canvas": { "width": 512, "height": 512 },
+  "root": "root",
+  "actions": ["idle", "click", "drag", "sleep", "wave", "stretch", "pat", "angry"],
+  "bones": [
+    { "id": "root", "parent": null, "x": 256, "y": 380 },
+    { "id": "body", "parent": "root", "x": 256, "y": 380 },
+    { "id": "head", "parent": "body", "x": 256, "y": 255 },
+    { "id": "ear-l", "parent": "head", "x": 214, "y": 165 },
+    { "id": "ear-r", "parent": "head", "x": 298, "y": 165 },
+    { "id": "front-leg-l", "parent": "body", "x": 228, "y": 370 },
+    { "id": "front-leg-r", "parent": "body", "x": 284, "y": 370 },
+    { "id": "back-leg-l", "parent": "body", "x": 202, "y": 380 },
+    { "id": "back-leg-r", "parent": "body", "x": 310, "y": 380 },
+    { "id": "tail", "parent": "body", "x": 348, "y": 330 }
+  ],
+  "layers": [
+    { "id": "back-leg-l", "file": "back-leg-l.png", "bone": "back-leg-l", "z": 1, "pivot": [202, 380] },
+    { "id": "back-leg-r", "file": "back-leg-r.png", "bone": "back-leg-r", "z": 2, "pivot": [310, 380] },
+    { "id": "tail", "file": "tail.png", "bone": "tail", "z": 3, "pivot": [348, 330] },
+    { "id": "body", "file": "body.png", "bone": "body", "z": 4, "pivot": [256, 380] },
+    { "id": "front-leg-l", "file": "front-leg-l.png", "bone": "front-leg-l", "z": 5, "pivot": [228, 370] },
+    { "id": "front-leg-r", "file": "front-leg-r.png", "bone": "front-leg-r", "z": 6, "pivot": [284, 370] },
+    { "id": "head", "file": "head.png", "bone": "head", "z": 7, "pivot": [256, 255] },
+    { "id": "ear-l", "file": "ear-l.png", "bone": "ear-l", "z": 8, "pivot": [214, 165] },
+    { "id": "ear-r", "file": "ear-r.png", "bone": "ear-r", "z": 9, "pivot": [298, 165] }
+  ]
+}
