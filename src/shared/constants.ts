@@ -32,8 +32,14 @@ export const HIT_MARGIN = 6;
 /** 光标轮询间隔（ms） */
 export const POLL_INTERVAL_MS = 80;
 
-/** 拖动时至少保留多少像素在屏幕内，防止宠物被拖丢 */
-export const MIN_VISIBLE_PX = 60;
+/**
+ * 拖动/贴边时，**角色中心**距离工作区边缘至少要留多少像素。
+ *
+ * 以前用的是"窗口至少露 60px"，但角色贴在窗口底部，
+ * 窗口露 60px 时角色已经几乎看不见了（BUG-011）。
+ * 现在按角色中心算：留 24px ≈ 角色还有 65% 在屏幕内。
+ */
+export const PET_EDGE_MARGIN = 24;
 
 /** 台词气泡默认停留时长（ms） */
 export const BUBBLE_DURATION_MS = 3000;

@@ -198,7 +198,9 @@ export class PetView {
     }
 
     if (name !== "sleep") this.el.style.opacity = String(this.baseOpacity);
-    this.el.style.transform = transform;
+    // 写 CSS 变量而不是直接写 transform：petpet 也要写 transform，
+    // 两边直接赋值会互相覆盖（BUG-012），由 style.css 负责组合
+    this.el.style.setProperty("--pet-anim-transform", transform);
   }
 
   private clearStaticTimer(): void {
@@ -213,7 +215,7 @@ export class PetView {
     this.clearStaticTimer();
     this.current = null;
     this.spec = null;
-    this.el.style.transform = "";
+    this.el.style.removeProperty("--pet-anim-transform");
     this.el.style.opacity = String(this.baseOpacity);
   }
 

@@ -108,6 +108,8 @@ function clearPatTimer(): void {
 window.addEventListener("mousedown", (event: MouseEvent) => {
   // 只响应左键，右键留给菜单
   if (event.button !== 0) return;
+  // 输入条开着时，点角色或任何非输入框的地方都算"点外面"：先收起（BUG-010）
+  if (!chatBox.hidden && !chatBox.contains(event.target as Node)) closeChatInput();
   pressOrigin = { x: event.screenX, y: event.screenY };
   dragging = false;
   patTriggered = false;
@@ -362,3 +364,4 @@ chatInput.addEventListener("keydown", (event) => {
 });
 
 window.pet.onShowChatInput(() => openChatInput());
+window.pet.onChatClose(() => closeChatInput());
