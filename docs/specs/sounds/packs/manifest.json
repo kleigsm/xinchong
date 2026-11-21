@@ -399,6 +399,326 @@
       "license": "CC-BY 3.0",
       "credit": "Pig SFX Pack / Vinrax",
       "duration": 0.5
+    },
+    {
+      "pack": "dog",
+      "action": "wave",
+      "variant": 1,
+      "file": "dog/wave-1.ogg",
+      "source": "derived from appear-1.ogg",
+      "license": "CC0",
+      "credit": "Dog sounds / pauliuw",
+      "duration": 0.21
+    },
+    {
+      "pack": "dog",
+      "action": "wave",
+      "variant": 2,
+      "file": "dog/wave-2.ogg",
+      "source": "derived from click-1.ogg, click-2.ogg",
+      "license": "CC0",
+      "credit": "Dog sounds / pauliuw",
+      "duration": 0.46
+    },
+    {
+      "pack": "dog",
+      "action": "stretch",
+      "variant": 1,
+      "file": "dog/stretch-1.ogg",
+      "source": "derived from drag-1.ogg",
+      "license": "CC0",
+      "credit": "Dog sounds / pauliuw",
+      "duration": 1.2
+    },
+    {
+      "pack": "dog",
+      "action": "stretch",
+      "variant": 2,
+      "file": "dog/stretch-2.ogg",
+      "source": "derived from sleep-1.ogg",
+      "license": "CC0",
+      "credit": "Dog sounds / pauliuw",
+      "duration": 1.2
+    },
+    {
+      "pack": "dog",
+      "action": "pat",
+      "variant": 1,
+      "file": "dog/pat-1.ogg",
+      "source": "derived from drag-2.ogg",
+      "license": "CC0",
+      "credit": "Dog sounds / pauliuw",
+      "duration": 0.6
+    },
+    {
+      "pack": "dog",
+      "action": "pat",
+      "variant": 2,
+      "file": "dog/pat-2.ogg",
+      "source": "derived from confirm-1.ogg",
+      "license": "CC0",
+      "credit": "Dog sounds / pauliuw",
+      "duration": 0.37
+    },
+    {
+      "pack": "dog",
+      "action": "angry",
+      "variant": 1,
+      "file": "dog/angry-1.ogg",
+      "source": "derived from confirm-2.ogg",
+      "license": "CC0",
+      "credit": "Dog sounds / pauliuw",
+      "duration": 0.36
+    },
+    {
+      "pack": "dog",
+      "action": "angry",
+      "variant": 2,
+      "file": "dog/angry-2.ogg",
+      "source": "derived from click-1.ogg",
+      "license": "CC0",
+      "credit": "Dog sounds / pauliuw",
+      "duration": 0.31
+    },
+    {
+      "pack": "cat",
+      "action": "wave",
+      "variant": 1,
+      "file": "cat/wave-1.ogg",
+      "source": "derived from appear-1.ogg",
+      "license": "CC0",
+      "credit": "Cat Purr & Meow / Kerzoven",
+      "duration": 0.5
+    },
+    {
+      "pack": "cat",
+      "action": "wave",
+      "variant": 2,
+      "file": "cat/wave-2.ogg",
+      "source": "derived from click-1.ogg, click-2.ogg",
+      "license": "CC0",
+      "credit": "Cat Purr & Meow / Kerzoven",
+      "duration": 0.46
+    },
+    {
+      "pack": "cat",
+      "action": "stretch",
+      "variant": 1,
+      "file": "cat/stretch-1.ogg",
+      "source": "derived from drag-1.ogg",
+      "license": "CC0",
+      "credit": "Cat Purr & Meow / Kerzoven",
+      "duration": 1.2
+    },
+    {
+      "pack": "cat",
+      "action": "stretch",
+      "variant": 2,
+      "file": "cat/stretch-2.ogg",
+      "source": "derived from drag-2.ogg",
+      "license": "CC0",
+      "credit": "Cat Purr & Meow / Kerzoven",
+      "duration": 1.2
+    },
+    {
+      "pack": "cat",
+      "action": "pat",
+      "variant": 1,
+      "file": "cat/pat-1.ogg",
+      "source": "derived from sleep-2.ogg",
+      "license": "CC0",
+      "credit": "Cat Purr & Meow / Kerzoven",
+      "duration": 0.6
+    },
+    {
+      "pack": "cat",
+      "action": "pat",
+      "variant": 2,
+      "file": "cat/pat-2.ogg",
+      "source": "derived from confirm-2.ogg",
+      "license": "CC0",
+      "credit": "Cat Purr & Meow / Kerzoven",
+      "duration": 0.55
+    },
+    {
+      "pack": "cat",
+      "action": "angry",
+      "variant": 1,
+      "file": "cat/angry-1.ogg",
+      "source": "derived from drag-2.ogg",
+      "license": "CC0",
+      "credit": "Cat Purr & Meow / Kerzoven",
+      "duration": 0.4
+    },
+    {
+      "pack": "cat",
+      "action": "angry",
+      "variant": 2,
+      "file": "cat/angry-2.ogg",
+      "source": "derived from confirm-1.ogg",
+      "license": "CC0",
+      "credit": "Cat Purr & Meow / Kerzoven",
+      "duration": 0.4
+    },
+    {
+      "pack": "bird",
+      "action": "wave",
+      "variant": 1,
+      "file": "bird/wave-1.ogg",
+      "source": "derived from appear-1.ogg",
+      "license": "CC0",
+      "credit": "Bird chirping / syncopika",
+      "duration": 0.5
+    },
+    {
+      "pack": "bird",
+      "action": "wave",
+      "variant": 2,
+      "file": "bird/wave-2.ogg",
+      "source": "derived from click-1.ogg, click-2.ogg",
+      "license": "CC0",
+      "credit": "Bird chirping / syncopika",
+      "duration": 0.46
+    },
+    {
+      "pack": "bird",
+      "action": "stretch",
+      "variant": 1,
+      "file": "bird/stretch-1.ogg",
+      "source": "derived from drag-1.ogg",
+      "license": "CC0",
+      "credit": "Bird chirping / syncopika",
+      "duration": 1.2
+    },
+    {
+      "pack": "bird",
+      "action": "stretch",
+      "variant": 2,
+      "file": "bird/stretch-2.ogg",
+      "source": "derived from appear-2.ogg",
+      "license": "CC0",
+      "credit": "Bird chirping / syncopika",
+      "duration": 1.2
+    },
+    {
+      "pack": "bird",
+      "action": "pat",
+      "variant": 1,
+      "file": "bird/pat-1.ogg",
+      "source": "derived from click-2.ogg",
+      "license": "CC0",
+      "credit": "Bird chirping / syncopika",
+      "duration": 0.37
+    },
+    {
+      "pack": "bird",
+      "action": "pat",
+      "variant": 2,
+      "file": "bird/pat-2.ogg",
+      "source": "derived from confirm-2.ogg",
+      "license": "CC0",
+      "credit": "Bird chirping / syncopika",
+      "duration": 0.48
+    },
+    {
+      "pack": "bird",
+      "action": "angry",
+      "variant": 1,
+      "file": "bird/angry-1.ogg",
+      "source": "derived from confirm-1.ogg",
+      "license": "CC0",
+      "credit": "Bird chirping / syncopika",
+      "duration": 0.4
+    },
+    {
+      "pack": "bird",
+      "action": "angry",
+      "variant": 2,
+      "file": "bird/angry-2.ogg",
+      "source": "derived from click-2.ogg",
+      "license": "CC0",
+      "credit": "Bird chirping / syncopika",
+      "duration": 0.4
+    },
+    {
+      "pack": "pig",
+      "action": "wave",
+      "variant": 1,
+      "file": "pig/wave-1.ogg",
+      "source": "derived from appear-1.ogg",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 0.5
+    },
+    {
+      "pack": "pig",
+      "action": "wave",
+      "variant": 2,
+      "file": "pig/wave-2.ogg",
+      "source": "derived from click-1.ogg, click-2.ogg",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 0.46
+    },
+    {
+      "pack": "pig",
+      "action": "stretch",
+      "variant": 1,
+      "file": "pig/stretch-1.ogg",
+      "source": "derived from drag-1.ogg",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 1.2
+    },
+    {
+      "pack": "pig",
+      "action": "stretch",
+      "variant": 2,
+      "file": "pig/stretch-2.ogg",
+      "source": "derived from sleep-1.ogg",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 1.2
+    },
+    {
+      "pack": "pig",
+      "action": "pat",
+      "variant": 1,
+      "file": "pig/pat-1.ogg",
+      "source": "derived from click-2.ogg",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 0.37
+    },
+    {
+      "pack": "pig",
+      "action": "pat",
+      "variant": 2,
+      "file": "pig/pat-2.ogg",
+      "source": "derived from confirm-1.ogg",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 0.48
+    },
+    {
+      "pack": "pig",
+      "action": "angry",
+      "variant": 1,
+      "file": "pig/angry-1.ogg",
+      "source": "derived from drag-2.ogg",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 0.4
+    },
+    {
+      "pack": "pig",
+      "action": "angry",
+      "variant": 2,
+      "file": "pig/angry-2.ogg",
+      "source": "derived from confirm-2.ogg",
+      "license": "CC-BY 3.0",
+      "credit": "Pig SFX Pack / Vinrax",
+      "duration": 0.4
     }
   ]
 }
