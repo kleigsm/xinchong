@@ -91,7 +91,7 @@ export interface QuickPanelApi {
   getState(): Promise<QuickPanelState>;
   patchSettings(patch: Partial<Settings>): Promise<Settings>;
   setPersonality(id: string): Promise<boolean>;
-  action(name: "wave" | "pat" | "stretch" | "hide"): void;
+  action(name: "chat" | "wave" | "pat" | "stretch" | "hide"): void;
   openSettings(): void;
   close(): void;
   quit(): void;
