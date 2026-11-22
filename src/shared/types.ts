@@ -44,6 +44,8 @@ export interface Settings {
   animationSpeed: number;
   /** 是否始终置顶 */
   alwaysOnTop: boolean;
+  /** 是否在 userData 写运行日志（隐私页可关；默认开） */
+  privacyLogs: boolean;
 }
 
 /** preload 通过 contextBridge 暴露给渲染进程的 API */

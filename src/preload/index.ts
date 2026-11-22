@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { PetApi, Point, QuickPanelApi, Settings, UserPetPayload } from "../shared/types";
+import type { PrivacyClearTarget } from "../shared/privacy";
 
 /**
  * 只暴露必要的方法，渲染进程拿不到 Node。
@@ -77,6 +78,8 @@ const settingsApi = {
   chatTest: (key?: string) => ipcRenderer.invoke("api:chat:test", key),
   chatSend: (text: string) => ipcRenderer.invoke("api:chat:send", text),
   chatHasKey: () => ipcRenderer.invoke("api:chat:hasKey"),
+  privacyReport: () => ipcRenderer.invoke("api:privacy:report"),
+  privacyClear: (target: PrivacyClearTarget) => ipcRenderer.invoke("api:privacy:clear", target),
   getSystemInfo: () => ipcRenderer.invoke("api:system:info"),
   openUserData: () => ipcRenderer.invoke("api:system:openUserData"),
   openLogFolder: () => ipcRenderer.invoke("api:system:openLogFolder"),

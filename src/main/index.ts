@@ -1,6 +1,4 @@
 import { app, ipcMain } from "electron";
-import { appendFileSync, mkdirSync } from "node:fs";
-import { join } from "node:path";
 import { initAutoStart } from "./autostart";
 import { registerSettingsApi } from "./api";
 import { destroyQuickPanel, registerQuickPanel } from "./quick-panel";
@@ -8,6 +6,7 @@ import { closeChatInput, openChatInput } from "./chat-input";
 import { exportTemplate } from "./template";
 import { importFromPath } from "./import-flow";
 import { destroySettingsWindow, openSettingsWindow } from "./settings-window";
+import { setLogWriteEnabled, setupLogging } from "./logging";
 import { buildPetPayload } from "./pet-payload";
 import { getSettings, updateSettings } from "./store";
 import { describeDisplays, watchDisplays } from "./display";
@@ -17,31 +16,7 @@ import { startPerfSampling } from "./perf";
 import { createTray, destroyTray, notifySettings } from "./tray";
 import { createMainWindow } from "./window";
 
-/**
- * 打包后的应用没有控制台，stdout 是断开的管道。
- * 此时任何 console.log 都会抛 EPIPE 并弹出「JavaScript error occurred in the main process」。
- * 解决：打包模式下把日志写到 userData/main.log，不再往 stdout 写。
- */
-function setupLogging(): void {
-  if (!app.isPackaged) return;
-
-  const write = (level: string, args: unknown[]): void => {
-    try {
-      const dir = app.getPath("userData");
-      mkdirSync(dir, { recursive: true });
-      const line = `${new Date().toISOString()} [${level}] ${args.map(String).join(" ")}\n`;
-      appendFileSync(join(dir, "main.log"), line);
-    } catch {
-      // 日志失败不能影响主流程
-    }
-  };
-
-  console.log = (...args: unknown[]) => write("log", args);
-  console.info = (...args: unknown[]) => write("info", args);
-  console.warn = (...args: unknown[]) => write("warn", args);
-  console.error = (...args: unknown[]) => write("error", args);
-}
-
+// 日志落盘与「是否记录日志」开关都在 logging.ts（P1-13 起隐私页可控）
 setupLogging();
 
 const T0 = Date.now();
@@ -51,6 +26,9 @@ let stopWatchingDisplays: (() => void) | null = null;
 let stopPerfSampling: (() => void) | null = null;
 
 app.whenReady().then(() => {
+  // 设置读出来之后再决定要不要写日志文件（隐私页可关）
+  setLogWriteEnabled(getSettings().privacyLogs !== false);
+
   console.log(`[app] ready in ${Date.now() - T0}ms`);
 
   initAutoStart();
