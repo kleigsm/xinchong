@@ -51,6 +51,8 @@ export interface Settings {
   proactiveTalk: boolean;
   /** 同一句台词多少分钟内不再出现（跨场景）；0 = 关闭冷却 */
   sceneCooldownMin: number;
+  /** 是否在 userData 写运行日志（隐私页可关；默认开） */
+  privacyLogs: boolean;
 }
 
 /** preload 通过 contextBridge 暴露给渲染进程的 API */
@@ -96,7 +98,7 @@ export interface QuickPanelApi {
   getState(): Promise<QuickPanelState>;
   patchSettings(patch: Partial<Settings>): Promise<Settings>;
   setPersonality(id: string): Promise<boolean>;
-  action(name: "wave" | "pat" | "stretch" | "hide"): void;
+  action(name: "chat" | "wave" | "pat" | "stretch" | "hide"): void;
   openSettings(): void;
   close(): void;
   quit(): void;

@@ -12,6 +12,9 @@ import { exportTemplate } from "./template";
 import { clearChatKey, isEncryptionAvailable, loadChatKey, maskChatKey, saveChatKey } from "./chat-key";
 import { sendChatMessage } from "./chat";
 import { applyAlwaysOnTop } from "./window";
+import { setLogWriteEnabled } from "./logging";
+import { clearPrivacyData, collectPrivacyReport } from "./privacy";
+import type { PrivacyClearTarget } from "../shared/privacy";
 
 /**
  * 设置窗口用的 IPC 接口（invoke/handle 模式）。
@@ -64,6 +67,10 @@ export function registerSettingsApi(getWindow: () => BrowserWindow | null): void
     if (patch.alwaysOnTop !== undefined) {
       const win = getWindow();
       if (win) applyAlwaysOnTop(win, next.alwaysOnTop);
+    }
+    // 日志开关同理：改设置的同时立刻生效，不用重启
+    if (patch.privacyLogs !== undefined) {
+      setLogWriteEnabled(next.privacyLogs !== false);
     }
     // 广播给所有窗口（桌宠窗口要实时响应）
     for (const win of [getWindow()]) {
@@ -161,7 +168,9 @@ export function registerSettingsApi(getWindow: () => BrowserWindow | null): void
       petOpacity: 1,
       animationSpeed: 1,
       alwaysOnTop: true,
+      privacyLogs: true,
     });
+    setLogWriteEnabled(true);
     const next = getSettings();
     const win = getWindow();
     if (win) applyAlwaysOnTop(win, next.alwaysOnTop);
@@ -250,6 +259,28 @@ export function registerSettingsApi(getWindow: () => BrowserWindow | null): void
       }
       return { ok: false, message: `网络错误：${text.slice(0, 120)}` };
     }
+  });
+
+  // ---------------- 隐私（P1-13）----------------
+
+  ipcMain.handle("api:privacy:report", () => collectPrivacyReport());
+
+  ipcMain.handle("api:privacy:clear", (_event, target: PrivacyClearTarget) => {
+    const result = clearPrivacyData(target);
+    const next = getSettings();
+    const win = getWindow();
+
+    // 清完要把新状态推出去：角色被删了要换回内置，设置被清了要刷新托盘勾选
+    win?.webContents.send("settings-changed", next);
+    if (result.cleared.includes("pets") || result.cleared.includes("settings")) {
+      win?.webContents.send("pet:builtin", next.personality);
+    }
+    if (result.cleared.includes("settings")) {
+      setLogWriteEnabled(next.privacyLogs !== false);
+      if (win) applyAlwaysOnTop(win, next.alwaysOnTop);
+    }
+
+    return result;
   });
 }
 

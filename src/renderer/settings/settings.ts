@@ -1,6 +1,8 @@
 import type { Settings } from "../../shared/types";
 import type { PetListItem, PersonalityInfo, SettingsApi, SystemInfo } from "../../shared/settings-api";
 import { SOUND_THEMES } from "../../shared/sound-themes";
+import type { PrivacyClearTarget } from "../../shared/privacy";
+import { formatBytes, networkStatus } from "../../shared/privacy";
 
 declare global {
   interface Window {
@@ -16,6 +18,7 @@ type Page =
   | "behavior"
   | "chat"
   | "system"
+  | "privacy"
   | "help"
   | "about";
 
@@ -406,12 +409,11 @@ async function pageChat(): Promise<string> {
     ${card(
       "隐私",
       "🔒",
-      `<div class="note">
-        Key 用 Windows 系统加密（DPAPI）保存在本机
-        <span class="mono">%APPDATA%\\xinchong\\chat-key.bin</span>，<strong>不会上传到任何服务器</strong>。<br /><br />
-        只有你主动和桌宠说话时，那一句才会发给你自己配置的服务；其它时候完全离线。<br /><br />
-        <strong>不填也能用</strong>：桌宠继续说内置台词，功能不受影响。
-      </div>`,
+      row(
+        "完整隐私说明",
+        `<button class="btn small" data-action="goto-privacy">打开隐私页</button>`,
+        "Key 用 Windows DPAPI 加密保存在本机，不会上传；只有你主动说话时才连 api.deepseek.com",
+      ),
     )}
 
     ${card(
@@ -491,6 +493,160 @@ function pageHelp(): string {
       </div>`,
     )}`;
 }
+/* ---------------- 隐私（P1-13）---------------- */
+
+/** 数据项的相对路径：绝对路径在表头统一给一次，行内只给相对部分 */
+function privacyPathLabel(relative: string): string {
+  if (relative === ".") return "（Electron 自管的多个缓存目录）";
+  return relative.replace(/\//g, "\\");
+}
+
+async function pagePrivacy(): Promise<string> {
+  // 清单来自主进程的实时扫描，不是写死的文案：删完再打开，数字会真的变小
+  const report = await window.api.privacyReport();
+  const network = networkStatus(report.hasKey);
+
+  const badges = `
+    <div class="pbadges">
+      <span class="pbadge">图片不上传</span>
+      <span class="pbadge">聊天默认关闭</span>
+      <span class="pbadge">无账号 / 无遥测</span>
+      <span class="pbadge ${network.online ? "warn" : "safe"}">${network.online ? "可能出网" : "完全离线"}</span>
+    </div>`;
+
+  const inventory = report.items
+    .map((item) => {
+      const size = item.exists && item.bytes > 0 ? formatBytes(item.bytes) : "—";
+      const canClear = item.clearable && item.exists;
+      return `
+        <div class="row">
+          <div>
+            <div class="label">${esc(item.label)}</div>
+            <div class="hint">${esc(item.what)}</div>
+            <div class="hint mono">${esc(privacyPathLabel(item.path))}</div>
+          </div>
+          <div class="control">
+            <span class="size-tag">${size}</span>
+            ${canClear ? `<button class="btn small danger" data-action="privacy-clear" data-target="${item.id}">清除</button>` : ""}
+          </div>
+        </div>`;
+    })
+    .join("");
+
+  const sendList = [
+    "你那句话（最多 200 字）",
+    "当前性格设定（害羞 / 开朗 / 傲娇）",
+    "最近 3 轮对话（只在内存里，不落盘）",
+    "点「测试连接」时的一个 ping",
+  ]
+    .map((text) => `<li><span class="tick">✓</span>${esc(text)}</li>`)
+    .join("");
+
+  const noSendList = [
+    "导入的立绘 / 雪碧图",
+    "麦克风、摄像头、屏幕截图",
+    "角色名、设置项、文件路径",
+    "使用统计、崩溃上报、设备信息",
+  ]
+    .map((text) => `<li><span class="cross">✕</span>${esc(text)}</li>`)
+    .join("");
+
+  const clearAllButton = `
+    <div class="privacy-actions">
+      <button class="btn small danger" data-action="privacy-clear" data-target="all">清除全部并恢复出厂</button>
+    </div>`;
+
+  return `
+    <h2 class="page-title">隐私</h2>
+    <p class="page-sub">这一页回答三个问题：存了什么、什么时候会出网、怎么删掉。数字是刚刚扫出来的。</p>
+
+    ${card(
+      "一句话",
+      "🔒",
+      `<div class="note">
+        芯宠没有账号、没有云同步、没有数据上报。图片、角色、设置只待在这台电脑上，
+        聊天 Key 用 Windows 系统加密保存。<strong>整份代码开源</strong>，可以自己审计。
+      </div>
+      ${badges}
+      <div class="privacy-net ${network.online ? "warn" : "safe"}">
+        <strong>${esc(network.title)}</strong><br />${esc(network.detail)}
+      </div>`,
+    )}
+
+    ${card(
+      "本机数据清单",
+      "▤",
+      `<div class="privacy-total">
+        <div>
+          <div class="label">你的数据合计 ${formatBytes(report.totalBytes)}</div>
+          <div class="hint mono">${esc(report.userDataPath)}</div>
+        </div>
+        <button class="btn small" data-action="open-userdata">打开目录</button>
+      </div>
+      ${inventory}
+      <p class="privacy-foot">
+        每一项都是刚刚从磁盘扫出来的，删完再看数字会变小。
+      </p>`,
+    )}
+
+    ${card(
+      "聊天时会发送什么",
+      "◇",
+      `<div class="privacy-cols">
+        <div class="pcol">
+          <div class="pcol-title">会发送（仅当你主动说话）</div>
+          <ul>${sendList}</ul>
+        </div>
+        <div class="pcol">
+          <div class="pcol-title">不会发送</div>
+          <ul>${noSendList}</ul>
+        </div>
+      </div>
+      <p class="privacy-foot">
+        请求发给 <span class="mono">api.deepseek.com</span>（你自己配置的服务商），受它的隐私政策约束。
+        不填 Key 就完全没有这条路径。
+      </p>`,
+    )}
+
+    ${card(
+      "运行日志",
+      "◷",
+      row(
+        "记录运行日志",
+        toggle("privacyLogs", report.logsEnabled),
+        report.packaged
+          ? "写在 main.log，排错用；关掉后不再增长（已写的要手动清）"
+          : "开发版只输出到控制台、不写文件；这个开关对打包版生效",
+      ),
+    )}
+
+    ${card(
+      "清除数据",
+      "⌫",
+      `<div class="note">
+        清单里每一项右侧的「清除」只删那一项；下面这个按钮会把聊天 Key、导入的角色、运行日志和所有设置一起清掉。
+      </div>
+      <div id="privacy-result" class="privacy-result"></div>
+      ${clearAllButton}
+      <p class="privacy-foot">
+        「其它运行时文件」是 Electron 自己的缓存，运行中删不安全，所以这一页不碰它；
+        想彻底清空，退出芯宠后直接删掉整个 <span class="mono">%APPDATA%\\xinchong</span> 目录即可。
+      </p>`,
+    )}
+
+    ${card(
+      "我们的承诺",
+      "✦",
+      `<ul class="promise-list">
+        <li><strong>数据最小化</strong>：只留功能必需的东西，不要账号、手机号、设备指纹。</li>
+        <li><strong>本地优先</strong>：图片只在内存里播放，从不离开这台电脑。</li>
+        <li><strong>加密存储</strong>：聊天 Key 走 Windows DPAPI，只有当前 Windows 账户能解开。</li>
+        <li><strong>可撤回</strong>：任何一项都能在上面删掉，不需要卸载重装。</li>
+        <li><strong>可审计</strong>：出网点只有 <span class="mono">api.deepseek.com</span> 一处，源码在 GitHub 上。</li>
+      </ul>`,
+    )}`;
+}
+
 async function pageSystem(): Promise<string> {
   if (!systemInfo) systemInfo = await window.api.getSystemInfo();
 
@@ -547,6 +703,9 @@ function pageAbout(): string {
       `<div class="note">
         你导入的所有图片、设置、角色数据都只保存在本机（<span class="mono">%APPDATA%\\xinchong</span>），
         不会上传到任何服务器。
+      </div>
+      <div class="privacy-actions">
+        <button class="btn small" data-action="goto-privacy">查看隐私设置</button>
       </div>`,
     )}`;
 }
@@ -561,6 +720,7 @@ const renderers: Record<Page, () => string | Promise<string>> = {
   behavior: pageBehavior,
   chat: pageChat,
   system: pageSystem,
+  privacy: pagePrivacy,
   help: pageHelp,
   about: pageAbout,
 };
@@ -576,6 +736,68 @@ async function render(page: Page): Promise<void> {
 async function reload(): Promise<void> {
   await refresh();
   await render(currentPage);
+}
+
+/* ---------------- 隐私页的清除流程 ---------------- */
+
+const CLEAR_LABELS: Record<string, string> = {
+  settings: "设置",
+  pets: "角色",
+  "chat-key": "聊天 Key",
+  logs: "运行日志",
+  runtime: "运行时文件",
+};
+
+function setPrivacyResult(text: string, ok: boolean): void {
+  const el = document.getElementById("privacy-result");
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = ok ? "#3f8f5f" : "#c4342a";
+}
+
+/**
+ * 清除本机数据：先问一遍（全部清除问两遍），再让主进程删，最后重新扫描。
+ * 「删完数字会变小」是这一页的核心承诺，所以 clear 之后必须 reload，让用户看到结果。
+ */
+async function clearPrivacy(target: PrivacyClearTarget): Promise<void> {
+  const messages: Record<PrivacyClearTarget, { title: string; detail: string }> = {
+    "chat-key": {
+      title: "清除聊天 Key？",
+      detail: "桌宠会改回内置台词，聊天功能随之关闭；之后可以重新填。",
+    },
+    pets: {
+      title: `删除全部导入的角色（${pets.length} 个）？`,
+      detail: "角色图片和配置会从本机删除，无法恢复。",
+    },
+    logs: {
+      title: "清除运行日志？",
+      detail: "只删本机的 main.log，不影响其它设置和角色。",
+    },
+    all: {
+      title: "清除全部本机数据？",
+      detail: "聊天 Key、导入的角色、运行日志、所有设置都会被删除，无法恢复。",
+    },
+  };
+
+  const asked = messages[target];
+  if (!(await window.api.confirm(asked.title, asked.detail))) return;
+
+  if (target === "all") {
+    const again = await window.api.confirm(
+      "再确认一次：全部删除？",
+      "删完就回到刚装好的样子，需要重新导入角色、重新调设置。",
+    );
+    if (!again) return;
+  }
+
+  const result = await window.api.privacyClear(target);
+  await reload();
+
+  const names = result.cleared.map((id) => CLEAR_LABELS[id] ?? id);
+  const summary = names.length
+    ? `已清除：${names.join("、")}。剩余 ${formatBytes(result.leftoverBytes)}`
+    : `没有可清除的内容。剩余 ${formatBytes(result.leftoverBytes)}`;
+  setPrivacyResult(summary, true);
 }
 
 function bindEvents(): void {
@@ -667,6 +889,12 @@ function bindEvents(): void {
         if (!yes) return;
         void window.api.chatClearKey().then(() => reload());
       });
+    }
+
+    if (action === "goto-privacy") void render("privacy");
+
+    if (action === "privacy-clear") {
+      void clearPrivacy((el.dataset.target ?? "all") as PrivacyClearTarget);
     }
 
     if (action === "reset") {

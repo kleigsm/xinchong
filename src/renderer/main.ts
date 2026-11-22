@@ -160,13 +160,20 @@ function clearPatTimer(): void {
 window.addEventListener("mousedown", (event: MouseEvent) => {
   // 只响应左键，右键留给菜单
   if (event.button !== 0) return;
+  // 点在输入框里：只聚焦，不启动拖拽
+  if (chatBox.contains(event.target as Node)) return;
   markInteraction();
   // 输入条开着时，点角色或任何非输入框的地方都算"点外面"：先收起（BUG-010）
-  if (!chatBox.hidden && !chatBox.contains(event.target as Node)) closeChatInput();
+  if (!chatBox.hidden) closeChatInput();
   pressOrigin = { x: event.screenX, y: event.screenY };
   dragging = false;
   patTriggered = false;
   clearPatTimer();
+
+  // 按下就立刻开始主进程的拖拽跟踪，并且用"按下那一刻"的位置当锚点。
+  // 不能等第一次 mousemove：那时光标已经移动了一段，会被永久算成偏移（BUG-021）；
+  // 而且快速拖动时光标可能已经离开角色，窗口被判定为穿透，拖拽根本起不来。
+  window.pet.dragStart({ x: event.screenX, y: event.screenY });
   // 长按 1.2 秒 = 摸头。
   // 之所以不用更短的 0.65s：用户按住想拖、手抖停顿一下就会被判定成摸头，
   // 而且旧实现里摸头之后会锁住拖拽，体验很糟。
@@ -204,7 +211,7 @@ window.addEventListener("mousemove", (event: MouseEvent) => {
         const line = lineEngine.pick("drag");
         if (line) bubble.show(line);
       }
-      window.pet.dragStart({ x: event.screenX, y: event.screenY });
+      // 拖拽已经在 mousedown 时通知过主进程了，这里只切状态和动画
     }
     return;
   }
@@ -221,6 +228,11 @@ function endDrag(): void {
   dragging = false;
 }
 
+// 拖到一半切窗口/失焦：主进程的跟踪要停，否则它会一直跟着光标走
+window.addEventListener("blur", () => {
+  if (pressOrigin) endDrag();
+});
+
 window.addEventListener("mouseup", () => {
   if (!pressOrigin) return;
   clearPatTimer();
@@ -230,12 +242,16 @@ window.addEventListener("mouseup", () => {
     patTriggered = false;
     pressOrigin = null;
     dragging = false;
+    // 主进程的拖拽跟踪从 mousedown 就开始了，这里必须收尾（BUG-022）
+    window.pet.dragEnd();
     return;
   }
 
   if (dragging) {
     endDrag();
   } else {
+    // 只是点击：主进程的跟踪同样在跑，必须收尾，否则它会一直跟着光标走
+    window.pet.dragEnd();
     const now = performance.now();
     rapidCount = now - lastClickAt < 1200 ? rapidCount + 1 : 1;
     lastClickAt = now;

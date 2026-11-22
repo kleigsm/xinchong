@@ -1,4 +1,5 @@
-﻿import type { Settings } from "./types";
+import type { Settings } from "./types";
+import type { PrivacyClearResult, PrivacyClearTarget, PrivacyReport } from "./privacy";
 
 /** 设置窗口与主进程之间的接口定义（preload 暴露为 window.api） */
 
@@ -43,6 +44,10 @@ export interface SettingsApi {
   chatTest(key?: string): Promise<ChatTestResult>;
   chatSend(text: string): Promise<ChatResult>;
   chatHasKey(): Promise<boolean>;
+  /** 隐私页：清点本机实际存了什么（读文件系统，不是写死的文案） */
+  privacyReport(): Promise<PrivacyReport>;
+  /** 隐私页：清除本机数据 */
+  privacyClear(target: PrivacyClearTarget): Promise<PrivacyClearResult>;
   getSystemInfo(): Promise<SystemInfo>;
   openUserData(): Promise<void>;
   openLogFolder(): Promise<void>;

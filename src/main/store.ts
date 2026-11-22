@@ -1,5 +1,5 @@
 import { app } from "electron";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import type { Settings } from "../shared/types";
 
@@ -33,6 +33,8 @@ const DEFAULTS: Settings = {
   proactiveTalk: false,
   // 跨场景冷却 5 分钟
   sceneCooldownMin: 5,
+  /** 在 userData 里写运行日志（隐私页可关；关掉不删已有文件） */
+  privacyLogs: true,
 };
 
 let cache: Settings | null = null;
@@ -74,4 +76,22 @@ export function updateSettings(patch: Partial<Settings>): Settings {
   }
 
   return next;
+}
+
+/**
+ * 恢复出厂：直接删掉 settings.json 并把内存缓存重置为默认值。
+ *
+ * 和「恢复默认设置」（只把几个开关改回默认值）不同：
+ * 这个是隐私页「清除全部本机数据」用的，目标是真的不留文件。
+ */
+export function resetAllSettings(): Settings {
+  try {
+    rmSync(settingsPath(), { force: true });
+    console.log("[store] 已删除 settings.json（恢复出厂）");
+  } catch (error) {
+    console.error(`[store] 删除 settings.json 失败: ${String(error)}`);
+  }
+
+  cache = { ...DEFAULTS };
+  return cache;
 }
