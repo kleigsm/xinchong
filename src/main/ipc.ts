@@ -33,12 +33,19 @@ function stopDragLoop(): void {
 
 /** 注册拖拽与右键菜单相关的 IPC */
 export function registerIpc(win: BrowserWindow): void {
-  ipcMain.on("drag-start", () => {
+  ipcMain.on("drag-start", (_event, point?: Point) => {
     if (win.isDestroyed()) return;
 
-    const cursor = screen.getCursorScreenPoint();
     const [wx, wy] = win.getPosition();
-    dragOffset = { dx: cursor.x - wx, dy: cursor.y - wy };
+    // 锚点用"按下那一刻"的位置（渲染层传过来），而不是此刻的鼠标位置：
+    // 从 mousedown 到 drag-start 之间光标可能已经挪了几十像素，
+    // 那段距离会被永久算成偏移，表现为"宠物总比鼠标超前/落后一截"（BUG-021）。
+    const anchor =
+      point && Number.isFinite(point.x) && Number.isFinite(point.y)
+        ? point
+        : screen.getCursorScreenPoint();
+
+    dragOffset = { dx: anchor.x - wx, dy: anchor.y - wy };
 
     stopDragLoop();
     dragTimer = setInterval(() => {
@@ -56,7 +63,7 @@ export function registerIpc(win: BrowserWindow): void {
     }, DRAG_INTERVAL_MS);
 
     console.log(
-      `[drag] start cursor=(${cursor.x},${cursor.y}) window=(${wx},${wy}) offset=(${dragOffset.dx},${dragOffset.dy})`,
+      `[drag] start anchor=(${anchor.x},${anchor.y}) window=(${wx},${wy}) offset=(${dragOffset.dx},${dragOffset.dy})`,
     );
   });
 
