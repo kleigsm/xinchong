@@ -11,6 +11,8 @@ import { importFromPath, runImportFlow, type ImportMode } from "./import-flow";
 import { exportTemplate } from "./template";
 import { clearChatKey, isEncryptionAvailable, loadChatKey, maskChatKey, saveChatKey } from "./chat-key";
 import { sendChatMessage } from "./chat";
+import { clearChats, listChatSummaries } from "./chat-store";
+import { characterKeyOf } from "../shared/chat-archive";
 import { applyAlwaysOnTop } from "./window";
 import { setLogWriteEnabled } from "./logging";
 import { clearPrivacyData, collectPrivacyReport } from "./privacy";
@@ -224,7 +226,19 @@ export function registerSettingsApi(getWindow: () => BrowserWindow | null): void
 
   ipcMain.handle("api:chat:send", async (_event, text: string) => {
     const settings = getSettings();
-    return sendChatMessage(text, settings.personality);
+    // P2-10：按"当前是哪个形象"取上下文——内置角色用性格，自定义角色用 petId
+    const characterKey = characterKeyOf(settings.personality, settings.activePetId);
+    return sendChatMessage(text, settings.personality, characterKey);
+  });
+
+  // ---------------- 对话记录（P2-10）----------------
+
+  ipcMain.handle("api:chat:history", () => listChatSummaries());
+
+  ipcMain.handle("api:chat:history:clear", (_event, key?: string) => {
+    clearChats(key);
+    console.log(`[chat] 清空对话记录 ${key ?? "(全部)"}`);
+    return listChatSummaries();
   });
 
   ipcMain.handle("api:chat:hasKey", () => loadChatKey() !== null);

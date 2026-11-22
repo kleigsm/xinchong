@@ -2,6 +2,7 @@ import { app, ipcMain } from "electron";
 import { initAutoStart } from "./autostart";
 import { registerSettingsApi } from "./api";
 import { destroyQuickPanel, registerQuickPanel } from "./quick-panel";
+import { flushChats } from "./chat-store";
 import { closeChatInput, openChatInput } from "./chat-input";
 import { exportTemplate } from "./template";
 import { importFromPath } from "./import-flow";
@@ -114,4 +115,9 @@ app.on("window-all-closed", () => {
   destroySettingsWindow();
   destroyQuickPanel();
   app.quit();
+});
+
+// 退出前把还在 500ms 防抖窗口里的对话记录写掉（P2-10）
+app.on("before-quit", () => {
+  flushChats();
 });

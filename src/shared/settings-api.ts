@@ -44,6 +44,10 @@ export interface SettingsApi {
   chatTest(key?: string): Promise<ChatTestResult>;
   chatSend(text: string): Promise<ChatResult>;
   chatHasKey(): Promise<boolean>;
+  /** 聊天页：每个角色有多少条对话（P2-10） */
+  chatHistory(): Promise<ChatHistorySummary[]>;
+  /** 聊天页：清空某个角色的对话；不传 key 就是全部清空 */
+  chatClearHistory(key?: string): Promise<ChatHistorySummary[]>;
   /** 隐私页：清点本机实际存了什么（读文件系统，不是写死的文案） */
   privacyReport(): Promise<PrivacyReport>;
   /** 隐私页：清除本机数据 */
@@ -68,3 +72,14 @@ export interface ChatTestResult {
 export type ChatResult =
   | { ok: true; reply: string }
   | { ok: false; reason: string; message: string };
+/** 对话存档的一个角色（P2-10） */
+export interface ChatHistorySummary {
+  /** builtin:shy / custom:<petId> */
+  key: string;
+  /** 给人看的名字 */
+  label: string;
+  /** 存了多少条消息（一问一答 = 2 条） */
+  turns: number;
+  /** 最后更新时间戳 */
+  updatedAt: number;
+}

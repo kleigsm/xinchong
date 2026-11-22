@@ -398,6 +398,18 @@ async function pageChat(): Promise<string> {
          </div>
        </div>`;
 
+  const history = await window.api.chatHistory();
+  const historyRows = history
+    .map((entry) => {
+      const count = entry.turns > 0 ? `${entry.turns} 条` : "暂无记录";
+      const clearButton =
+        entry.turns > 0
+          ? `<button class="btn small danger" data-action="chat-history-clear" data-key="${esc(entry.key)}">清空</button>`
+          : "";
+      return row(entry.label, `<span class="mono" style="color:#8a8a90">${count}</span>${clearButton}`);
+    })
+    .join("");
+
   return `
     <h2 class="page-title">聊天</h2>
     <p class="page-sub">可选功能：自带 DeepSeek API Key，让桌宠能接你的话。</p>
@@ -405,6 +417,23 @@ async function pageChat(): Promise<string> {
     ${status.encryptionAvailable ? "" : `<div class="note warn">这台机器的系统加密不可用，Key 无法安全保存。</div>`}
 
     ${card("API Key", "◆", keyBlock + `<div id="chat-result"></div>`)}
+
+    ${card(
+      "对话记录",
+      "🗂",
+      `${historyRows}
+       <div class="row">
+         <div>
+           <div class="label">清空所有对话</div>
+           <div class="hint">所有角色的记录一起删除，无法恢复</div>
+         </div>
+         <div class="control"><button class="btn small danger" data-action="chat-history-clear-all">全部清空</button></div>
+       </div>
+       <div class="note">
+         按形象分开保存，最多保留最近 20 轮；发给模型的是最近 6 轮。
+         文件在 <span class="mono">%APPDATA%\\xinchong\\chats.json</span>，不上传。
+       </div>`,
+    )}
 
     ${card(
       "隐私",
@@ -536,7 +565,7 @@ async function pagePrivacy(): Promise<string> {
   const sendList = [
     "你那句话（最多 200 字）",
     "当前性格设定（害羞 / 开朗 / 傲娇）",
-    "最近 3 轮对话（只在内存里，不落盘）",
+    "最近 6 轮对话（从本机存档读取）",
     "点「测试连接」时的一个 ping",
   ]
     .map((text) => `<li><span class="tick">✓</span>${esc(text)}</li>`)
@@ -586,6 +615,9 @@ async function pagePrivacy(): Promise<string> {
       ${inventory}
       <p class="privacy-foot">
         每一项都是刚刚从磁盘扫出来的，删完再看数字会变小。
+      </p>
+      <p class="privacy-foot">
+        对话记录保存在本机 <span class="mono">%APPDATA%\\xinchong\\chats.json</span>，不上传；可在「聊天」页清空。
       </p>`,
     )}
 
@@ -744,6 +776,7 @@ const CLEAR_LABELS: Record<string, string> = {
   settings: "设置",
   pets: "角色",
   "chat-key": "聊天 Key",
+  chats: "对话记录",
   logs: "运行日志",
   runtime: "运行时文件",
 };
@@ -769,13 +802,17 @@ async function clearPrivacy(target: PrivacyClearTarget): Promise<void> {
       title: `删除全部导入的角色（${pets.length} 个）？`,
       detail: "角色图片和配置会从本机删除，无法恢复。",
     },
+    chats: {
+      title: "清空所有对话记录？",
+      detail: "所有角色和桌宠聊过的内容都会被删除，无法恢复（不影响 Key 和角色）。",
+    },
     logs: {
       title: "清除运行日志？",
       detail: "只删本机的 main.log，不影响其它设置和角色。",
     },
     all: {
       title: "清除全部本机数据？",
-      detail: "聊天 Key、导入的角色、运行日志、所有设置都会被删除，无法恢复。",
+      detail: "聊天 Key、对话记录、导入的角色、运行日志、所有设置都会被删除，无法恢复。",
     },
   };
 
@@ -889,6 +926,20 @@ function bindEvents(): void {
         if (!yes) return;
         void window.api.chatClearKey().then(() => reload());
       });
+    }
+
+    if (action === "chat-history-clear") {
+      const key = el.dataset.key;
+      if (key) void window.api.chatClearHistory(key).then(() => reload());
+    }
+
+    if (action === "chat-history-clear-all") {
+      void window.api
+        .confirm("清空所有对话记录？", "所有角色和桌宠聊过的内容都会删除，无法恢复。")
+        .then((yes) => (yes ? window.api.chatClearHistory() : null))
+        .then((list) => {
+          if (list) void reload();
+        });
     }
 
     if (action === "goto-privacy") void render("privacy");

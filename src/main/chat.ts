@@ -1,5 +1,6 @@
 import { loadChatKey } from "./chat-key";
 import { clipReply } from "../shared/chat-text";
+import { appendConversation, getChatContext } from "./chat-store";
 
 /**
  * 可选的聊天调用（P2-6）。
@@ -8,6 +9,9 @@ import { clipReply } from "../shared/chat-text";
  * - **没有 Key 时完全不影响使用**——调用方拿到 no-key 就静默回落到内置台词
  * - **任何失败都回落**，不要让桌宠"卡住不说话"
  * - 只发送用户这几句话 + 性格设定，不发任何本地数据
+ *
+ * P2-10：上下文不再放这个文件的全局数组，改成按角色从 `chat-store` 取
+ * （切角色不串味、重启还记得、发给 API 的仍只有最近 6 轮）。
  */
 
 export type ChatResult =
@@ -17,15 +21,6 @@ export type ChatResult =
       reason: "no-key" | "unauthorized" | "rate-limit" | "timeout" | "network" | "empty";
       message: string;
     };
-
-interface Turn {
-  role: "user" | "assistant";
-  content: string;
-}
-
-/** 最近几轮对话（只放内存，不落盘） */
-const history: Turn[] = [];
-const MAX_HISTORY_TURNS = 6; // 3 问 3 答
 
 /** 每套性格的语气设定 + 两个示例（示例比形容词更能约束风格） */
 const PERSONA: Record<string, string> = {
@@ -58,19 +53,12 @@ function systemPrompt(personality: string): string {
   return `${PERSONA[personality] ?? DEFAULT_PERSONA}\n${COMMON_RULES}`;
 }
 
-/** 记一轮对话，超长就丢掉最早的 */
-function remember(userText: string, reply: string): void {
-  history.push({ role: "user", content: userText }, { role: "assistant", content: reply });
-  while (history.length > MAX_HISTORY_TURNS) history.shift();
-}
-
-/** 换性格/换角色时清空上下文，免得串味 */
-export function resetChatHistory(): void {
-  history.length = 0;
-}
-
 /** 和桌宠说一句话；失败时返回原因，由调用方决定怎么回落 */
-export async function sendChatMessage(text: string, personality: string): Promise<ChatResult> {
+export async function sendChatMessage(
+  text: string,
+  personality: string,
+  characterKey: string,
+): Promise<ChatResult> {
   const key = loadChatKey();
   if (!key) return { ok: false, reason: "no-key", message: "还没有配置 API Key" };
 
@@ -88,8 +76,8 @@ export async function sendChatMessage(text: string, personality: string): Promis
         model: "deepseek-chat",
         messages: [
           { role: "system", content: systemPrompt(personality) },
-          // 带上最近几轮，回复才不会"失忆"
-          ...history,
+          // 只带这个角色的最近 6 轮（P2-10）：跨角色不串味，token 也可控
+          ...getChatContext(characterKey),
           { role: "user", content: trimmed },
         ],
         max_tokens: 80,
@@ -116,7 +104,7 @@ export async function sendChatMessage(text: string, personality: string): Promis
 
     // 压成一行并限长（P2-7 7d）：切在标点后面，别切出半个词
     const cleaned = clipReply(reply);
-    remember(trimmed, cleaned);
+    appendConversation(characterKey, trimmed, cleaned);
     return { ok: true, reply: cleaned };
   } catch (error) {
     const text = String(error);
