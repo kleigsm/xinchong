@@ -5,6 +5,7 @@ import { PERSONALITIES, isPersonalityId } from "../shared/personalities";
 import { getSettings, updateSettings } from "./store";
 import { useBuiltInPet } from "./pet-switch";
 import { openSettingsWindow } from "./settings-window";
+import { openChatInput } from "./chat-input";
 
 /**
  * 快捷面板（P1-12 第一版）。
@@ -20,6 +21,13 @@ import { openSettingsWindow } from "./settings-window";
 const PANEL_WIDTH = 320;
 const PANEL_HEIGHT = 420;
 const CURSOR_GAP = 8;
+
+interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 /** 失焦后稍等一下再关，避免"点面板里的下拉/拖滑杆"被误判成失焦 */
 const BLUR_CLOSE_DELAY_MS = 120;
 
@@ -59,6 +67,13 @@ export function registerQuickPanel(petWindow: () => BrowserWindow | null): void 
   ipcMain.on("quick-panel:action", (_event, name: string) => {
     const win = getPetWindow();
     if (!win || win.isDestroyed()) return;
+
+    if (name === "chat") {
+      // 先关面板再开输入条：面板失焦会把输入条的焦点抢回来
+      closeQuickPanel();
+      openChatInput(win);
+      return;
+    }
 
     if (name === "hide") {
       win.hide();
@@ -111,25 +126,60 @@ export function destroyQuickPanel(): void {
 function computePosition(point: Point): { x: number; y: number } {
   const display = screen.getDisplayNearestPoint({ x: point.x, y: point.y });
   const area = display.workArea;
+  const pet = getPetWindow()?.getBounds() ?? null;
 
-  // 默认：面板在光标右上方
-  let x = point.x + CURSOR_GAP;
-  let y = point.y - PANEL_HEIGHT - CURSOR_GAP;
+  const clampX = (x: number): number =>
+    Math.min(Math.max(x, area.x), area.x + area.width - PANEL_WIDTH);
+  const clampY = (y: number): number =>
+    Math.min(Math.max(y, area.y), area.y + area.height - PANEL_HEIGHT);
 
-  // 右边放不下 → 翻到光标左侧
-  if (x + PANEL_WIDTH > area.x + area.width) {
-    x = point.x - PANEL_WIDTH - CURSOR_GAP;
-  }
-  // 上面放不下 → 翻到光标下方
-  if (y < area.y) {
-    y = point.y + CURSOR_GAP;
+  // 拿不到桌宠位置（窗口已销毁）：退回光标右上方
+  if (!pet) {
+    return { x: Math.round(clampX(point.x + CURSOR_GAP)), y: Math.round(clampY(point.y - PANEL_HEIGHT - CURSOR_GAP)) };
   }
 
-  // 最后夹一次，保证整块面板在工作区内
-  x = Math.min(Math.max(x, area.x), area.x + area.width - PANEL_WIDTH);
-  y = Math.min(Math.max(y, area.y), area.y + area.height - PANEL_HEIGHT);
+  // 以桌宠为参照，优先放到不压住它的地方：
+  // 上 → 左 → 右 → 下，第一个"完整在屏内且不和桌宠相交"的胜出
+  const make = (x: number, y: number): Rect => ({ x, y, width: PANEL_WIDTH, height: PANEL_HEIGHT });
+  const candidates: Rect[] = [
+    make(clampX(point.x - PANEL_WIDTH / 2), pet.y - PANEL_HEIGHT - CURSOR_GAP),
+    make(pet.x - PANEL_WIDTH - CURSOR_GAP, clampY(point.y - PANEL_HEIGHT / 2)),
+    make(pet.x + pet.width + CURSOR_GAP, clampY(point.y - PANEL_HEIGHT / 2)),
+    make(clampX(point.x - PANEL_WIDTH / 2), pet.y + pet.height + CURSOR_GAP),
+  ];
 
-  return { x: Math.round(x), y: Math.round(y) };
+  for (const candidate of candidates) {
+    if (!fitsInArea(candidate, area)) continue;
+    if (intersects(candidate, pet)) continue;
+    return { x: Math.round(candidate.x), y: Math.round(candidate.y) };
+  }
+
+  // 桌宠几乎占满屏幕：退到"离桌宠远的那一侧"，仍然夹进工作区
+  const petCenterX = pet.x + pet.width / 2;
+  const preferLeft = point.x > petCenterX;
+  const fallback = {
+    x: clampX(preferLeft ? pet.x - PANEL_WIDTH - CURSOR_GAP : pet.x + pet.width + CURSOR_GAP),
+    y: clampY(point.y - PANEL_HEIGHT / 2),
+  };
+  return { x: Math.round(fallback.x), y: Math.round(fallback.y) };
+}
+
+function fitsInArea(rect: Rect, area: Rect): boolean {
+  return (
+    rect.x >= area.x &&
+    rect.y >= area.y &&
+    rect.x + rect.width <= area.x + area.width &&
+    rect.y + rect.height <= area.y + area.height
+  );
+}
+
+function intersects(a: Rect, b: Rect): boolean {
+  return (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  );
 }
 
 function ensurePanel(): BrowserWindow {
