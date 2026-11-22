@@ -70,6 +70,28 @@ body {
 }
 .dot.muted { background: #c9c9cf; }
 
+/* ---------- 说句话：最高频，单独一整行 ---------- */
+.talk {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px 0;
+  border: 0;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: #b8431f;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+.talk:hover { background: #fbe0d5; }
+.talk:active { transform: scale(0.99); }
+.talk .ico { font-size: 14px; }
+
 /* ---------- 4 个动作 ---------- */
 .actions {
   display: grid;

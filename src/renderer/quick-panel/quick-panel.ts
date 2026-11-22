@@ -66,9 +66,9 @@ async function patch(patch: Partial<Settings>): Promise<void> {
 }
 
 function bind(): void {
-  document.querySelectorAll<HTMLButtonElement>(".tile").forEach((tile) => {
+  document.querySelectorAll<HTMLButtonElement>("[data-action]").forEach((tile) => {
     tile.addEventListener("click", () => {
-      const action = tile.dataset.action as "wave" | "pat" | "stretch" | "hide";
+      const action = tile.dataset.action as "chat" | "wave" | "pat" | "stretch" | "hide";
       window.quickPanel.action(action);
     });
   });
