@@ -11,6 +11,7 @@ import type {
 } from "../shared/privacy";
 import { sumBytes } from "../shared/privacy";
 import { clearChatKey, hasChatKey, isEncryptionAvailable } from "./chat-key";
+import { clearChats } from "./chat-store";
 import { listPetIds, removePet } from "./pet-store";
 import { getSettings, resetAllSettings, updateSettings } from "./store";
 
@@ -25,7 +26,7 @@ import { getSettings, resetAllSettings, updateSettings } from "./store";
  */
 
 /** 能解释的条目；不在这张表里的顶层文件/目录统一归到「其它运行时文件」 */
-const KNOWN_ENTRIES = new Set(["settings.json", "pets", "chat-key.bin", "main.log"]);
+const KNOWN_ENTRIES = new Set(["settings.json", "pets", "chat-key.bin", "chats.json", "main.log"]);
 
 const MAX_DEPTH = 8;
 /**
@@ -171,6 +172,14 @@ export function collectPrivacyReport(): PrivacyReport {
     ),
     item(
       userData,
+      "chats",
+      "对话记录",
+      "你和桌宠聊过的内容，按形象分开保存在本地；可在「聊天」页清空",
+      "chats.json",
+      true,
+    ),
+    item(
+      userData,
       "logs",
       "运行日志",
       "排错用；可能包含本机路径，不含对话内容",
@@ -229,6 +238,12 @@ export function clearPrivacyData(target: PrivacyClearTarget): PrivacyClearResult
 
   if (target === "chat-key" || target === "all") {
     if (clearChatKey()) cleared.push("chat-key");
+  }
+
+  // 对话记录也属于"聊天"这一块：一键清除要一起带走（P2-10）
+  if (target === "chats" || target === "all") {
+    clearChats();
+    cleared.push("chats");
   }
 
   if (target === "pets" || target === "all") {

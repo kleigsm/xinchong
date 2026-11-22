@@ -10,7 +10,7 @@
  */
 
 /** 本机数据项（一行 = userData 下一个可解释的东西） */
-export type PrivacyItemId = "settings" | "pets" | "chat-key" | "logs" | "runtime";
+export type PrivacyItemId = "settings" | "pets" | "chat-key" | "chats" | "logs" | "runtime";
 
 export interface PrivacyItem {
   id: PrivacyItemId;
@@ -46,7 +46,7 @@ export interface PrivacyReport {
 }
 
 /** 能一键清除的目标 */
-export type PrivacyClearTarget = "chat-key" | "pets" | "logs" | "all";
+export type PrivacyClearTarget = "chat-key" | "pets" | "chats" | "logs" | "all";
 
 export interface PrivacyClearResult {
   ok: boolean;

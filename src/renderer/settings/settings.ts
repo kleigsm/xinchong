@@ -4,6 +4,10 @@ import { SOUND_THEMES } from "../../shared/sound-themes";
 import type { PrivacyClearTarget } from "../../shared/privacy";
 import { formatBytes, networkStatus } from "../../shared/privacy";
 
+import shySheet from "../assets/pet-shy.png";
+import cheerfulSheet from "../assets/pet-cheerful.png";
+import tsundereSheet from "../assets/pet-tsundere.png";
+
 declare global {
   interface Window {
     api: SettingsApi;
@@ -99,6 +103,48 @@ function row(label: string, controlHtml: string, hint = ""): string {
     </div>`;
 }
 
+/* ---------------- 形象头像 ---------------- */
+
+/** 内置三套形象共用 4 列 × 9 行、每格 128px；头像取左上角第一格 */
+const BUILTIN_SHEETS: Record<string, string> = {
+  shy: shySheet,
+  cheerful: cheerfulSheet,
+  tsundere: tsundereSheet,
+};
+
+/**
+ * 形象头像。
+ *
+ * - 内置形象：用雪碧图当背景，`background-position: 0 0` + 放大到「4 格宽」，
+ *   等于只显示第一格——不用 canvas、不用主进程转码，打包后也能用
+ * - 自定义形象：主进程 `api:pets:list` 已经给了裁好的 72×72 缩略图
+ */
+function avatarHtml(key: string, size = 44): string {
+  const style = `width:${size}px;height:${size}px;border-radius:12px;`;
+
+  if (key.startsWith("builtin:")) {
+    const id = key.slice("builtin:".length);
+    const sheet = BUILTIN_SHEETS[id];
+    if (!sheet) return `<div class="avatar" style="${style}"></div>`;
+    return `<div class="avatar" style="${style}background-image:url(${sheet});background-size:${4 * size}px auto;background-position:0 0"></div>`;
+  }
+
+  const id = key.slice("custom:".length);
+  const pet = pets.find((item) => item.id === id);
+  return pet?.thumb
+    ? `<img class="avatar" src="${pet.thumb}" alt="" style="${style}" />`
+    : `<div class="avatar" style="${style}">?</div>`;
+}
+
+function currentCharacterKey(): string {
+  return settings.activePetId ? `custom:${settings.activePetId}` : `builtin:${settings.personality}`;
+}
+
+/** 对话条数：key → 条数 */
+function chatCountMap(history: Array<{ key: string; turns: number }>): Map<string, number> {
+  return new Map(history.map((entry) => [entry.key, entry.turns]));
+}
+
 function toggle(key: keyof Settings, on: boolean): string {
   return `<button class="switch ${on ? "on" : ""}" data-action="toggle" data-key="${String(key)}" aria-pressed="${on}"></button>`;
 }
@@ -120,7 +166,22 @@ function segmented(
 
 /* ---------------- 页面 ---------------- */
 
-function pagePets(): string {
+/** 形象卡片底部的一行：对话条数 + 清空（把「对话」挂在形象上，而不是单独的数据表） */
+function chatMeta(key: string, counts: Map<string, number>): string {
+  const turns = counts.get(key) ?? 0;
+  return `
+    <div class="chat-meta">
+      <span>${turns > 0 ? `${turns} 条对话` : "还没聊过"}</span>
+      ${
+        turns > 0
+          ? `<button class="btn small danger" data-action="chat-history-clear" data-key="${esc(key)}">清空</button>`
+          : ""
+      }
+    </div>`;
+}
+
+async function pagePets(): Promise<string> {
+  const chatCounts = chatCountMap(await window.api.chatHistory());
   const cards = pets.length
     ? `<div class="pet-grid">${pets
         .map(
@@ -129,6 +190,7 @@ function pagePets(): string {
           <span class="badge">${pet.kind === "l2" ? "单图" : "多帧"}</span>
           ${pet.thumb ? `<img src="${pet.thumb}" alt="" />` : `<div style="width:72px;height:72px"></div>`}
           <div class="name" title="${esc(pet.name)}">${esc(pet.name)}</div>
+          ${chatMeta(`custom:${pet.id}`, chatCounts)}
           <div class="actions">
             <button class="btn small" data-action="use-pet" data-id="${esc(pet.id)}">使用</button>
             <button class="btn small" data-action="rename-pet" data-id="${esc(pet.id)}">改名</button>
@@ -166,22 +228,26 @@ function pagePets(): string {
     )}`;
 }
 
-function pagePersonality(): string {
+async function pagePersonality(): Promise<string> {
+  const chatCounts = chatCountMap(await window.api.chatHistory());
   const activeId = settings.activePetId ? "" : settings.personality;
   const cards = personalities
     .map(
       (p) => `
-      <button class="pet-card ${activeId === p.id ? "active" : ""}" data-action="use-builtin" data-id="${p.id}"
-        style="cursor:pointer;text-align:center">
-        <div class="name" style="font-size:14px;font-weight:600">${esc(PERSONALITY_NAMES[p.id] ?? p.label)}</div>
-        <div class="hint" style="font-size:12px;color:#8a8a90;white-space:normal">${esc(PERSONALITY_DESC[p.id] ?? "")}</div>
-      </button>`,
+      <div class="pet-card ${activeId === p.id ? "active" : ""}">
+        <button class="card-pick" data-action="use-builtin" data-id="${p.id}">
+          ${avatarHtml(`builtin:${p.id}`, 64)}
+          <div class="name">${esc(PERSONALITY_NAMES[p.id] ?? p.label)}</div>
+          <div class="hint">${esc(PERSONALITY_DESC[p.id] ?? "")}</div>
+        </button>
+        ${chatMeta(`builtin:${p.id}`, chatCounts)}
+      </div>`,
     )
     .join("");
 
   return `
     <h2 class="page-title">性格</h2>
-    <p class="page-sub">换性格会同时换掉形象、台词和音色。</p>
+    <p class="page-sub">每个形象有自己的性格、台词、音色和对话记忆；换形象不会串味。</p>
     ${card("内置角色", "☺", `<div class="pet-grid">${cards}</div>`)}
     ${
       settings.activePetId
@@ -398,6 +464,37 @@ async function pageChat(): Promise<string> {
          </div>
        </div>`;
 
+  const history = await window.api.chatHistory();
+  const currentKey = currentCharacterKey();
+  // 当前形象排最前，其余按最近聊过排序——「形象」是主体，不是一个数据表
+  const ordered = [...history].sort((a, b) => {
+    if (a.key === currentKey) return -1;
+    if (b.key === currentKey) return 1;
+    return b.updatedAt - a.updatedAt;
+  });
+
+  const historyRows = ordered
+    .map((entry) => {
+      const isCurrent = entry.key === currentKey;
+      const count = entry.turns > 0 ? `${entry.turns} 条对话` : "还没有聊过";
+      const clearButton =
+        entry.turns > 0
+          ? `<button class="btn small danger" data-action="chat-history-clear" data-key="${esc(entry.key)}">清空</button>`
+          : "";
+      return `
+        <div class="row chat-row">
+          <div class="chat-who">
+            ${avatarHtml(entry.key)}
+            <div>
+              <div class="label">${esc(entry.label)}${isCurrent ? '<span class="tag">当前</span>' : ""}</div>
+              <div class="hint">${esc(count)}</div>
+            </div>
+          </div>
+          <div class="control">${clearButton}</div>
+        </div>`;
+    })
+    .join("");
+
   return `
     <h2 class="page-title">聊天</h2>
     <p class="page-sub">可选功能：自带 DeepSeek API Key，让桌宠能接你的话。</p>
@@ -405,6 +502,24 @@ async function pageChat(): Promise<string> {
     ${status.encryptionAvailable ? "" : `<div class="note warn">这台机器的系统加密不可用，Key 无法安全保存。</div>`}
 
     ${card("API Key", "◆", keyBlock + `<div id="chat-result"></div>`)}
+
+    ${card(
+      "对话记录",
+      "🗂",
+      `<p class="hint" style="margin:0 0 6px">每个形象有自己的记忆：换形象不会串味，也不会丢。</p>
+       ${historyRows}
+       <div class="row">
+         <div>
+           <div class="label">清空所有对话</div>
+           <div class="hint">所有角色的记录一起删除，无法恢复</div>
+         </div>
+         <div class="control"><button class="btn small danger" data-action="chat-history-clear-all">全部清空</button></div>
+       </div>
+       <div class="note">
+         按形象分开保存，最多保留最近 20 轮；发给模型的是最近 6 轮。
+         文件在 <span class="mono">%APPDATA%\\xinchong\\chats.json</span>，不上传。
+       </div>`,
+    )}
 
     ${card(
       "隐私",
@@ -536,7 +651,7 @@ async function pagePrivacy(): Promise<string> {
   const sendList = [
     "你那句话（最多 200 字）",
     "当前性格设定（害羞 / 开朗 / 傲娇）",
-    "最近 3 轮对话（只在内存里，不落盘）",
+    "最近 6 轮对话（从本机存档读取）",
     "点「测试连接」时的一个 ping",
   ]
     .map((text) => `<li><span class="tick">✓</span>${esc(text)}</li>`)
@@ -586,6 +701,9 @@ async function pagePrivacy(): Promise<string> {
       ${inventory}
       <p class="privacy-foot">
         每一项都是刚刚从磁盘扫出来的，删完再看数字会变小。
+      </p>
+      <p class="privacy-foot">
+        对话记录保存在本机 <span class="mono">%APPDATA%\\xinchong\\chats.json</span>，不上传；可在「聊天」页清空。
       </p>`,
     )}
 
@@ -744,6 +862,7 @@ const CLEAR_LABELS: Record<string, string> = {
   settings: "设置",
   pets: "角色",
   "chat-key": "聊天 Key",
+  chats: "对话记录",
   logs: "运行日志",
   runtime: "运行时文件",
 };
@@ -769,13 +888,17 @@ async function clearPrivacy(target: PrivacyClearTarget): Promise<void> {
       title: `删除全部导入的角色（${pets.length} 个）？`,
       detail: "角色图片和配置会从本机删除，无法恢复。",
     },
+    chats: {
+      title: "清空所有对话记录？",
+      detail: "所有角色和桌宠聊过的内容都会被删除，无法恢复（不影响 Key 和角色）。",
+    },
     logs: {
       title: "清除运行日志？",
       detail: "只删本机的 main.log，不影响其它设置和角色。",
     },
     all: {
       title: "清除全部本机数据？",
-      detail: "聊天 Key、导入的角色、运行日志、所有设置都会被删除，无法恢复。",
+      detail: "聊天 Key、对话记录、导入的角色、运行日志、所有设置都会被删除，无法恢复。",
     },
   };
 
@@ -889,6 +1012,20 @@ function bindEvents(): void {
         if (!yes) return;
         void window.api.chatClearKey().then(() => reload());
       });
+    }
+
+    if (action === "chat-history-clear") {
+      const key = el.dataset.key;
+      if (key) void window.api.chatClearHistory(key).then(() => reload());
+    }
+
+    if (action === "chat-history-clear-all") {
+      void window.api
+        .confirm("清空所有对话记录？", "所有角色和桌宠聊过的内容都会删除，无法恢复。")
+        .then((yes) => (yes ? window.api.chatClearHistory() : null))
+        .then((list) => {
+          if (list) void reload();
+        });
     }
 
     if (action === "goto-privacy") void render("privacy");

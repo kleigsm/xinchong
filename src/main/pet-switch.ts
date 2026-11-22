@@ -2,6 +2,7 @@ import type { BrowserWindow } from "electron";
 import { updateSettings } from "./store";
 import { buildPetPayload } from "./pet-payload";
 import { removePet } from "./pet-store";
+import { clearChats } from "./chat-store";
 import { DEFAULT_PERSONALITY } from "../shared/personalities";
 
 /**
@@ -36,6 +37,9 @@ export function useBuiltInPet(win: BrowserWindow, personalityId = DEFAULT_PERSON
 export function deleteStoredPet(win: BrowserWindow, id: string, currentId: string | null): boolean {
   const removed = removePet(id);
   if (!removed) return false;
+
+  // 角色没了，它的对话记录也别留着（否则 custom:xxx 变孤儿数据）
+  clearChats(`custom:${id}`);
 
   if (currentId === id) {
     useBuiltInPet(win);

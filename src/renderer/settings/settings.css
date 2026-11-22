@@ -395,6 +395,72 @@ button.btn.small {
   gap: 6px;
 }
 
+/* 形象头像：内置形象裁雪碧图第一格，自定义形象用主进程给的缩略图 */
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  background-repeat: no-repeat;
+  background-color: var(--card-2);
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* 形象卡片里的「选它」点击区 */
+.card-pick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.card-pick .hint {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: normal;
+  line-height: 1.35;
+}
+
+/* 对话记录挂在形象下面：N 条对话 + 清空 */
+.chat-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* 聊天页：一个形象一行 */
+.chat-who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.chat-who .label {
+  display: flex;
+  align-items: center;
+}
+
+.tag {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
 .empty {
   padding: 30px;
   text-align: center;
