@@ -14,7 +14,8 @@ import { clampPosition, clampToVisibleArea } from "./window";
  * 好处：1) 与缩放无关；2) 鼠标移出小窗口时依然跟随，不会卡住。
  */
 
-const DRAG_INTERVAL_MS = 16;
+// 8ms ≈ 125Hz：拖动跟手度明显好于 16ms，只在按住期间跑，CPU 可以忽略
+const DRAG_INTERVAL_MS = 8;
 
 let dragOffset: { dx: number; dy: number } | null = null;
 let dragTimer: NodeJS.Timeout | null = null;
@@ -75,6 +76,22 @@ export function registerIpc(win: BrowserWindow): void {
   ipcMain.on("drag-end", () => {
     if (win.isDestroyed()) return;
     stopDragLoop();
+
+    // 松手时按"当前光标"补最后一次位置。
+    // 16ms 的定时器可能还停在上一帧，不补的话宠物会停在离光标几十像素的地方，
+    // 表现为"松手了还在往回追"或者"总是差一截"（BUG-021 的尾巴）。
+    if (dragOffset) {
+      const cursor = screen.getCursorScreenPoint();
+      const bounds = win.getBounds();
+      const target = clampPosition(
+        cursor.x - dragOffset.dx,
+        cursor.y - dragOffset.dy,
+        bounds.width,
+        bounds.height,
+      );
+      win.setPosition(Math.round(target.x), Math.round(target.y));
+    }
+
     dragOffset = null;
     // 松手时兜底：保证宠物没有拖出屏幕
     clampToVisibleArea(win);
