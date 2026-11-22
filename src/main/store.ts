@@ -29,6 +29,10 @@ const DEFAULTS: Settings = {
   petOpacity: 1,
   animationSpeed: 1,
   alwaysOnTop: true,
+  // 默认不主动说话（AGENTS 硬约束）
+  proactiveTalk: false,
+  // 跨场景冷却 5 分钟
+  sceneCooldownMin: 5,
 };
 
 let cache: Settings | null = null;

@@ -324,6 +324,30 @@ function pageBehavior(): string {
     )}
 
     ${card(
+      "说话",
+      "◇",
+      row(
+        "久未互动时主动说话",
+        toggle("proactiveTalk", settings.proactiveTalk),
+        "默认关闭。打开后 5 分钟没互动会说一句；睡着时不会说",
+      ) +
+        row(
+          "台词冷却",
+          segmented(
+            "sceneCooldownMin",
+            [
+              { label: "关闭", value: 0 },
+              { label: "3 分钟", value: 3 },
+              { label: "5 分钟", value: 5 },
+              { label: "10 分钟", value: 10 },
+            ],
+            settings.sceneCooldownMin,
+          ),
+          "同一句台词在这段时间内不再出现（点击、拖拽等场景一起算）",
+        ),
+    )}
+
+    ${card(
       "手势",
       "✋",
       row(

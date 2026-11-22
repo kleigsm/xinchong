@@ -44,6 +44,13 @@ export interface Settings {
   animationSpeed: number;
   /** 是否始终置顶 */
   alwaysOnTop: boolean;
+  /**
+   * 久未互动时主动说一句（P2-7 7a）。
+   * **默认关闭**：AGENTS 的硬约束是「不主动打扰」，必须用户自己打开。
+   */
+  proactiveTalk: boolean;
+  /** 同一句台词多少分钟内不再出现（跨场景）；0 = 关闭冷却 */
+  sceneCooldownMin: number;
 }
 
 /** preload 通过 contextBridge 暴露给渲染进程的 API */
