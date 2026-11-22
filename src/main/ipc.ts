@@ -1,7 +1,6 @@
 import type { BrowserWindow } from "electron";
 import { ipcMain, screen } from "electron";
 import type { Point } from "../shared/types";
-import { buildMenu } from "./tray";
 import { clampPosition, clampToVisibleArea } from "./window";
 
 /**
@@ -74,11 +73,5 @@ export function registerIpc(win: BrowserWindow): void {
     clampToVisibleArea(win);
     const [x, y] = win.getPosition();
     console.log(`[drag] end, window at (${x},${y})`);
-  });
-
-  // 宠物身上右键 → 弹出与托盘一致的菜单
-  ipcMain.on("show-context-menu", () => {
-    if (win.isDestroyed()) return;
-    buildMenu(win).popup({ window: win });
   });
 }

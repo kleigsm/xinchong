@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { PetApi, Point, Settings, UserPetPayload } from "../shared/types";
+import type { PetApi, Point, QuickPanelApi, Settings, UserPetPayload } from "../shared/types";
 
 /**
  * 只暴露必要的方法，渲染进程拿不到 Node。
@@ -12,7 +12,6 @@ const api: PetApi = {
   dragStart: (point: Point) => ipcRenderer.send("drag-start", point),
   dragMove: (point: Point) => ipcRenderer.send("drag-move", point),
   dragEnd: () => ipcRenderer.send("drag-end"),
-  showMenu: () => ipcRenderer.send("show-context-menu"),
   ready: () => ipcRenderer.send("renderer-ready"),
   chatInputClosed: () => ipcRenderer.send("chat-input-closed"),
   onSettings: (callback: (settings: Settings) => void) => {
@@ -50,6 +49,7 @@ const api: PetApi = {
       ipcRenderer.removeListener("pet:use", listener);
     };
   },
+  openQuickPanel: () => ipcRenderer.send("quick-panel:open"),
   onPlayAction: (callback: (name: string) => void) => {
     const listener = (_event: unknown, name: string): void => callback(name);
     ipcRenderer.on("play-action", listener);
@@ -85,5 +85,17 @@ const settingsApi = {
     ipcRenderer.invoke("api:system:confirm", message, detail),
 };
 
+/** 快捷面板用：窗口内只做动作与设置，不碰文件 */
+const quickPanel: QuickPanelApi = {
+  getState: () => ipcRenderer.invoke("quick-panel:state"),
+  patchSettings: (patch: Partial<Settings>) => ipcRenderer.invoke("quick-panel:settings", patch),
+  setPersonality: (id: string) => ipcRenderer.invoke("quick-panel:personality", id),
+  action: (name) => ipcRenderer.send("quick-panel:action", name),
+  openSettings: () => ipcRenderer.send("quick-panel:open-settings"),
+  close: () => ipcRenderer.send("quick-panel:close"),
+  quit: () => ipcRenderer.send("quick-panel:quit"),
+};
+
 contextBridge.exposeInMainWorld("pet", api);
+contextBridge.exposeInMainWorld("quickPanel", quickPanel);
 contextBridge.exposeInMainWorld("api", settingsApi);

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    />
+    <title>芯宠 · 快捷面板</title>
+    <link rel="stylesheet" href="./quick-panel.css" />
+  </head>
+  <body>
+    <div class="panel" id="panel">
+      <header class="head">
+        <div class="avatar" id="avatar">芯</div>
+        <div class="who">
+          <div class="name" id="name">小芯</div>
+          <div class="status"><span class="dot" id="dot"></span><span id="status">使用中</span></div>
+        </div>
+      </header>
+
+      <div class="actions">
+        <button class="tile" data-action="wave"><span class="ico">✋</span>招手</button>
+        <button class="tile" data-action="pat"><span class="ico">♡</span>摸头</button>
+        <button class="tile" data-action="stretch"><span class="ico">☾</span>伸懒腰</button>
+        <button class="tile" data-action="hide"><span class="ico">◐</span>隐藏</button>
+      </div>
+
+      <section class="block">
+        <div class="label">性格</div>
+        <div class="seg" id="personality"></div>
+      </section>
+
+      <section class="block">
+        <div class="label">音量 <b id="volume-value">60%</b></div>
+        <input class="range" id="volume" type="range" min="0" max="100" step="5" />
+      </section>
+
+      <section class="switches">
+        <button class="switch" id="mute" aria-pressed="false">
+          <span>静音</span><i class="knob"></i>
+        </button>
+        <button class="switch" id="dnd" aria-pressed="false">
+          <span>勿扰</span><i class="knob"></i>
+        </button>
+      </section>
+
+      <footer class="foot">
+        <button class="primary" id="open-settings">打开控制中心</button>
+        <button class="ghost" id="quit">退出</button>
+      </footer>
+    </div>
+    <script type="module" src="./quick-panel.ts"></script>
+  </body>
+</html>

@@ -51,8 +51,6 @@ export interface PetApi {
   dragStart(point: Point): void;
   dragMove(point: Point): void;
   dragEnd(): void;
-  /** 弹出右键菜单（与托盘菜单一致） */
-  showMenu(): void;
   /** 订阅设置变化，返回取消订阅函数 */
   onSettings(callback: (settings: Settings) => void): () => void;
   /** 渲染层初始化完成，通知主进程可以派发事件了 */
@@ -69,6 +67,8 @@ export interface PetApi {
   onUsePet(callback: (payload: UserPetPayload) => void): () => void;
   /** 订阅右键/托盘菜单里的「动作」触发 */
   onPlayAction(callback: (name: string) => void): () => void;
+  /** 桌宠右键 → 弹出快捷面板（位置由主进程按当前光标算） */
+  openQuickPanel(): void;
 }
 
 /** 主进程告知渲染层：换上这个角色（雪碧图已转成 data URL） */
@@ -76,4 +76,21 @@ export interface UserPetPayload {
   id: string;
   name: string;
   pack: PetPack;
+}
+
+/** 快捷面板（独立窗口）用到的状态 */
+export interface QuickPanelState {
+  settings: Settings;
+  personalities: Array<{ id: string; label: string }>;
+}
+
+/** 快捷面板通过 preload 暴露的 API（window.quickPanel） */
+export interface QuickPanelApi {
+  getState(): Promise<QuickPanelState>;
+  patchSettings(patch: Partial<Settings>): Promise<Settings>;
+  setPersonality(id: string): Promise<boolean>;
+  action(name: "wave" | "pat" | "stretch" | "hide"): void;
+  openSettings(): void;
+  close(): void;
+  quit(): void;
 }
