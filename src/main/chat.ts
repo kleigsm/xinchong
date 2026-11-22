@@ -1,4 +1,5 @@
 import { loadChatKey } from "./chat-key";
+import { clipReply } from "../shared/chat-text";
 
 /**
  * 可选的聊天调用（P2-6）。
@@ -113,8 +114,8 @@ export async function sendChatMessage(text: string, personality: string): Promis
     const reply = data.choices?.[0]?.message?.content?.trim();
     if (!reply) return { ok: false, reason: "empty", message: "回复是空的" };
 
-    // 压成一行，气泡里更整齐
-    const cleaned = reply.replace(/\s+/g, " ").slice(0, 60);
+    // 压成一行并限长（P2-7 7d）：切在标点后面，别切出半个词
+    const cleaned = clipReply(reply);
     remember(trimmed, cleaned);
     return { ok: true, reply: cleaned };
   } catch (error) {

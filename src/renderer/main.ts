@@ -3,6 +3,7 @@ import { PACKS } from "./pets";
 import { PetStateMachine } from "./state-machine";
 import { SpeechBubble } from "./bubble";
 import { LineEngine } from "./line-engine";
+import { INTENT_SCENE, detectIntent, pickComfort } from "./intent";
 import { SoundPlayer } from "./audio";
 import { playPetpet, stopPetpet } from "./petpet";
 import { playFx } from "./fx";
@@ -91,6 +92,57 @@ const machine = new PetStateMachine(view, {
 });
 machine.start();
 
+/* ---------------- 久未互动主动说话（P2-7 7a）---------------- */
+
+/** 多久没互动算「久」：任务书定的 5 分钟 */
+const IDLE_TALK_AFTER_MS = 5 * 60_000;
+/** 检查间隔 30 秒：每次只比两个时间戳，开销可以忽略（不新增高频定时器） */
+const IDLE_TALK_CHECK_MS = 30_000;
+
+let lastInteractionAt = Date.now();
+let lastIdleTalkAt = 0;
+let idleTalkTimer: number | null = null;
+
+/** 任何一次真实交互都重置「多久没动」 */
+function markInteraction(): void {
+  lastInteractionAt = Date.now();
+}
+
+function stopIdleTalk(): void {
+  if (idleTalkTimer !== null) {
+    window.clearInterval(idleTalkTimer);
+    idleTalkTimer = null;
+  }
+}
+
+/** 只有用户自己打开「主动说话」才起定时器；关掉立刻停 */
+function syncIdleTalk(): void {
+  if (currentSettings?.proactiveTalk !== true) {
+    stopIdleTalk();
+    return;
+  }
+  if (idleTalkTimer !== null) return;
+  idleTalkTimer = window.setInterval(maybeTalkWhenIdle, IDLE_TALK_CHECK_MS);
+}
+
+function maybeTalkWhenIdle(): void {
+  if (currentSettings?.proactiveTalk !== true) return;
+  // 勿扰、睡着、正在播动作，都不算「闲得发慌」
+  if (isDoNotDisturb() || machine.current !== "idle") return;
+
+  const now = Date.now();
+  if (now - lastInteractionAt < IDLE_TALK_AFTER_MS) return;
+  // 说过一句之后重新计时，否则每分钟都会说
+  if (now - lastIdleTalkAt < IDLE_TALK_AFTER_MS) return;
+
+  const line = lineEngine.pick("idleLong");
+  if (!line) return;
+
+  lastIdleTalkAt = now;
+  bubble.show(line, 4000);
+  console.log("[idle] 主动说了一句");
+}
+
 let pressOrigin: Point | null = null;
 let dragging = false;
 let patTimer: number | null = null;
@@ -110,6 +162,7 @@ window.addEventListener("mousedown", (event: MouseEvent) => {
   if (event.button !== 0) return;
   // 点在输入框里：只聚焦，不启动拖拽
   if (chatBox.contains(event.target as Node)) return;
+  markInteraction();
   // 输入条开着时，点角色或任何非输入框的地方都算"点外面"：先收起（BUG-010）
   if (!chatBox.hidden) closeChatInput();
   pressOrigin = { x: event.screenX, y: event.screenY };
@@ -258,6 +311,10 @@ function applySettings(settings: Settings): void {
   sound.setVolume(settings.volume ?? 0.6);
   sound.setTheme(settings.soundTheme ?? "personality");
   machine.setIdleTimeout(settings.idleToSleepMs ?? 30_000);
+  // 台词冷却（P2-7 7b）：设置改了立刻生效，不用重启
+  lineEngine.setCooldownMs(Math.max(0, settings.sceneCooldownMin ?? 5) * 60_000);
+  // 主动说话（P2-7 7a）：默认关；打开才起定时器
+  syncIdleTalk();
   // 外观：速度与透明度都由播放器持有，改一次立刻生效
   view.setSpeed(settings.animationSpeed ?? 1);
   view.setOpacity(settings.petOpacity ?? 1);
@@ -281,6 +338,7 @@ window.pet.onSettings(applySettings);
 
 // 托盘 / 右键菜单里的「动作」主动触发
 window.pet.onPlayAction((name) => {
+  markInteraction();
   if (name === "wave") machine.playWave();
   else if (name === "stretch") machine.playStretch();
   else if (name === "pat") machine.playPat();
@@ -309,6 +367,7 @@ window.pet.onUseBuiltin((personalityId) => {
 });
 
 window.addEventListener("beforeunload", () => {
+  stopIdleTalk();
   machine.destroy();
   bubble.destroy();
 });
@@ -321,8 +380,11 @@ window.pet.ready();
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
     view.stop();
+    // 窗口被隐藏时连主动说话的定时器一起停，别在后台空转
+    stopIdleTalk();
   } else {
     machine.start();
+    syncIdleTalk();
   }
 });
 
@@ -351,6 +413,18 @@ async function sendChat(): Promise<void> {
   const text = chatInput.value.trim();
   closeChatInput();
   if (!text) return;
+
+  markInteraction();
+
+  // P2-7 7c：常见的话本地就接住了，不花 API、也不用等网络
+  const intent = detectIntent(text);
+  if (intent !== "none") {
+    const scene = INTENT_SCENE[intent];
+    const line = scene ? lineEngine.pick(scene) : null;
+    bubble.show(line ?? pickComfort(), 4000);
+    console.log(`[chat] 本地意图=${intent}，未调用 API`);
+    return;
+  }
 
   bubble.show("……", 20000);
 

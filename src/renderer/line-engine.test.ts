@@ -92,3 +92,88 @@ describe("LineEngine", () => {
     expect(legacy.pick("night")).toBe("hi");
   });
 });
+
+/**
+ * P2-7 7b：跨场景全局冷却。
+ *
+ * 老实现只按「场景」去重，点一下挑到「诶？」，拖一下还能再挑到「诶？」。
+ * 现在同一句话在冷却期内不允许跨场景重复。
+ */
+describe("LineEngine 跨场景冷却（P2-7 7b）", () => {
+  const COOLDOWN = 5 * 60_000;
+  let clock = new Date("2026-01-01T12:00:00");
+
+  const fresh = (): LineBank => ({
+    click: ["甲", "乙", "丙"],
+    drag: ["甲", "乙", "丙"],
+    // 故意留空：用来验证「空场景回退到 click 池」时冷却依然生效
+    idleLong: [],
+    sleep: [],
+    morning: [],
+    night: [],
+  });
+
+  it("同一句台词不会在别的场景里接着出现", () => {
+    clock = new Date("2026-01-01T12:00:00");
+    const engine = new LineEngine(fresh(), {
+      random: () => 0,
+      now: () => clock,
+      cooldownMs: COOLDOWN,
+    });
+
+    expect(engine.pick("click")).toBe("甲");
+    // 拖拽池里「甲」已冷却 → 只能给「乙」
+    expect(engine.pick("drag")).toBe("乙");
+    // idleLong 只有「甲」，冷却后回退到 click 池，丙还没出现过
+    expect(engine.pick("idleLong")).toBe("丙");
+  });
+
+  it("冷却过期后可以再用", () => {
+    clock = new Date("2026-01-01T12:00:00");
+    const engine = new LineEngine(fresh(), {
+      random: () => 0,
+      now: () => clock,
+      cooldownMs: COOLDOWN,
+    });
+
+    expect(engine.pick("click")).toBe("甲");
+
+    // 没过冷却时：拖拽只会给「乙」/「丙」
+    expect(engine.pick("drag")).not.toBe("甲");
+
+    // 过了 6 分钟：「甲」重新可用，random=0 又会挑回它
+    clock = new Date(clock.getTime() + 6 * 60_000);
+    expect(engine.pick("drag")).toBe("甲");
+  });
+
+  it("冷却把库锁死时仍然说话（库只有一句）", () => {
+    clock = new Date("2026-01-01T12:00:00");
+    const tiny: LineBank = { click: ["只有这一句"], drag: ["只有这一句"], idleLong: [] };
+    const engine = new LineEngine(tiny, { random: () => 0, now: () => clock, cooldownMs: COOLDOWN });
+
+    expect(engine.pick("click")).toBe("只有这一句");
+    // 宁可重复，也不能哑掉
+    expect(engine.pick("drag")).toBe("只有这一句");
+  });
+
+  it("冷却设为 0 时回到老行为（允许跨场景重复）", () => {
+    clock = new Date("2026-01-01T12:00:00");
+    const engine = new LineEngine(fresh(), { random: () => 0, now: () => clock, cooldownMs: 0 });
+
+    expect(engine.pick("click")).toBe("甲");
+    expect(engine.pick("drag")).toBe("甲");
+  });
+
+  it("setCooldownMs 能即时关掉冷却", () => {
+    clock = new Date("2026-01-01T12:00:00");
+    const engine = new LineEngine(fresh(), {
+      random: () => 0,
+      now: () => clock,
+      cooldownMs: COOLDOWN,
+    });
+
+    expect(engine.pick("click")).toBe("甲");
+    engine.setCooldownMs(0);
+    expect(engine.pick("drag")).toBe("甲");
+  });
+});
