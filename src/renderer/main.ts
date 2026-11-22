@@ -208,10 +208,10 @@ window.addEventListener("mouseup", () => {
   }
 });
 
-// 右键：弹出与托盘一致的菜单
+// 右键：弹出快捷面板（P1-12）。托盘菜单仍是原生菜单，不受影响
 window.addEventListener("contextmenu", (event: MouseEvent) => {
   event.preventDefault();
-  window.pet.showMenu();
+  window.pet.openQuickPanel();
 });
 
 /** 换性格：整个角色包（图 + 台词）一起换 */

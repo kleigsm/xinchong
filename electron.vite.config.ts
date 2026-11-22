@@ -24,6 +24,7 @@ export default defineConfig({
         input: {
           index: resolve(__dirname, "src/renderer/index.html"),
           settings: resolve(__dirname, "src/renderer/settings/index.html"),
+          "quick-panel": resolve(__dirname, "src/renderer/quick-panel/index.html"),
         },
       },
     },

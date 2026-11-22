@@ -3,6 +3,7 @@ import { appendFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { initAutoStart } from "./autostart";
 import { registerSettingsApi } from "./api";
+import { destroyQuickPanel, registerQuickPanel } from "./quick-panel";
 import { closeChatInput, openChatInput } from "./chat-input";
 import { exportTemplate } from "./template";
 import { importFromPath } from "./import-flow";
@@ -57,6 +58,7 @@ app.whenReady().then(() => {
   const win = createMainWindow(getSettings().alwaysOnTop);
   registerIpc(win);
   registerSettingsApi(() => (win.isDestroyed() ? null : win));
+  registerQuickPanel(() => (win.isDestroyed() ? null : win));
   createTray(win);
   stopHitTesting = startHitTesting(win, isDragging);
   stopWatchingDisplays = watchDisplays(win);
@@ -132,5 +134,6 @@ app.on("window-all-closed", () => {
   stopPerfSampling?.();
   destroyTray();
   destroySettingsWindow();
+  destroyQuickPanel();
   app.quit();
 });

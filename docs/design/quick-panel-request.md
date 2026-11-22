@@ -1,6 +1,6 @@
 # 建议申请：用 HTML 快捷面板替换原生右键菜单
 
-> 状态：**待批准**
+> 状态：**已实施（第一版）** — 见 `docs/log/2026-11-22-quick-panel.md`
 > 关联：[导航改造方案](navigation-redesign.md) · [高保真稿](mockups/README.md)
 > 预估：B 线 3–4 天
 > 建议分支：`feat/quick-panel`
