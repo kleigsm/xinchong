@@ -336,7 +336,7 @@ function applySettings(settings: Settings): void {
 
 window.pet.onSettings(applySettings);
 
-// 设置里换音效主题：立刻试播一声，用户不用再点桌宠（BUG-023）
+// 设置里换音效主题：立刻试播一声，用户不用再点桌宠（BUG-024）
 window.pet.onPlaySound((kind) => {
   sound.play(kind);
 });

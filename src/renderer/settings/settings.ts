@@ -1106,7 +1106,7 @@ function bindEvents(): void {
         for (const btn of el.parentElement?.querySelectorAll("button") ?? []) {
           btn.classList.toggle("active", btn === el);
         }
-        // 换音效主题立刻响一声：用户不用再去点桌宠确认（BUG-023）
+        // 换音效主题立刻响一声：用户不用再去点桌宠确认（BUG-024）
         if (key === "soundTheme") void window.api.soundTrial();
       });
     }
