@@ -38,7 +38,10 @@
 
 ## 5. 干活规矩
 
-- **开工前先查上游**，再看 [`docs/WORKFLOW.md`](docs/WORKFLOW.md) 的四道闸；**收工前清理工作区**
+- **开工前先查上游并同步**：`git fetch` + `git reset --hard origin/main` 之后**再切分支**；
+  再看 [`docs/WORKFLOW.md`](docs/WORKFLOW.md) 的四道闸；**收工前清理工作区**
+- **提交前 `git rebase origin/main`**，并在 rebase 后的代码上重跑自测；**同时只开一个 PR**
+  （共享文件清单与命令见 [WORKFLOW.md 0.5](docs/WORKFLOW.md)，2026-11-23 补）
 - **一个任务 = 一个分支 = 一个 PR**，分支名 `feat/<任务号>-<短描述>`，如 `feat/p1-3-personality`
 - 改代码的 PR **必须同时更新** `docs/STATUS.md` 和一篇 `docs/log/YYYY-MM-DD-<任务号>.md`
 - **日志按任务建文件，不按天合并** —— 两个人同一天做不同任务时不会改同一个文件，也就不会冲突
