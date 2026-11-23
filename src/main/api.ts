@@ -351,6 +351,12 @@ export function registerSettingsApi(getWindow: () => BrowserWindow | null): void
     return readSoundFile(id, file);
   });
 
+  // 设置页换主题后让桌宠试播一声（用桌宠自己的播放器，用户包也能试）
+  ipcMain.handle("api:sounds:trial", () => {
+    const win = getWindow();
+    if (win && !win.isDestroyed()) win.webContents.send("play-sound", "click");
+  });
+
   // ---------------- 隐私（P1-13）----------------
 
   ipcMain.handle("api:privacy:report", () => collectPrivacyReport());

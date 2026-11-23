@@ -1,4 +1,4 @@
-import type { PetPack } from "./pet-pack";
+import type { PetPack, SoundName } from "./pet-pack";
 import type { SoundTheme } from "./sound-themes";
 
 /** 屏幕坐标点（DIP） */
@@ -73,6 +73,8 @@ export interface PetApi {
   chatInputClosed(): void;
   /** 订阅「换回内置角色」事件 */
   onUseBuiltin(callback: (personalityId: string) => void): () => void;
+  /** 订阅「试播一声」事件（设置里换音效主题后） */
+  onPlaySound(callback: (kind: SoundName) => void): () => void;
   /** 订阅「导入后立即换上」事件 */
   onUsePet(callback: (payload: UserPetPayload) => void): () => void;
   /** 订阅右键/托盘菜单里的「动作」触发 */

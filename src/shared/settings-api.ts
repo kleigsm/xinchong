@@ -58,6 +58,8 @@ export interface SettingsApi {
   soundPackFiles(id: string): Promise<Record<string, string[]> | null>;
   /** 播放器：读某个音频的 data URL */
   soundFile(id: string, file: string): Promise<string | null>;
+  /** 让桌宠试播一声（换主题后给即时反馈） */
+  soundTrial(): Promise<void>;
   /** 聊天页：每个角色有多少条对话（P2-10） */
   chatHistory(): Promise<ChatHistorySummary[]>;
   /** 聊天页：清空某个角色的对话；不传 key 就是全部清空 */

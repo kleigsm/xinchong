@@ -446,7 +446,7 @@ async function pageSound(): Promise<string> {
   const themeButtons = themeOptions
     .map(
       (option) =>
-        `<button data-action="segment-text" data-key="soundTheme" data-value="${esc(option.value)}"
+        `<button data-action="segment" data-key="soundTheme" data-value="${esc(option.value)}"
            class="${settings.soundTheme === option.value ? "active" : ""}">${esc(option.label)}</button>`,
     )
     .join("");
@@ -1106,6 +1106,8 @@ function bindEvents(): void {
         for (const btn of el.parentElement?.querySelectorAll("button") ?? []) {
           btn.classList.toggle("active", btn === el);
         }
+        // 换音效主题立刻响一声：用户不用再去点桌宠确认（BUG-023）
+        if (key === "soundTheme") void window.api.soundTrial();
       });
     }
 

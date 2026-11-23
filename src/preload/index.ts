@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { PetApi, Point, QuickPanelApi, Settings, UserPetPayload } from "../shared/types";
+import type { SoundName } from "../shared/pet-pack";
 import type { PrivacyClearTarget } from "../shared/privacy";
 
 /**
@@ -50,6 +51,13 @@ const api: PetApi = {
       ipcRenderer.removeListener("pet:use", listener);
     };
   },
+  onPlaySound: (callback: (kind: SoundName) => void) => {
+    const listener = (_event: unknown, kind: SoundName): void => callback(kind);
+    ipcRenderer.on("play-sound", listener);
+    return () => {
+      ipcRenderer.removeListener("play-sound", listener);
+    };
+  },
   openQuickPanel: () => ipcRenderer.send("quick-panel:open"),
   onPlayAction: (callback: (name: string) => void) => {
     const listener = (_event: unknown, name: string): void => callback(name);
@@ -87,6 +95,7 @@ const settingsApi = {
   soundRemove: (id: string) => ipcRenderer.invoke("api:sounds:remove", id),
   soundPackFiles: (id: string) => ipcRenderer.invoke("api:sounds:pack", id),
   soundFile: (id: string, file: string) => ipcRenderer.invoke("api:sounds:file", id, file),
+  soundTrial: () => ipcRenderer.invoke("api:sounds:trial"),
   privacyReport: () => ipcRenderer.invoke("api:privacy:report"),
   privacyClear: (target: PrivacyClearTarget) => ipcRenderer.invoke("api:privacy:clear", target),
   getSystemInfo: () => ipcRenderer.invoke("api:system:info"),

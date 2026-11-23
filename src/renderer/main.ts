@@ -336,6 +336,11 @@ function applySettings(settings: Settings): void {
 
 window.pet.onSettings(applySettings);
 
+// 设置里换音效主题：立刻试播一声，用户不用再点桌宠（BUG-023）
+window.pet.onPlaySound((kind) => {
+  sound.play(kind);
+});
+
 // 托盘 / 右键菜单里的「动作」主动触发
 window.pet.onPlayAction((name) => {
   markInteraction();
