@@ -44,6 +44,20 @@ export interface SettingsApi {
   chatTest(key?: string): Promise<ChatTestResult>;
   chatSend(text: string): Promise<ChatResult>;
   chatHasKey(): Promise<boolean>;
+  /** 声音页：已导入的音效包（P2-11） */
+  soundPacks(): Promise<SoundPackInfo[]>;
+  /** 声音页：选文件夹并做静态校验，返回待校验的文件（data URL） */
+  soundImport(dir?: string): Promise<SoundImportPrepared>;
+  /** 声音页：时长校验通过后转正 */
+  soundImportCommit(token: string): Promise<SoundImportCommitted>;
+  /** 声音页：取消导入，清掉 staging */
+  soundImportCancel(token: string): Promise<void>;
+  /** 声音页：删除音效包（正在使用会自动切回内置） */
+  soundRemove(id: string): Promise<SoundPackInfo[]>;
+  /** 播放器：音效包的文件清单 */
+  soundPackFiles(id: string): Promise<Record<string, string[]> | null>;
+  /** 播放器：读某个音频的 data URL */
+  soundFile(id: string, file: string): Promise<string | null>;
   /** 聊天页：每个角色有多少条对话（P2-10） */
   chatHistory(): Promise<ChatHistorySummary[]>;
   /** 聊天页：清空某个角色的对话；不传 key 就是全部清空 */
@@ -83,3 +97,25 @@ export interface ChatHistorySummary {
   /** 最后更新时间戳 */
   updatedAt: number;
 }
+/** 用户导入的音效包（P2-11） */
+export interface SoundPackInfo {
+  id: string;
+  name: string;
+  license?: string;
+  /** 包内音频总大小（字节） */
+  bytes: number;
+  /** 每种音效的文件列表（相对文件名） */
+  sounds: Record<string, string[]>;
+}
+
+/** 导入第一步的结果：已复制到 staging，等渲染层按时长校验 */
+export interface SoundImportPreview {
+  token: string;
+  manifest: { id: string; name: string };
+  files: Array<{ kind: string; name: string; dataUrl: string; bytes: number }>;
+}
+
+export type SoundImportPrepared = { ok: true; preview: SoundImportPreview } | { ok: false; error: string };
+export type SoundImportCommitted =
+  | { ok: true; id: string; packs: SoundPackInfo[] }
+  | { ok: false; error: string };

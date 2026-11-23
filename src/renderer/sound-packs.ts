@@ -1,5 +1,5 @@
 import type { SoundName } from "../shared/pet-pack";
-import type { SoundTheme } from "../shared/sound-themes";
+import type { BuiltinSoundTheme } from "../shared/sound-themes";
 
 /**
  * 萌宠语音包（C2 交付，胡汇兴）。
@@ -95,7 +95,7 @@ export type { SoundTheme } from "../shared/sound-themes";
 /** 每种音效 2 个变体；没交付的 kind 留空，由播放器回落到性格音效/合成音 */
 type ThemePool = Partial<Record<SoundName, string[]>>;
 
-export const SOUND_PACKS: Record<Exclude<SoundTheme, "personality">, ThemePool> = {
+export const SOUND_PACKS: Record<Exclude<BuiltinSoundTheme, "personality">, ThemePool> = {
   dog: {
     appear: [dogAppear1, dogAppear2],
     click: [dogClick1, dogClick2],

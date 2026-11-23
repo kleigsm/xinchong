@@ -1,4 +1,5 @@
 import type { PetPack } from "./pet-pack";
+import type { SoundTheme } from "./sound-themes";
 
 /** 屏幕坐标点（DIP） */
 export interface Point {
@@ -21,7 +22,7 @@ export interface Settings {
   /** 音量 0–1 */
   volume: number;
   /** 音效主题：跟随性格 / 狗狗 / 猫咪 / 小鸟 / 小猪 */
-  soundTheme: "personality" | "dog" | "cat" | "bird" | "pig";
+  soundTheme: SoundTheme;
   /** 多久没互动进入睡觉（毫秒）；0 = 不自动睡 */
   idleToSleepMs: number;
   /** 双击招手 */
