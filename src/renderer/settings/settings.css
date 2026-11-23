@@ -245,6 +245,11 @@ body {
 
 /* 分段选择器 */
 
+.segmented.wrap {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
 .segmented {
   display: inline-flex;
   background: var(--card-2);

@@ -1,5 +1,4 @@
-import { app, dialog, ipcMain, nativeImage, shell } from "electron";
-import type { BrowserWindow } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell } from "electron";
 import { join } from "node:path";
 import type { Settings } from "../shared/types";
 import { PERSONALITIES } from "../shared/personalities";
@@ -17,6 +16,16 @@ import { applyAlwaysOnTop } from "./window";
 import { setLogWriteEnabled } from "./logging";
 import { clearPrivacyData, collectPrivacyReport } from "./privacy";
 import type { PrivacyClearTarget } from "../shared/privacy";
+import {
+  cancelSoundPack,
+  commitSoundPack,
+  findSoundPack,
+  isSafePackId,
+  listSoundPacks,
+  prepareSoundPack,
+  readSoundFile,
+  removeSoundPack,
+} from "./sound-store";
 
 /**
  * 设置窗口用的 IPC 接口（invoke/handle 模式）。
@@ -58,6 +67,14 @@ function makeThumb(id: string): string | null {
       : image.crop({ x: 0, y: 0, width: frameWidth, height: frameHeight });
 
   return cropped.resize({ width: 72, height: 72, quality: "best" }).toDataURL();
+}
+
+/** 广播设置变化：桌宠窗口 + 设置窗口（音效主题切换要立刻生效，不用重启） */
+function broadcastSettings(): void {
+  const next = getSettings();
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (!win.isDestroyed()) win.webContents.send("settings-changed", next);
+  }
 }
 
 export function registerSettingsApi(getWindow: () => BrowserWindow | null): void {
@@ -273,6 +290,71 @@ export function registerSettingsApi(getWindow: () => BrowserWindow | null): void
       }
       return { ok: false, message: `网络错误：${text.slice(0, 120)}` };
     }
+  });
+
+  // ---------------- 自定义音效包（P2-11）----------------
+
+  ipcMain.handle("api:sounds:packs", () => listSoundPacks());
+
+  // 不传 sourceDir 时弹文件夹选择；传了就直接校验（测试 / 开发用）
+  ipcMain.handle("api:sounds:import", async (_event, sourceDir?: string) => {
+    if (typeof sourceDir === "string" && sourceDir) return prepareSoundPack(sourceDir);
+
+    const win = getWindow();
+    const options = {
+      title: "选择音效包文件夹",
+      buttonLabel: "导入",
+      properties: ["openDirectory" as const],
+    };
+    const picked = win ? await dialog.showOpenDialog(win, options) : await dialog.showOpenDialog(options);
+    const dir = picked.filePaths[0];
+    if (picked.canceled || !dir) return { ok: false as const, error: "已取消" };
+    return prepareSoundPack(dir);
+  });
+
+  ipcMain.handle("api:sounds:import:commit", (_event, token: string) => {
+    if (typeof token !== "string") return { ok: false as const, error: "参数不对" };
+
+    const result = commitSoundPack(token);
+    if (result.ok) {
+      // 导入成功就直接用上（音频文件复制在同一块磁盘，rename 很快）
+      updateSettings({ soundTheme: `user:${result.id}` });
+      broadcastSettings();
+    }
+    return result;
+  });
+
+  ipcMain.handle("api:sounds:import:cancel", (_event, token: string) => {
+    if (typeof token === "string") cancelSoundPack(token);
+  });
+
+  ipcMain.handle("api:sounds:remove", (_event, id: string) => {
+    if (!isSafePackId(id)) return listSoundPacks();
+
+    const packs = removeSoundPack(id);
+    // 删掉的正是当前主题：切回「跟随性格」，别让设置指向不存在的包
+    if (getSettings().soundTheme === `user:${id}`) {
+      updateSettings({ soundTheme: "personality" });
+      broadcastSettings();
+      console.log(`[sounds] 当前音效包被删除，已切回跟随性格`);
+    }
+    return packs;
+  });
+
+  ipcMain.handle("api:sounds:pack", (_event, id: string) => {
+    if (!isSafePackId(id)) return null;
+    return findSoundPack(id)?.sounds ?? null;
+  });
+
+  ipcMain.handle("api:sounds:file", (_event, id: string, file: string) => {
+    if (!isSafePackId(id) || typeof file !== "string") return null;
+    return readSoundFile(id, file);
+  });
+
+  // 设置页换主题后让桌宠试播一声（用桌宠自己的播放器，用户包也能试）
+  ipcMain.handle("api:sounds:trial", () => {
+    const win = getWindow();
+    if (win && !win.isDestroyed()) win.webContents.send("play-sound", "click");
   });
 
   // ---------------- 隐私（P1-13）----------------

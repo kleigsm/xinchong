@@ -1,4 +1,6 @@
 import type { PetPack, SoundName } from "../shared/pet-pack";
+import type { BuiltinSoundTheme } from "../shared/sound-themes";
+import { isUserSoundTheme, userSoundId } from "../shared/sound-themes";
 import { SOUND_PACKS, type SoundTheme } from "./sound-packs";
 
 /** 音效名统一在 shared/pet-pack.ts 定义，这里再导出方便渲染层引用 */
@@ -10,16 +12,26 @@ export type SoundKind = SoundName;
  * 设计：角色包里有音效文件就用文件，没有就**用 Web Audio 合成**一个短音。
  * 好处：素材没到位时也能验证"静音开关 / 音量控制"这条链路，
  *       之后往 assets/sounds 里丢文件、改配置即可升级，代码不用动。
+ *
+ * P2-11：多了用户导入的音效包（`user:<id>`）。文件不在打包产物里，
+ * 而是通过 IPC 从 userData 读成 data URL，按需加载并缓存。
  */
 export class SoundPlayer {
   private ctx: AudioContext | null = null;
   private pack: PetPack;
   private volume = 0.6;
   private muted = false;
-  /** 音效主题：personality = 跟随角色；其它 = 萌宠语音包 */
+  /** 音效主题：personality = 跟随角色；其它 = 萌宠语音包 / 用户导入的包 */
   private theme: SoundTheme = "personality";
   /** 文件音效缓存，避免每次点击都重新加载 */
   private audioCache = new Map<string, HTMLAudioElement>();
+
+  /** 用户音效包：id + 每种音效的文件名 */
+  private userPackId: string | null = null;
+  private userPack: { sounds: Record<string, string[]> } | null = null;
+  /** data URL 缓存（文件名 → URL） */
+  private userCache = new Map<string, string>();
+  private userLoading = new Set<string>();
 
   constructor(pack: PetPack) {
     this.pack = pack;
@@ -40,6 +52,20 @@ export class SoundPlayer {
   /** 切换音效主题（设置里改，立即生效） */
   setTheme(theme: SoundTheme): void {
     this.theme = theme;
+
+    const id = userSoundId(theme);
+    if (!id) {
+      this.userPackId = null;
+      this.userPack = null;
+      this.userCache.clear();
+      return;
+    }
+    if (id === this.userPackId && this.userPack) return;
+
+    this.userPackId = id;
+    this.userPack = null;
+    this.userCache.clear();
+    void this.loadUserPack(id);
   }
 
   play(kind: SoundKind): void {
@@ -48,9 +74,16 @@ export class SoundPlayer {
       return;
     }
 
-    // 1) 萌宠语音包（用户选的主题）：每种音效有 2 个变体，随机取一个
-    if (this.theme !== "personality") {
-      const pool = SOUND_PACKS[this.theme][kind];
+    // 0) 用户导入的音效包：文件是懒加载的，加载中先不出声（避免和内置音叠在一起）
+    if (isUserSoundTheme(this.theme)) {
+      const state = this.playUser(kind);
+      if (state === "played") return;
+      if (state === "loading" || !this.userPack) return;
+    }
+
+    // 1) 萌宠语音包（内置主题）：每种音效有 2 个变体，随机取一个
+    if (this.theme !== "personality" && !isUserSoundTheme(this.theme)) {
+      const pool = SOUND_PACKS[this.theme as Exclude<BuiltinSoundTheme, "personality">][kind];
       if (pool && pool.length > 0) {
         const url = pool[Math.floor(Math.random() * pool.length)];
         console.log(`[audio] play ${kind} (pack=${this.theme})`);
@@ -70,6 +103,67 @@ export class SoundPlayer {
     // 3) 兜底：Web Audio 合成
     console.log(`[audio] play ${kind} (synth, base=${this.baseFrequency()}Hz)`);
     this.synthesize(kind);
+  }
+
+  /* ---------------- 用户音效包 ---------------- */
+
+  private async loadUserPack(id: string): Promise<void> {
+    try {
+      const sounds = await window.api.soundPackFiles(id);
+      if (this.userPackId !== id) return; // 期间又切主题了
+      // 包被删掉时给个空对象：playUser 会返回 fallback，继续走内置/合成音
+      this.userPack = { sounds: sounds ?? {} };
+      this.preloadUserFiles();
+    } catch (error) {
+      console.warn(`[audio] 读取音效包 ${id} 失败: ${String(error)}`);
+      this.userPack = { sounds: {} };
+    }
+  }
+
+  private playUser(kind: SoundKind): "played" | "loading" | "fallback" {
+    const files = this.userPack?.sounds[kind];
+    if (!files || files.length === 0) return "fallback";
+
+    const file = files[Math.floor(Math.random() * files.length)];
+    const cached = this.userCache.get(file);
+    if (cached) {
+      console.log(`[audio] play ${kind} (user=${this.userPackId})`);
+      this.playFile(cached);
+      return "played";
+    }
+
+    void this.loadUserFile(file).then((url) => {
+      if (url) this.playFile(url);
+    });
+    return "loading";
+  }
+
+  private async loadUserFile(file: string): Promise<string | null> {
+    const id = this.userPackId;
+    if (!id) return null;
+
+    const cached = this.userCache.get(file);
+    if (cached) return cached;
+    if (this.userLoading.has(file)) return null;
+
+    this.userLoading.add(file);
+    try {
+      const url = await window.api.soundFile(id, file);
+      if (url && this.userPackId === id) this.userCache.set(file, url);
+      return url;
+    } catch {
+      return null;
+    } finally {
+      this.userLoading.delete(file);
+    }
+  }
+
+  /** 切到用户包时先预加载常用的 5 种，第一次点击才不卡 */
+  private preloadUserFiles(): void {
+    for (const kind of ["appear", "click", "drag", "confirm", "sleep"] as SoundKind[]) {
+      const files = this.userPack?.sounds[kind];
+      if (files?.[0]) void this.loadUserFile(files[0]);
+    }
   }
 
   /** 不同性格用不同音高，听感上能区分 */

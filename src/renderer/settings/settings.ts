@@ -3,6 +3,7 @@ import type { PetListItem, PersonalityInfo, SettingsApi, SystemInfo } from "../.
 import { SOUND_THEMES } from "../../shared/sound-themes";
 import type { PrivacyClearTarget } from "../../shared/privacy";
 import { formatBytes, networkStatus } from "../../shared/privacy";
+import { MAX_SOUND_DURATION_SEC } from "../../shared/sound-pack";
 
 import shySheet from "../assets/pet-shy.png";
 import cheerfulSheet from "../assets/pet-cheerful.png";
@@ -72,6 +73,110 @@ function setChatResult(text: string, ok: boolean): void {
   if (!el) return;
   el.textContent = text;
   el.style.color = ok ? "#3f8f5f" : "#c4342a";
+}
+
+/* ---------------- 自定义音效包（P2-11） ---------------- */
+
+function setSoundResult(text: string, ok: boolean): void {
+  const el = document.getElementById("sound-result");
+  if (!el) return;
+  el.textContent = text;
+  el.style.fontSize = "13px";
+  el.style.marginTop = "8px";
+  el.style.color = ok ? "#3f8f5f" : "#c4342a";
+}
+
+/**
+ * 时长校验放在渲染层：主进程没有音频解码器，而 Chromium 有。
+ * 超过 2 秒就拒绝——这类包通常是"随手拖进来的整首歌"。
+ */
+/** data URL → 字节。用 atob 而不是 fetch：CSP 的 connect-src 不允许 data: */
+function dataUrlBytes(dataUrl: string): ArrayBuffer {
+  const base64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
+  const binary = atob(base64);
+  const buffer = new ArrayBuffer(binary.length);
+  const bytes = new Uint8Array(buffer);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  return buffer;
+}
+
+async function findTooLongSound(files: Array<{ name: string; dataUrl: string }>): Promise<string | null> {
+  const ctx = new AudioContext();
+  try {
+    for (const file of files) {
+      if (!file.dataUrl) return `${file.name} 读不出来`;
+
+      let buffer: AudioBuffer;
+      try {
+        buffer = await ctx.decodeAudioData(dataUrlBytes(file.dataUrl));
+      } catch {
+        return `${file.name} 解码失败，可能不是有效的音频`;
+      }
+
+      if (buffer.duration > MAX_SOUND_DURATION_SEC + 0.05) {
+        return `${file.name} 超过 2 秒（${buffer.duration.toFixed(1)} 秒）`;
+      }
+    }
+    return null;
+  } finally {
+    void ctx.close();
+  }
+}
+
+async function importSoundPack(): Promise<void> {
+  setSoundResult("正在导入…", true);
+
+  const prepared = await window.api.soundImport();
+  if (!prepared.ok) {
+    setSoundResult(prepared.error, false);
+    return;
+  }
+
+  const problem = await findTooLongSound(prepared.preview.files);
+  if (problem) {
+    await window.api.soundImportCancel(prepared.preview.token);
+    setSoundResult(problem, false);
+    return;
+  }
+
+  const committed = await window.api.soundImportCommit(prepared.preview.token);
+  if (!committed.ok) {
+    setSoundResult(committed.error, false);
+    return;
+  }
+
+  await reload();
+  setSoundResult("导入成功，已经切到这个音效包", true);
+}
+
+/** 依次播放 5 种必需音效，让用户听一下 */
+async function previewSoundPack(id: string): Promise<void> {
+  const sounds = await window.api.soundPackFiles(id);
+  if (!sounds) {
+    setSoundResult("这个音效包读不出来了", false);
+    return;
+  }
+
+  setSoundResult("正在试听…", true);
+  for (const kind of ["appear", "click", "drag", "sleep", "confirm"]) {
+    const file = sounds[kind]?.[0];
+    if (!file) continue;
+    const url = await window.api.soundFile(id, file);
+    if (url) await playUrlOnce(url);
+  }
+  setSoundResult("试听结束", true);
+}
+
+function playUrlOnce(url: string): Promise<void> {
+  return new Promise((resolve) => {
+    const audio = new Audio(url);
+    audio.volume = settings.volume;
+    const done = (): void => resolve();
+    audio.onended = done;
+    audio.onerror = done;
+    void audio.play().catch(done);
+    window.setTimeout(done, 3000);
+  });
 }
 
 async function refresh(): Promise<void> {
@@ -328,8 +433,44 @@ function pageAppearance(): string {
     )}`;
 }
 
-function pageSound(): string {
+async function pageSound(): Promise<string> {
   const percent = Math.round(settings.volume * 100);
+  const userPacks = await window.api.soundPacks();
+
+  // 内置主题 + 用户导入的包，一起放进同一个选择器（P2-11）
+  const themeOptions = [
+    ...SOUND_THEMES.map((theme) => ({ value: theme.id as string, label: theme.label })),
+    ...userPacks.map((pack) => ({ value: `user:${pack.id}`, label: pack.name })),
+  ];
+
+  const themeButtons = themeOptions
+    .map(
+      (option) =>
+        `<button data-action="segment" data-key="soundTheme" data-value="${esc(option.value)}"
+           class="${settings.soundTheme === option.value ? "active" : ""}">${esc(option.label)}</button>`,
+    )
+    .join("");
+
+  const userRows = userPacks.length
+    ? userPacks
+        .map(
+          (pack) => `
+        <div class="row">
+          <div>
+            <div class="label">${esc(pack.name)}</div>
+            <div class="hint">${formatBytes(pack.bytes)} · ${Object.values(pack.sounds).flat().length} 个音频${
+              pack.license ? ` · ${esc(pack.license)}` : ""
+            }</div>
+          </div>
+          <div class="control">
+            <button class="btn small" data-action="sound-preview" data-id="${esc(pack.id)}">试听</button>
+            <button class="btn small danger" data-action="sound-remove" data-id="${esc(pack.id)}">删除</button>
+          </div>
+        </div>`,
+        )
+        .join("")
+    : `<div class="empty" style="padding:18px">还没有导入过音效包</div>`;
+
   return `
     <h2 class="page-title">声音</h2>
     <p class="page-sub">默认静音关闭；勿扰模式下不出声也不冒台词。</p>
@@ -354,13 +495,23 @@ function pageSound(): string {
       "◇",
       row(
         "用哪套音效",
-        `<div class="segmented">${SOUND_THEMES.map(
-          (t) =>
-            `<button data-action="segment-text" data-key="soundTheme" data-value="${t.id}"
-               class="${settings.soundTheme === t.id ? "active" : ""}">${esc(t.label)}</button>`,
-        ).join("")}</div>`,
-        "「跟随性格」是三套角色的原生音色；其余是萌宠语音包，每种音效有 2 个变体随机播放",
+        `<div class="segmented wrap">${themeButtons}</div>`,
+        "「跟随性格」是三套角色的原生音色；其余是萌宠语音包或你导入的包，切换后立刻生效",
       ),
+    )}
+
+    ${card(
+      "自定义音效包",
+      "＋",
+      `<div class="row">
+         <div>
+           <div class="label">导入自己的音效包</div>
+           <div class="hint">选一个文件夹：里面要有 manifest.json + 音频（ogg / wav / mp3，单个 ≤2 秒、≤2 MB）</div>
+         </div>
+         <div class="control"><button class="btn" data-action="sound-import">选择文件夹…</button></div>
+       </div>
+       ${userRows}
+       <div id="sound-result"></div>`,
     )}
 
     ${card(
@@ -955,6 +1106,8 @@ function bindEvents(): void {
         for (const btn of el.parentElement?.querySelectorAll("button") ?? []) {
           btn.classList.toggle("active", btn === el);
         }
+        // 换音效主题立刻响一声：用户不用再去点桌宠确认（BUG-024）
+        if (key === "soundTheme") void window.api.soundTrial();
       });
     }
 
@@ -1017,6 +1170,24 @@ function bindEvents(): void {
     if (action === "chat-history-clear") {
       const key = el.dataset.key;
       if (key) void window.api.chatClearHistory(key).then(() => reload());
+    }
+
+    if (action === "sound-import") void importSoundPack();
+
+    if (action === "sound-preview") {
+      const id = el.dataset.id;
+      if (id) void previewSoundPack(id);
+    }
+
+    if (action === "sound-remove") {
+      const id = el.dataset.id;
+      if (!id) return;
+      void window.api
+        .confirm("删除这个音效包？", "只删本机上的文件；正在使用的话会自动切回「跟随性格」。")
+        .then((yes) => (yes ? window.api.soundRemove(id) : null))
+        .then((packs) => {
+          if (packs) void reload();
+        });
     }
 
     if (action === "chat-history-clear-all") {
