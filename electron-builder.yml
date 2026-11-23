@@ -25,6 +25,11 @@ extraResources:
   - from: resources/pet-pack-template
     to: template
 
+# 解压后根目录放一份上手说明：zip 里文件一多，新用户不知道双击哪个（BUG-007）
+extraFiles:
+  - from: resources/先读我.txt
+    to: 先读我.txt
+
 # 没有原生依赖，跳过 rebuild
 npmRebuild: false
 

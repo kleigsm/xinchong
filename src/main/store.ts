@@ -43,6 +43,18 @@ function settingsPath(): string {
   return join(app.getPath("userData"), "settings.json");
 }
 
+/**
+ * BUG-015 的根因：`settings.json` 里 `volume` 可能是 `null` / 字符串（旧版本或手改导致）。
+ * 直接 `{...DEFAULTS, ...parsed}` 之后：
+ * - 设置页 `Math.round(null * 100)` → 显示 **0%**
+ * - 音频侧 `settings.volume ?? 0.6` → `null` 是 nullish → 用 **0.6** 出声
+ * 于是出现「显示 0% 却有声音」。读盘时统一收敛成 0–1 的数字。
+ */
+function readVolume(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) return DEFAULTS.volume;
+  return Math.min(1, Math.max(0, value));
+}
+
 /** 读取设置（首次读取会尝试加载磁盘文件，失败则用默认值） */
 export function getSettings(): Settings {
   if (cache) return cache;
@@ -52,7 +64,7 @@ export function getSettings(): Settings {
     // 而 JSON.parse 遇到 BOM 会直接抛错，表现为"设置被静默重置"。
     const raw = readFileSync(settingsPath(), "utf8").replace(/^\uFEFF/, "");
     const parsed = JSON.parse(raw) as Partial<Settings>;
-    cache = { ...DEFAULTS, ...parsed };
+    cache = { ...DEFAULTS, ...parsed, volume: readVolume(parsed.volume) };
     console.log(`[store] loaded ${settingsPath()}`);
   } catch (error) {
     cache = { ...DEFAULTS };
