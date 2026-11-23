@@ -2,7 +2,7 @@ import { Menu, Tray, dialog, nativeImage } from "electron";
 import type { BrowserWindow } from "electron";
 import { PERSONALITIES } from "../shared/personalities";
 import { runImportFlow } from "./import-flow";
-import { openSettingsWindow } from "./settings-window";
+import { hideSettingsWindow, openSettingsWindow } from "./settings-window";
 import { loadChatKey } from "./chat-key";
 import { openChatInput } from "./chat-input";
 import { listPetSummaries } from "./pet-payload";
@@ -207,6 +207,8 @@ function toggleWindow(win: BrowserWindow): void {
 
   if (win.isVisible()) {
     win.hide();
+    // 收起来就一起收：别只剩一个设置窗口飘在桌面上（BUG-023）
+    hideSettingsWindow();
     console.log("[tray] window hidden");
     return;
   }

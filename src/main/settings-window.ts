@@ -80,9 +80,22 @@ export function openSettingsWindow(): BrowserWindow {
   return win;
 }
 
+/**
+ * 桌宠收起时，把设置窗口一起藏起来（BUG-023）。
+ *
+ * 三个窗口（桌宠 / 快捷面板 / 设置）各自独立，`win.hide()` 只作用于桌宠，
+ * 于是出现过「面板和桌宠都关了，只剩一个隐私设置页飘在桌面上」。
+ * 用户把芯宠「收起来」时，界面上不应该还留着一个窗口。
+ */
+export function hideSettingsWindow(): void {
+  const win = getSettingsWindow();
+  if (!win || !win.isVisible()) return;
+  win.hide();
+  console.log("[settings] 桌宠收起，设置窗口一并隐藏");
+}
+
 /** 真正退出时用：跳过 close 拦截，直接销毁 */
-export function destroySettingsWindow(): void {
-  if (settingsWindow && !settingsWindow.isDestroyed()) {
+export function destroySettingsWindow(): void {  if (settingsWindow && !settingsWindow.isDestroyed()) {
     (settingsWindow as unknown as { forceClose?: boolean }).forceClose = true;
     settingsWindow.destroy();
   }

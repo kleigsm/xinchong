@@ -1,4 +1,4 @@
-import { app, ipcMain } from "electron";
+import { app, dialog, ipcMain } from "electron";
 import { initAutoStart } from "./autostart";
 import { registerSettingsApi } from "./api";
 import { destroyQuickPanel, registerQuickPanel } from "./quick-panel";
@@ -16,6 +16,28 @@ import { isDragging, registerIpc } from "./ipc";
 import { startPerfSampling } from "./perf";
 import { createTray, destroyTray, notifySettings } from "./tray";
 import { createMainWindow } from "./window";
+
+/**
+ * BUG-008：中文（非 ASCII）路径下 Electron 会**静默崩溃**（D-404），
+ * 用户只看到「双击没反应」，完全不知道原因。
+ *
+ * 这里在启动最早期检查一次安装路径，给一句人话提示再退出。
+ * 只检查程序所在路径；用户数据目录（%APPDATA%）不受这个限制。
+ */
+function ensureAsciiInstallPath(): void {
+  const target = app.isPackaged ? process.execPath : app.getAppPath();
+  if (!/[^\x00-\x7F]/.test(target)) return;
+
+  dialog.showErrorBox(
+    "芯宠无法从这个位置启动",
+    `当前路径里含有中文或特殊字符：\n${target}\n\n` +
+      "Electron 在这类路径下会直接闪退，且不给出任何报错。\n" +
+      "请把芯宠放到纯英文、层级不太深的目录，例如：D:\\xinchong\\XinChong.exe",
+  );
+  app.exit(1);
+}
+
+ensureAsciiInstallPath();
 
 // 日志落盘与「是否记录日志」开关都在 logging.ts（P1-13 起隐私页可控）
 setupLogging();

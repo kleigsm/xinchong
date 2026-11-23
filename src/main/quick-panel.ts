@@ -4,7 +4,7 @@ import type { Point, Settings } from "../shared/types";
 import { PERSONALITIES, isPersonalityId } from "../shared/personalities";
 import { getSettings, updateSettings } from "./store";
 import { useBuiltInPet } from "./pet-switch";
-import { openSettingsWindow } from "./settings-window";
+import { hideSettingsWindow, openSettingsWindow } from "./settings-window";
 import { openChatInput } from "./chat-input";
 import { PET_SIZE } from "../shared/constants";
 import { isDragging } from "./ipc";
@@ -120,6 +120,8 @@ export function registerQuickPanel(petWindow: () => BrowserWindow | null): void 
     if (name === "hide") {
       win.hide();
       closeQuickPanel();
+      // 一起收起来，别留一个设置窗口在桌面上（BUG-023）
+      hideSettingsWindow();
       return;
     }
     // 招手 / 摸头 / 伸懒腰都走已有的 play-action 通道
