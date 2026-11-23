@@ -125,7 +125,7 @@
 - **备注**：需要在 P3-3 用户测试里验证。可能解法：根目录放一个「先读我.txt」或改名。
   **2026-11-23 修复**：zip 根目录新增 `先读我.txt`（启动步骤 / 怎么玩 / 怎么彻底退出 / 中文路径警告），
   由 `electron-builder.yml` 的 `extraFiles` 输出；`pnpm build:win` 打出的解压目录里已确认存在。
-  它能不能真正减少「不知道点哪个」还要等 P3-3 实测。
+  它能不能真正减少「不知道点哪个」还要等 P3-3 实测。（PR #81）
 
 ### BUG-008 中文路径启动失败且无提示
 
@@ -141,7 +141,7 @@
   ① 开发形态（`out/ + package.json`）放到 `D:\中文路径测试` → 弹窗、不创建桌宠窗口；
   ② **打包形态**（`win-unpacked`）放到 `D:\中文路径测试2`，双击 `XinChong.exe` → 弹窗写明
   「当前路径里含有中文或特殊字符：D:\中文路径测试2\XinChong.exe」。
-  截图：`docs/design/shots/bug-008-path-dialog.png`。
+  截图：`docs/design/shots/bug-008-path-dialog.png`。（PR #81）
 
 ### BUG-009 多显示器 / 150% 缩放下未验证
 
@@ -194,7 +194,7 @@
   接入说明见 docs/specs/sounds/custom-sound-integration.md。
   **2026-11-23 判定**：内置 4 套主题已经满足这条 P3 的原始诉求；
   「导入用户自己的音效」属于**功能**而不是 bug（涉及声音包格式、授权字段、合规闸），
-  已作为 **P2-9 声音资产化** 排在 BACKLOG，不在这里当 bug 处理。
+  已作为 **P2-9 声音资产化** 排在 BACKLOG，不在这里当 bug 处理。（PR #81 判定）
 
 ---
 
@@ -292,7 +292,7 @@
   2. 点一下 → `sleep → stretch`，1.2 秒后 `stretch → idle`（没有卡死）
   3. 再点一次 → 正常 `→ click`
   4. 按住拖动 → `→ drag`，松手 `drag → idle`
-  结论：`playOneShot()` 的 700ms 兜底确实堵住了「无 stretch 帧 → 卡死」这条路。
+  结论：`playOneShot()` 的 700ms 兜底确实堵住了「无 stretch 帧 → 卡死」这条路。（2026-11-23 复测，PR #81）
 
 ### BUG-015 初始音量显示 0% 但仍有声音
 
@@ -311,7 +311,7 @@
   展开默认值后 `Math.round(null * 100)` = **0%**（界面），而音频侧 `settings.volume ?? 0.6`
   把 `null` 当 nullish → **0.6 照常出声**，于是「显示 0% 却有声音」。
   修复：`store.getSettings()` 读盘时用 `readVolume()` 把 volume 收敛成 0–1 的数字，非法值回落 0.6。
-  实测：隔离 userData 写入 `{"volume": null}` → 设置页显示 **60%**，音频按 60% 播放。
+  实测：隔离 userData 写入 `{"volume": null}` → 设置页显示 **60%**，音频按 60% 播放。（PR #81）
 
 ### BUG-019 快捷面板遮挡桌宠
 
@@ -381,4 +381,4 @@
   设置窗口的 `close` 又是 `preventDefault()` + `hide()`，于是留下一个「孤零零的设置页」。
   **2026-11-23 修复**：`settings-window.ts` 新增 `hideSettingsWindow()`，
   在「托盘 → 显示/隐藏」和「快捷面板 → 隐藏」两条收起路径上调用。
-  实测：面板点「隐藏」后设置页 `visibilityState` 从 `visible` 变 `hidden`。
+  实测：面板点「隐藏」后设置页 `visibilityState` 从 `visible` 变 `hidden`。（PR #81）
