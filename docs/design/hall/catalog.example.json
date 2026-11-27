@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-27",
+  "note": "示例目录；download/sha256/size 待真实 zip 打包后填写",
+  "items": [
+    {
+      "id": "mint-soda",
+      "name": "薄荷汽水",
+      "author": "芯宠官方",
+      "license": "CC0",
+      "tags": [
+        "兔",
+        "糖果"
+      ],
+      "preview": "covers/mint-soda.png",
+      "download": null,
+      "sha256": null,
+      "size": null,
+      "version": 1
+    },
+    {
+      "id": "night-fox",
+      "name": "夜樱狐",
+      "author": "芯宠官方",
+      "license": "CC0",
+      "tags": [
+        "兔",
+        "糖果"
+      ],
+      "preview": "covers/night-fox.png",
+      "download": null,
+      "sha256": null,
+      "size": null,
+      "version": 1
+    },
+    {
+      "id": "caramel-pudding",
+      "name": "焦糖布丁",
+      "author": "芯宠官方",
+      "license": "CC0",
+      "tags": [
+        "兔",
+        "糖果"
+      ],
+      "preview": "covers/caramel-pudding.png",
+      "download": null,
+      "sha256": null,
+      "size": null,
+      "version": 1
+    },
+    {
+      "id": "cloud-rabbit",
+      "name": "云朵兔",
+      "author": "芯宠官方",
+      "license": "CC0",
+      "tags": [
+        "兔",
+        "糖果"
+      ],
+      "preview": "covers/cloud-rabbit.png",
+      "download": null,
+      "sha256": null,
+      "size": null,
+      "version": 1
+    },
+    {
+      "id": "sakura-cat",
+      "name": "樱花猫",
+      "author": "芯宠官方",
+      "license": "CC0",
+      "tags": [
+        "兔",
+        "糖果"
+      ],
+      "preview": "covers/sakura-cat.png",
+      "download": null,
+      "sha256": null,
+      "size": null,
+      "version": 1
+    },
+    {
+      "id": "star-dog",
+      "name": "星尘犬",
+      "author": "芯宠官方",
+      "license": "CC0",
+      "tags": [
+        "兔",
+        "糖果"
+      ],
+      "preview": "covers/star-dog.png",
+      "download": null,
+      "sha256": null,
+      "size": null,
+      "version": 1
+    },
+    {
+      "id": "lemon-soda",
+      "name": "柠檬气泡",
+      "author": "芯宠官方",
+      "license": "CC0",
+      "tags": [
+        "兔",
+        "糖果"
+      ],
+      "preview": "covers/lemon-soda.png",
+      "download": null,
+      "sha256": null,
+      "size": null,
+      "version": 1
+    },
+    {
+      "id": "grape-gummy",
+      "name": "葡萄软糖",
+      "author": "芯宠官方",
+      "license": "CC0",
+      "tags": [
+        "兔",
+        "糖果"
+      ],
+      "preview": "covers/grape-gummy.png",
+      "download": null,
+      "sha256": null,
+      "size": null,
+      "version": 1
+    }
+  ]
+}
