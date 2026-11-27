@@ -14,6 +14,43 @@ body {
 }
 
 /**
+ * 桌宠光晕：独立一层，不碰 #pet 的 filter。
+ *
+ * 之前把 drop-shadow 直接挂在 #pet 上，L2 动画期间必须关掉（每帧重栅格化，
+ * CPU 会飙到 40%+）。这里改成静态径向渐变 + 一次 blur，颜色/强度只换 CSS 变量，
+ * 动画只影响这一层，不影响宠物本体。
+ */
+#pet-glow {
+  --glow-rgb: 240 108 138;
+  --glow-alpha: 0.4;
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  width: 224px;
+  height: 144px;
+  margin-left: -112px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse closest-side at 50% 55%,
+    rgb(var(--glow-rgb) / var(--glow-alpha)) 0%,
+    rgb(var(--glow-rgb) / calc(var(--glow-alpha) * 0.55)) 34%,
+    rgb(var(--glow-rgb) / calc(var(--glow-alpha) * 0.22)) 58%,
+    rgb(var(--glow-rgb) / 0) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes pet-glow-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.06); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #pet-glow { animation: none; }
+}
+
+/**
  * 桌宠本体：160×160 的雪碧图容器，贴在窗口底部。
  * 背景图与 background-size / position 由 PetView 运行时设置。
  */
@@ -30,6 +67,7 @@ body {
   will-change: background-position, transform;
   /* 立绘动画以"脚底"为支点，呼吸/倾斜才自然 */
   transform-origin: 50% 100%;
+  z-index: 1;
   /**
    * 两段变换在这里合成：
    *   --pet-anim-transform  呼吸/点击/拖拽（PetView 写）
