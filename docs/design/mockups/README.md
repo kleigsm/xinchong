@@ -21,6 +21,7 @@
 | [`shots/habitat.png`](shots/habitat.png) | 栖息地 / 小屋风格 |
 | [`shots/immersive.png`](shots/immersive.png) | 沉浸式游戏库 · 我的形象（深色） |
 | [`shots/immersive-light.png`](shots/immersive-light.png) | 沉浸式游戏库 · 我的形象（浅色） |
+| [`shots/icon-sheet.png`](shots/icon-sheet.png) | 图标系统：12 个功能图标 + 品牌标记 |
 | [`shots/hall-immersive.png`](shots/hall-immersive.png) | 沉浸式游戏库 · 外观大厅（深色） |
 | [`shots/hall-immersive-light.png`](shots/hall-immersive-light.png) | 沉浸式游戏库 · 外观大厅（浅色） |
 | [`shots/settings-immersive.png`](shots/settings-immersive.png) | 沉浸式游戏库 · 设置页（深色） |
