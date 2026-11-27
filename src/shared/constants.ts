@@ -11,7 +11,7 @@ export const WINDOW_HEIGHT = 340;
 export const PET_SIZE = 160;
 
 /** 命中检测半径（略大于 160 的一半，留容差） */
-export const HIT_RADIUS = 82;
+export const HIT_RADIUS = 105;
 
 /**
  * 聊天输入条（渲染层 #chat-box）在窗口内的位置。

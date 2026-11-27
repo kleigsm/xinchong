@@ -367,11 +367,26 @@ const SPEED_OPTIONS: Array<{ label: string; value: number }> = [
   { label: "2×", value: 2 },
 ];
 
+/** 光晕预设：与「跟随性格」的三色错开，给用户一个可玩的起点 */
+const GLOW_PRESETS: Array<{ name: string; color: string }> = [
+  { name: "樱花粉", color: "#F06C8A" },
+  { name: "蜜桃橙", color: "#FF9A62" },
+  { name: "柠檬黄", color: "#FFD166" },
+  { name: "薄荷", color: "#5EE0B8" },
+  { name: "天空蓝", color: "#62B6FF" },
+  { name: "薰衣草", color: "#B08CFF" },
+  { name: "月白", color: "#F2E9E4" },
+  { name: "墨夜", color: "#2E2521" },
+];
+
 function pageAppearance(): string {
   const percent = Math.round((settings.petOpacity ?? 1) * 100);
   const speed = SPEED_OPTIONS.some((o) => o.value === settings.animationSpeed)
     ? settings.animationSpeed
     : 1;
+  const glowPercent = Math.round((settings.glowIntensity ?? 0.55) * 100);
+  const glowColor = (settings.glowColor ?? "#F06C8A").toUpperCase();
+  const glowLocked = settings.glowFollow !== false;
 
   const opacityRow = `
     <div class="row">
@@ -385,9 +400,60 @@ function pageAppearance(): string {
       </div>
     </div>`;
 
+  const glowSwatches = GLOW_PRESETS.map(
+    (preset) => `
+      <button
+        class="glow-swatch ${glowColor === preset.color ? "active" : ""}"
+        data-action="glow-color"
+        data-color="${preset.color}"
+        style="background:${preset.color}"
+        title="${preset.name}"
+        aria-label="光晕颜色：${preset.name}"
+        ${glowLocked ? "disabled" : ""}
+      ></button>`,
+  ).join("");
+
+  const glowBody = `
+    ${row("显示光晕", toggle("glowEnabled", settings.glowEnabled), "关闭后只保留宠物本体，动画不受影响")}
+    ${row("跟随性格", toggle("glowFollow", settings.glowFollow), "害羞粉 / 开朗橙 / 傲娇玫红；打开时忽略下面的自定义颜色")}
+    <div class="glow-colors ${glowLocked ? "locked" : ""}">
+      <div class="glow-swatches">${glowSwatches}</div>
+      <div class="glow-custom">
+        <input
+          class="glow-picker"
+          type="color"
+          value="${glowColor}"
+          data-action="glow-picker"
+          aria-label="自定义光晕颜色"
+          ${glowLocked ? "disabled" : ""}
+        />
+        <input
+          class="glow-hex"
+          type="text"
+          value="${glowColor}"
+          maxlength="7"
+          data-action="glow-hex"
+          aria-label="光晕 HEX 颜色"
+          ${glowLocked ? "disabled" : ""}
+        />
+        <button class="btn small" data-action="glow-eyedrop" ${glowLocked ? "disabled" : ""}>吸管取色</button>
+      </div>
+      <div class="row">
+        <div>
+          <div class="label">光晕强度</div>
+          <div class="hint">0% 等同于关闭；推荐 40–70%</div>
+        </div>
+        <div class="control">
+          <input type="range" min="0" max="100" step="5" value="${glowPercent}" data-action="glow-intensity" />
+          <span class="range-value" id="glow-intensity-value">${glowPercent}%</span>
+        </div>
+      </div>
+    </div>
+    <div class="glow-note">光晕是独立图层，不会拖慢宠物动画；颜色太接近背景时可以换深一档。</div>`;
+
   return `
     <h2 class="page-title">外观</h2>
-    <p class="page-sub">让它淡一点、快一点，或者不再挡在所有窗口前面。</p>
+    <p class="page-sub">让它淡一点、快一点，或者换一圈喜欢的颜色。</p>
 
     ${card(
       "显示",
@@ -404,6 +470,8 @@ function pageAppearance(): string {
           "关掉后其它窗口会盖住它；这是预期行为，随时可以再打开",
         ),
     )}
+
+    ${card("桌宠光晕", "✦", glowBody)}
 
     ${card(
       "摸头手掌",
@@ -428,7 +496,8 @@ function pageAppearance(): string {
       `<div class="note">
         · <strong>透明度</strong>最低 50%：再淡的话，浅色桌面上就真的找不到它了。<br />
         · <strong>动画速度</strong>只影响动作播放快慢，点击响应不受影响。<br />
-        · <strong>关闭置顶</strong>后，从托盘重新显示也不会再强制浮到最上面。
+        · <strong>关闭置顶</strong>后，从托盘重新显示也不会再强制浮到最上面。<br />
+        · <strong>光晕</strong>是独立图层，L2/L3 动画期间也会保留。
       </div>`,
     )}`;
 }
@@ -1074,6 +1143,42 @@ async function clearPrivacy(target: PrivacyClearTarget): Promise<void> {
   setPrivacyResult(summary, true);
 }
 
+interface EyeDropperResult {
+  sRGBHex: string;
+}
+
+interface EyeDropperLike {
+  open(): Promise<EyeDropperResult>;
+}
+
+type EyeDropperCtor = new () => EyeDropperLike;
+
+/** 改光晕颜色 = 自动关闭「跟随性格」并落盘 */
+function setGlowColor(value: string): void {
+  const color = value.trim().toUpperCase();
+  if (!/^#[0-9A-F]{6}$/.test(color)) return;
+  void window.api
+    .patchSettings({ glowFollow: false, glowColor: color })
+    .then((next) => {
+      settings = next;
+      void reload();
+    });
+}
+
+async function pickGlowColor(): Promise<void> {
+  const ctor = (window as unknown as { EyeDropper?: EyeDropperCtor }).EyeDropper;
+  if (!ctor) {
+    alert("当前系统不支持吸管取色，请用色板或 HEX 输入。");
+    return;
+  }
+  try {
+    const result = await new ctor().open();
+    setGlowColor(result.sRGBHex);
+  } catch {
+    // 用户按 Esc 取消，不处理
+  }
+}
+
 function bindEvents(): void {
   document.getElementById("nav")?.addEventListener("click", (event) => {
     const target = (event.target as HTMLElement).closest<HTMLElement>(".nav-item");
@@ -1094,6 +1199,7 @@ function bindEvents(): void {
         settings = s;
         el.classList.toggle("on", next);
         el.setAttribute("aria-pressed", String(next));
+        if (key === "glowFollow" || key === "glowEnabled") void reload();
       });
     }
 
@@ -1110,6 +1216,13 @@ function bindEvents(): void {
         if (key === "soundTheme") void window.api.soundTrial();
       });
     }
+
+    if (action === "glow-color") {
+      const color = el.dataset.color;
+      if (color) setGlowColor(color);
+    }
+
+    if (action === "glow-eyedrop") void pickGlowColor();
 
     if (action === "use-pet") {
       void window.api.usePet(id).then((ok) => {
@@ -1231,6 +1344,20 @@ function bindEvents(): void {
       const label = document.getElementById("opacity-value");
       if (label) label.textContent = `${percent}%`;
       void window.api.patchSettings({ petOpacity: percent / 100 });
+    }
+
+    if (el.dataset.action === "glow-intensity") {
+      const percent = Number(el.value);
+      const label = document.getElementById("glow-intensity-value");
+      if (label) label.textContent = `${percent}%`;
+      void window.api.patchSettings({ glowIntensity: percent / 100 });
+    }
+  });
+
+  content.addEventListener("change", (event) => {
+    const el = event.target as HTMLInputElement;
+    if (el.dataset.action === "glow-hex" || el.dataset.action === "glow-picker") {
+      setGlowColor(el.value);
     }
   });
 }

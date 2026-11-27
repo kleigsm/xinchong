@@ -43,7 +43,11 @@ export function openSettingsWindow(): BrowserWindow {
 
   win.once("ready-to-show", () => {
     console.log("[settings] ready-to-show");
+    // 桌宠是 screen-saver 层级；设置窗口必须同层级并置顶，
+    // 否则设置页/取色器会被桌宠盖住（用户无法点到色板）。
+    win.setAlwaysOnTop(true, "screen-saver");
     win.show();
+    win.focus();
   });
   win.webContents.on("did-fail-load", (_e, code, desc, url) => {
     console.error(`[settings] 页面加载失败 ${code} ${desc} ${url}`);

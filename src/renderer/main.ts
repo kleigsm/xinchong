@@ -12,6 +12,7 @@ import type { Point, Settings } from "../shared/types";
 
 // 注意：不能叫 pet，否则和 preload 暴露的 window.pet 冲突（P0-1 踩过的坑）
 const petEl = document.getElementById("pet") as HTMLElement;
+const glowEl = document.getElementById("pet-glow") as HTMLElement;
 const handEl = document.getElementById("petpet-hand") as HTMLImageElement;
 const fxLayer = document.getElementById("fx-layer") as HTMLElement;
 const bubbleEl = document.getElementById("bubble") as HTMLElement;
@@ -304,9 +305,52 @@ function switchPersonality(id: string): void {
   console.log(`[personality] switched to ${nextId}`);
 }
 
+/** 光晕跟随性格时的默认色：害羞粉 / 开朗橙 / 傲娇玫红 */
+const GLOW_BY_PERSONALITY: Record<string, string> = {
+  shy: "#F06C8A",
+  cheerful: "#FF9A62",
+  tsundere: "#E85D8A",
+};
+
+function hexToRgb(hex: string): [number, number, number] | null {
+  const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.trim());
+  if (!match) return null;
+  const value = match[1];
+  const full =
+    value.length === 3
+      ? value.split("").map((c) => c + c).join("")
+      : value;
+  return [
+    parseInt(full.slice(0, 2), 16),
+    parseInt(full.slice(2, 4), 16),
+    parseInt(full.slice(4, 6), 16),
+  ];
+}
+
+/**
+ * 光晕只改这一层的 CSS 变量，不碰 #pet 的 filter。
+ * 强度 0 等价于关闭；glowFollow=true 时忽略用户颜色。
+ */
+function applyGlow(settings: Settings): void {
+  const enabled = settings.glowEnabled !== false;
+  glowEl.style.display = enabled ? "" : "none";
+  if (!enabled) return;
+
+  const color =
+    settings.glowFollow !== false
+      ? (GLOW_BY_PERSONALITY[settings.personality] ?? "#F06C8A")
+      : (settings.glowColor ?? "#F06C8A");
+  const rgb = hexToRgb(color) ?? [240, 108, 138];
+  const intensity = Math.max(0, Math.min(1, settings.glowIntensity ?? 0.55));
+
+  glowEl.style.setProperty("--glow-rgb", `${rgb[0]} ${rgb[1]} ${rgb[2]}`);
+  glowEl.style.setProperty("--glow-alpha", String(intensity));
+}
+
 /** 设置变化：性格、静音、勿扰、音量、行为 */
 function applySettings(settings: Settings): void {
   currentSettings = settings;
+  applyGlow(settings);
   sound.setMuted(settings.muted);
   sound.setVolume(settings.volume ?? 0.6);
   sound.setTheme(settings.soundTheme ?? "personality");

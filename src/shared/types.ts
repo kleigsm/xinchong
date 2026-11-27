@@ -45,6 +45,14 @@ export interface Settings {
   animationSpeed: number;
   /** 是否始终置顶 */
   alwaysOnTop: boolean;
+  /** 桌宠光晕：开关 */
+  glowEnabled: boolean;
+  /** 光晕跟随性格（害羞粉 / 开朗橙 / 傲娇玫红） */
+  glowFollow: boolean;
+  /** 自定义光晕颜色（#RRGGBB）；glowFollow=true 时忽略 */
+  glowColor: string;
+  /** 光晕强度 0–1 */
+  glowIntensity: number;
   /**
    * 久未互动时主动说一句（P2-7 7a）。
    * **默认关闭**：AGENTS 的硬约束是「不主动打扰」，必须用户自己打开。
