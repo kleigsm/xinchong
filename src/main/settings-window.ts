@@ -44,6 +44,7 @@ export function openSettingsWindow(): BrowserWindow {
   win.once("ready-to-show", () => {
     console.log("[settings] ready-to-show");
     win.show();
+    win.focus();
   });
   win.webContents.on("did-fail-load", (_e, code, desc, url) => {
     console.error(`[settings] 页面加载失败 ${code} ${desc} ${url}`);

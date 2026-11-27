@@ -367,11 +367,26 @@ const SPEED_OPTIONS: Array<{ label: string; value: number }> = [
   { label: "2×", value: 2 },
 ];
 
+/** 光晕预设：与「跟随性格」的三色错开，给用户一个可玩的起点 */
+const GLOW_PRESETS: Array<{ name: string; color: string }> = [
+  { name: "樱花粉", color: "#F06C8A" },
+  { name: "蜜桃橙", color: "#FF9A62" },
+  { name: "柠檬黄", color: "#FFD166" },
+  { name: "薄荷", color: "#5EE0B8" },
+  { name: "天空蓝", color: "#62B6FF" },
+  { name: "薰衣草", color: "#B08CFF" },
+  { name: "月白", color: "#F2E9E4" },
+  { name: "墨夜", color: "#2E2521" },
+];
+
 function pageAppearance(): string {
   const percent = Math.round((settings.petOpacity ?? 1) * 100);
   const speed = SPEED_OPTIONS.some((o) => o.value === settings.animationSpeed)
     ? settings.animationSpeed
     : 1;
+  const glowPercent = Math.round((settings.glowIntensity ?? 0.55) * 100);
+  const glowColor = (settings.glowColor ?? "#F06C8A").toUpperCase();
+  const glowLocked = settings.glowFollow !== false;
 
   const opacityRow = `
     <div class="row">
@@ -385,9 +400,73 @@ function pageAppearance(): string {
       </div>
     </div>`;
 
+  const glowSwatches = GLOW_PRESETS.map(
+    (preset) => `
+      <button
+        class="glow-swatch ${glowColor === preset.color ? "active" : ""}"
+        data-action="glow-color"
+        data-color="${preset.color}"
+        style="background:${preset.color}"
+        title="${preset.name}"
+        aria-label="光晕颜色：${preset.name}"
+        ${glowLocked ? "disabled" : ""}
+      ></button>`,
+  ).join("");
+
+  const glowBody = `
+    ${row("显示光晕", toggle("glowEnabled", settings.glowEnabled), "关闭后只保留宠物本体，动画不受影响")}
+    ${row("跟随性格", toggle("glowFollow", settings.glowFollow), "害羞粉 / 开朗橙 / 傲娇玫红；打开时忽略下面的自定义颜色")}
+    <div class="glow-colors ${glowLocked ? "locked" : ""}">
+      <div class="glow-swatches">${glowSwatches}</div>
+      <div class="glow-custom">
+        <input
+          class="glow-picker"
+          type="color"
+          value="${glowColor}"
+          data-action="glow-picker"
+          aria-label="自定义光晕颜色"
+          ${glowLocked ? "disabled" : ""}
+        />
+        <input
+          class="glow-hex"
+          type="text"
+          value="${glowColor}"
+          maxlength="7"
+          data-action="glow-hex"
+          aria-label="光晕 HEX 颜色"
+          ${glowLocked ? "disabled" : ""}
+        />
+      </div>
+      <div class="glow-pet-pick">
+        <canvas
+          id="glow-pet-canvas"
+          width="220"
+          height="220"
+          data-action="glow-canvas"
+          title="点宠物图上的颜色"
+          aria-label="从宠物形象取色"
+        ></canvas>
+        <div>
+          <div class="label">从宠物图取色</div>
+          <div class="hint">直接点图片上的颜色，取到的就是这一块光晕色；比屏幕吸管更准。</div>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <div class="label">光晕强度</div>
+          <div class="hint">0% 等同于关闭；推荐 40–70%</div>
+        </div>
+        <div class="control">
+          <input type="range" min="0" max="100" step="5" value="${glowPercent}" data-action="glow-intensity" />
+          <span class="range-value" id="glow-intensity-value">${glowPercent}%</span>
+        </div>
+      </div>
+    </div>
+    <div class="glow-note">光晕是独立图层，不会拖慢宠物动画；颜色太接近背景时可以换深一档。</div>`;
+
   return `
     <h2 class="page-title">外观</h2>
-    <p class="page-sub">让它淡一点、快一点，或者不再挡在所有窗口前面。</p>
+    <p class="page-sub">让它淡一点、快一点，或者换一圈喜欢的颜色。</p>
 
     ${card(
       "显示",
@@ -404,6 +483,8 @@ function pageAppearance(): string {
           "关掉后其它窗口会盖住它；这是预期行为，随时可以再打开",
         ),
     )}
+
+    ${card("桌宠光晕", "✦", glowBody)}
 
     ${card(
       "摸头手掌",
@@ -428,7 +509,8 @@ function pageAppearance(): string {
       `<div class="note">
         · <strong>透明度</strong>最低 50%：再淡的话，浅色桌面上就真的找不到它了。<br />
         · <strong>动画速度</strong>只影响动作播放快慢，点击响应不受影响。<br />
-        · <strong>关闭置顶</strong>后，从托盘重新显示也不会再强制浮到最上面。
+        · <strong>关闭置顶</strong>后，从托盘重新显示也不会再强制浮到最上面。<br />
+        · <strong>光晕</strong>是独立图层，L2/L3 动画期间也会保留。
       </div>`,
     )}`;
 }
@@ -1000,6 +1082,7 @@ async function render(page: Page): Promise<void> {
     btn.classList.toggle("active", btn.dataset.page === page);
   }
   content.innerHTML = await renderers[page]();
+  if (page === "appearance") requestAnimationFrame(drawGlowPetCanvas);
 }
 
 async function reload(): Promise<void> {
@@ -1074,6 +1157,49 @@ async function clearPrivacy(target: PrivacyClearTarget): Promise<void> {
   setPrivacyResult(summary, true);
 }
 
+/** 改光晕颜色 = 自动关闭「跟随性格」并落盘 */
+function setGlowColor(value: string): void {
+  const color = value.trim().toUpperCase();
+  if (!/^#[0-9A-F]{6}$/.test(color)) return;
+  void window.api
+    .patchSettings({ glowFollow: false, glowColor: color })
+    .then((next) => {
+      settings = next;
+      void reload();
+    });
+}
+
+/** 把当前形象画到取色画布上：内置取雪碧图第一格，自定义取缩略图 */
+function drawGlowPetCanvas(): void {
+  const canvas = document.getElementById("glow-pet-canvas") as HTMLCanvasElement | null;
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const key = currentCharacterKey();
+  let url = "";
+  if (key.startsWith("builtin:")) {
+    url = BUILTIN_SHEETS[key.slice("builtin:".length)] ?? "";
+  } else {
+    const pet = pets.find((item) => `custom:${item.id}` === key);
+    url = pet?.thumb ?? "";
+  }
+  if (!url) return;
+
+  const img = new Image();
+  img.onload = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (key.startsWith("builtin:")) {
+      // 三套内置角色是 4×9、每格 128px，只画第一格
+      ctx.drawImage(img, 0, 0, 128, 128, 0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+    }
+  };
+  img.src = url;
+}
+
 function bindEvents(): void {
   document.getElementById("nav")?.addEventListener("click", (event) => {
     const target = (event.target as HTMLElement).closest<HTMLElement>(".nav-item");
@@ -1094,6 +1220,7 @@ function bindEvents(): void {
         settings = s;
         el.classList.toggle("on", next);
         el.setAttribute("aria-pressed", String(next));
+        if (key === "glowFollow" || key === "glowEnabled") void reload();
       });
     }
 
@@ -1109,6 +1236,28 @@ function bindEvents(): void {
         // 换音效主题立刻响一声：用户不用再去点桌宠确认（BUG-024）
         if (key === "soundTheme") void window.api.soundTrial();
       });
+    }
+
+    if (action === "glow-color") {
+      const color = el.dataset.color;
+      if (color) setGlowColor(color);
+    }
+
+    if (action === "glow-canvas") {
+      const canvas = el as HTMLCanvasElement;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      if (!ctx) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = Math.floor(((event.clientX - rect.left) / rect.width) * canvas.width);
+      const y = Math.floor(((event.clientY - rect.top) / rect.height) * canvas.height);
+      if (x < 0 || y < 0 || x >= canvas.width || y >= canvas.height) return;
+      const pixel = ctx.getImageData(x, y, 1, 1).data;
+      if (pixel[3] < 24) return; // 透明区域不取色
+      const hex = `#${[pixel[0], pixel[1], pixel[2]]
+        .map((v) => v.toString(16).padStart(2, "0"))
+        .join("")
+        .toUpperCase()}`;
+      setGlowColor(hex);
     }
 
     if (action === "use-pet") {
@@ -1231,6 +1380,20 @@ function bindEvents(): void {
       const label = document.getElementById("opacity-value");
       if (label) label.textContent = `${percent}%`;
       void window.api.patchSettings({ petOpacity: percent / 100 });
+    }
+
+    if (el.dataset.action === "glow-intensity") {
+      const percent = Number(el.value);
+      const label = document.getElementById("glow-intensity-value");
+      if (label) label.textContent = `${percent}%`;
+      void window.api.patchSettings({ glowIntensity: percent / 100 });
+    }
+  });
+
+  content.addEventListener("change", (event) => {
+    const el = event.target as HTMLInputElement;
+    if (el.dataset.action === "glow-hex" || el.dataset.action === "glow-picker") {
+      setGlowColor(el.value);
     }
   });
 }
