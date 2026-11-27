@@ -25,7 +25,8 @@ curl.exe -sSL "https://api.github.com/repos/kleigsm/xinchong/pulls?state=open"
 - **无新提交**：直接用当前工作区
 - **有新提交**：
   - 先读 `docs/STATUS.md`、新 `docs/log/`，看别人改了什么
-  - 只把相关文件同步进来，**不要整目录覆盖**
+  - **在 git 工作区里用 0.5 的 `git fetch` + `git reset --hard origin/main` 同步**。
+    ❌ 不要手工只拷「相关文件」——缺文件会让本地和远端悄悄分叉，合并冲突最后堆给审核的人
   - 同步后重新跑 `pnpm typecheck && pnpm test`
 - **有冲突/不确定**：先停在开工检查，不要写代码
 
@@ -53,6 +54,47 @@ curl.exe -sSL "https://api.github.com/repos/kleigsm/xinchong/pulls?state=open"
 - 本次目标：<一句话>
 - 明确不做：<边界>
 ```
+
+### 0.5 Git 同步与分支（2026-11-23 补：这里踩过两次）
+
+**开工：先同步，再切分支。** 不要基于本地旧 `main` 开工，也不要在旧分支上直接改。
+
+```powershell
+git fetch origin
+git checkout main
+git reset --hard origin/main        # 本地 main 永远与远端一致，别在 main 上提交
+git checkout -b feat/<任务号>-<短描述>
+```
+
+**提交前：rebase 到最新 main，并在 rebase 后的代码上重跑自测。**
+
+```powershell
+git fetch origin
+git rebase origin/main
+corepack pnpm typecheck; corepack pnpm test; corepack pnpm build
+```
+
+> rebase 会改写提交 hash，推已推过的分支要 `git push --force-with-lease`（不要用 `--force`）。
+
+**同时只开一个 PR。** 必须并行时：
+
+- 第二个 PR 从第一个分支切：`git checkout -b feat/b origin/feat/a`；
+  或在 PR 描述里写「依赖 #xx 先合，合并顺序 A → B」
+- 开完 PR 先看 GitHub 上 `mergeable` 是不是绿的；变红（conflicting）就**自己 rebase**，
+  不要留给审核的人手工解
+- 合并前再刷一次：别人刚合了别的 PR，你的分支就过期了
+
+**最容易撞车的共享文件**（改之前先想能不能少动）：
+
+```
+src/shared/types.ts        设置字段
+src/main/store.ts          设置默认值
+src/renderer/main.ts       渲染层行为
+docs/BACKLOG.md            任务行
+docs/STATUS.md             进度快照
+```
+
+两个功能都要加设置项时，**先合成一个 PR 再拆**，或者一个先合、另一个 rebase 后合。
 
 ---
 
@@ -143,6 +185,7 @@ pnpm build
 
 - [ ] 分支已推送
 - [ ] PR 已创建（或记录 compare 链接和阻塞原因）
+- [ ] PR 的 `mergeable` 是绿的（不是 conflicting）；变红就自己 rebase
 - [ ] 没有把临时文件、模型、安装包提交进去
 
 ### 4.3 工作区清理
@@ -191,6 +234,8 @@ Get-ChildItem -Recurse -Directory -Filter node_modules -ErrorAction SilentlyCont
 | 不要做 | 原因 |
 |---|---|
 | 没查上游就改 | 容易和已合并的 PR 冲突 |
+| 基于旧 `main` 切分支、提交前不 rebase | 分支天生是旧的，冲突全堆给审核的人 |
+| 并行开多个 PR 改同一批共享文件 | 后合的那个必然要解冲突 |
 | 想法直接写代码 | 越界/返工 |
 | 顺手改 B 线代码 | 分工混乱 |
 | 把 AI 模型/大素材塞进安装包 | 包体/隐私红线 |
